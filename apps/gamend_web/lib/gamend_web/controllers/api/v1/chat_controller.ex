@@ -14,6 +14,7 @@ defmodule GamendWeb.Api.V1.ChatController do
     ChatMessageResponse,
     ChatReadCursorResponse,
     ChatUnreadResponse,
+    FreeForm,
     OkResponse
   }
 
@@ -57,7 +58,7 @@ defmodule GamendWeb.Api.V1.ChatController do
              description: "Reference ID (lobby_id, group_id, party_id, or friend user_id)"
            },
            content: %Schema{type: :string, description: "Message text (1-4096 chars)"},
-           metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Optional metadata")
+           metadata: FreeForm.metadata(description: "Optional metadata")
          }
        }},
     responses: [
@@ -384,7 +385,7 @@ defmodule GamendWeb.Api.V1.ChatController do
          type: :object,
          properties: %{
            content: %Schema{type: :string, description: "New message text (1-4096 chars)"},
-           metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Optional metadata")
+           metadata: FreeForm.metadata(description: "Optional metadata")
          }
        }},
     responses: [

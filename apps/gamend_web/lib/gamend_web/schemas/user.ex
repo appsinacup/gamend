@@ -46,6 +46,7 @@ end
 defmodule GamendWeb.Schemas.CurrentUser do
   @moduledoc "The signed-in user, as `GET /me` sends it: the only user shape carrying email."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias GamendWeb.Schemas.LinkedProviders
   alias OpenApiSpex.Schema
 
@@ -63,7 +64,7 @@ defmodule GamendWeb.Schemas.CurrentUser do
       },
       username: %Schema{type: :string, description: "Unique handle"},
       display_name: %Schema{type: :string, description: "Chosen name"},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       lobby_id: %Schema{type: :string, description: "Current lobby id, or empty"},
       party_id: %Schema{type: :string, description: "Current party id, or empty"},
       is_online: %Schema{type: :boolean},
@@ -100,6 +101,7 @@ defmodule GamendWeb.Schemas.PublicUser do
   row without the avatar, with metadata cut to the public keys.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -111,7 +113,7 @@ defmodule GamendWeb.Schemas.PublicUser do
       username: %Schema{type: :string, description: "Unique handle"},
       display_name: %Schema{type: :string, description: "Chosen name"},
       metadata:
-        GamendWeb.Schemas.FreeForm.metadata(
+        FreeForm.metadata(
           description:
             "User metadata, restricted to the keys named by the :public_user_metadata_keys setting. Empty by default."
         ),

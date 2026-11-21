@@ -18,6 +18,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     AdminQuestProgressPage,
     AdminQuestProgressResponse,
     AdminQuestResponse,
+    FreeForm,
     OkResponse,
     QuestFunnelResponse,
     UploadTicketResponse
@@ -52,10 +53,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
           properties: %{
             event: %Schema{type: :string},
             target: %Schema{type: :integer},
-            params:
-              GamendWeb.Schemas.FreeForm.object(
-                "the meta an objective's event must carry, the game's own"
-              )
+            params: FreeForm.object("the meta an objective's event must carry, the game's own")
           },
           required: [:event]
         }
@@ -83,7 +81,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
       starts_at: %Schema{type: :string, format: "date-time", nullable: true},
       ends_at: %Schema{type: :string, format: "date-time", nullable: true},
       active: %Schema{type: :boolean},
-      metadata: GamendWeb.Schemas.FreeForm.metadata()
+      metadata: FreeForm.metadata()
     }
   }
 
@@ -93,7 +91,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     description: "1 is single-use, N the first N players, null every player once"
   }
 
-  @code_metadata_schema GamendWeb.Schemas.FreeForm.metadata(
+  @code_metadata_schema FreeForm.metadata(
                           description:
                             "Copied onto each player's progress row, where they can read it"
                         )

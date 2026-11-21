@@ -6,6 +6,7 @@ defmodule GamendWeb.Schemas.Lobby do
   declared but not required.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias GamendWeb.Schemas.UserBrief
   alias OpenApiSpex.Schema
 
@@ -38,7 +39,7 @@ defmodule GamendWeb.Schemas.Lobby do
         nullable: true,
         description: "When `state` last changed; null if it never has"
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Arbitrary metadata"),
+      metadata: FreeForm.metadata(description: "Arbitrary metadata"),
       is_passworded: %Schema{type: :boolean, description: "Joining requires a password"},
       slowdown: %Schema{type: :integer, description: "Chat slowdown in seconds (0 = off)"},
       spectator_count: %Schema{type: :integer, description: "Current spectators"},

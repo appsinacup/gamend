@@ -22,11 +22,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
   alias Gamend.ReadyChecks
   alias GamendWeb.Schemas
 
-  alias GamendWeb.Schemas.{
-    MyReadyChecksResponse,
-    OkResponse,
-    ReadyCheckStateResponse
-  }
+  alias GamendWeb.Schemas.{FreeForm, MyReadyChecksResponse, OkResponse, ReadyCheckStateResponse}
 
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
@@ -138,7 +134,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
             type: :integer,
             description: "Answering window; omit for the configured default"
           },
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Echoed to clients")
+          metadata: FreeForm.metadata(description: "Echoed to clients")
         }
       }
     },
@@ -181,7 +177,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
             type: :integer,
             description: "Answering window; omit for the configured default"
           },
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Echoed to clients")
+          metadata: FreeForm.metadata(description: "Echoed to clients")
         }
       }
     },

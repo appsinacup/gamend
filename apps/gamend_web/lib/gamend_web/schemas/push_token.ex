@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.PushToken do
   @moduledoc "A registered device, as the push token endpoints send it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -20,7 +21,7 @@ defmodule GamendWeb.Schemas.PushToken do
         description: "Set when the provider reported the token dead"
       },
       last_used_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [

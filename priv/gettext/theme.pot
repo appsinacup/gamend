@@ -97,7 +97,7 @@ msgstr ""
 msgid "Gamend"
 msgstr ""
 
-msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting sessions**: short, focused help to get you unstuck. **€50 per hour.**"
+msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting** and **paid work**: focused help to get you unstuck, priority fixes and new features. **€50 per hour** for indies, **€100 per hour** for studios (10+ employees) or contract work."
 msgstr ""
 
 msgid "Deployment"
@@ -128,6 +128,12 @@ msgid "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](ht
 msgstr ""
 
 msgid "Client integration"
+msgstr ""
+
+msgid "Besides advice, I can also do the work for you: a Gamend bug that blocks you, fixed ahead of the queue, or a feature you need, built in Gamend or in your own game. Billed at the same hourly rates."
+msgstr ""
+
+msgid "Priority fixes & feature work"
 msgstr ""
 
 msgid "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need."

@@ -17,7 +17,7 @@ defmodule GamendWeb.ContractLint do
       no type at all. A value no schema can say (a game's metadata, a
       plugin's arguments, a provider's webhook body) is marked with why:
       `extensions: %{"x-free-form" => "a game's metadata"}`, which
-      `GamendWeb.Schemas.FreeForm.schema/1` writes.
+      `GamendWeb.Schemas.FreeForm.object/2` writes.
     * `:event_protobuf` — a server→client event with no protobuf message in
       `GamendWeb.EventCodec`: sent as JSON only.
     * `:command_type` — a client→server command whose keys
@@ -111,7 +111,7 @@ defmodule GamendWeb.ContractLint do
         :api_free_form,
         where,
         "a schema that says nothing of its value: give it properties or a type, or mark it " <>
-          "`GamendWeb.Schemas.FreeForm.schema(\"why\")`"
+          "`GamendWeb.Schemas.FreeForm.object(\"why\")`"
       )
     end
   end
@@ -127,7 +127,7 @@ defmodule GamendWeb.ContractLint do
     typed_values? =
       match?(%Schema{}, schema.additionalProperties) or
         match?(%Reference{}, schema.additionalProperties) or
-        is_atom_schema?(schema.additionalProperties)
+        schema_module?(schema.additionalProperties)
 
     no_properties? = schema.properties in [nil, %{}]
 
@@ -146,10 +146,10 @@ defmodule GamendWeb.ContractLint do
     end
   end
 
-  defp is_atom_schema?(module) when is_atom(module) and module not in [nil, true, false],
+  defp schema_module?(module) when is_atom(module) and module not in [nil, true, false],
     do: function_exported?(module, :schema, 0)
 
-  defp is_atom_schema?(_), do: false
+  defp schema_module?(_), do: false
 
   # Every schema the document holds, named by where it sits: each component
   # and what it nests, and each operation's inline parameter, body and

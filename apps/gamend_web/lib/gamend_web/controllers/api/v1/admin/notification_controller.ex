@@ -9,6 +9,7 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
 
   alias GamendWeb.Schemas.{
     AnnouncementResponse,
+    FreeForm,
     NotificationPage,
     NotificationResponse,
     OkResponse
@@ -85,7 +86,7 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
             nullable: true
           },
           metadata:
-            GamendWeb.Schemas.FreeForm.metadata(
+            FreeForm.metadata(
               description: "Arbitrary metadata (optional)",
               nullable: true
             )

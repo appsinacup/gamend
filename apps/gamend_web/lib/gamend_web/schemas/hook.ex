@@ -23,6 +23,7 @@ defmodule GamendWeb.Schemas.HookFunction do
   `fn` name it there.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias GamendWeb.Schemas.HookSignature
   alias OpenApiSpex.Schema
 
@@ -41,7 +42,7 @@ defmodule GamendWeb.Schemas.HookFunction do
         arities: %Schema{type: :array, items: %Schema{type: :integer}},
         signatures: %Schema{type: :array, items: HookSignature},
         meta:
-          GamendWeb.Schemas.FreeForm.object(
+          FreeForm.object(
             "a dynamic function's registration, as its plugin made it",
             description: "A dynamic function's registration; `{}` otherwise"
           )
@@ -64,7 +65,10 @@ defmodule GamendWeb.Schemas.HookCallResponse do
   registered `<Fn>Request`/`<Fn>Reply` schemas) answers an object, an untyped
   one whatever it returned.
   """
+
+  alias GamendWeb.Schemas.FreeForm
+
   use GamendWeb.Schemas.Envelope,
-    data: GamendWeb.Schemas.FreeForm.value("the plugin function's own return value"),
+    data: FreeForm.value("the plugin function's own return value"),
     description: "The hook's return value under `data`"
 end

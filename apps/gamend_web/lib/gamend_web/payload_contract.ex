@@ -16,6 +16,8 @@ defmodule GamendWeb.PayloadContract do
     * `:string` — a string.
     * `:uuid` — a string that is a UUID (a row's id: anything else would
       raise in the query that reads it).
+    * `:id` — a string or an integer: an id the page drew itself (a word's,
+      a card's, a city's), which the handler looks up.
     * `:integer` — an integer, or its digits as a string (`phx-value-*` and a
       query string send every value as text).
     * `:boolean` — `true`/`false`, or `"true"`, `"false"`, `"on"` (a
@@ -43,6 +45,7 @@ defmodule GamendWeb.PayloadContract do
   @type type ::
           :string
           | :uuid
+          | :id
           | :integer
           | :boolean
           | {:in, [term()]}
@@ -55,7 +58,7 @@ defmodule GamendWeb.PayloadContract do
   @type declaration :: [{atom() | String.t(), type() | {:optional, type()}}]
   @type errors :: %{String.t() => [String.t()]}
 
-  @scalars [:string, :uuid, :integer, :boolean]
+  @scalars [:string, :uuid, :id, :integer, :boolean]
 
   @doc "The scalar types a declaration may name."
   @spec scalars() :: [atom()]
@@ -191,6 +194,7 @@ defmodule GamendWeb.PayloadContract do
   def typed?(_value, {:free, _reason}), do: true
   def typed?(value, :string), do: is_binary(value)
   def typed?(value, :uuid), do: is_binary(value) and match?({:ok, _}, Ecto.UUID.cast(value))
+  def typed?(value, :id), do: is_binary(value) or is_integer(value)
   def typed?(value, :integer) when is_integer(value), do: true
   def typed?(value, :integer) when is_binary(value), do: Regex.match?(~r/\A-?\d{1,18}\z/, value)
   def typed?(value, :boolean) when is_boolean(value), do: true
@@ -200,6 +204,7 @@ defmodule GamendWeb.PayloadContract do
 
   defp message(:string), do: "must be a string"
   defp message(:uuid), do: "must be a UUID"
+  defp message(:id), do: "must be a string or an integer"
   defp message(:integer), do: "must be an integer"
   defp message(:boolean), do: "must be a boolean"
   defp message({:in, values}), do: "must be one of: " <> Enum.map_join(values, ", ", &to_string/1)

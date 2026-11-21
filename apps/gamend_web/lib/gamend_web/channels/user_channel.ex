@@ -39,6 +39,8 @@ defmodule GamendWeb.UserChannel do
 
   use GamendWeb, :channel
 
+  require GamendWeb.WebrtcEvent, as: WebrtcEvent
+
   import GamendWeb.ChannelPush
   require Logger
 
@@ -677,31 +679,32 @@ defmodule GamendWeb.UserChannel do
 
   @impl true
   def handle_info({:webrtc_answer, answer_json}, socket) do
-    push_event(socket, "webrtc:answer", %{sdp: answer_json["sdp"], type: answer_json["type"]})
+    push_event(socket, WebrtcEvent.answer(), %{sdp: answer_json["sdp"], type: answer_json["type"]})
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:webrtc_ice, candidate_json}, socket) do
-    push_event(socket, "webrtc:ice", candidate_json)
+    push_event(socket, WebrtcEvent.ice(), candidate_json)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:webrtc_channel_open, _ref, label}, socket) do
-    push_event(socket, "webrtc:channel_open", %{channel: label})
+    push_event(socket, WebrtcEvent.channel_open(), %{channel: label})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:webrtc_channel_closed, _ref}, socket) do
-    push_event(socket, "webrtc:channel_closed", %{})
+    push_event(socket, WebrtcEvent.channel_closed(), %{})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:webrtc_connection_state, conn_state}, socket) do
-    push_event(socket, "webrtc:state", %{state: to_string(conn_state)})
+    push_event(socket, WebrtcEvent.state(), %{state: to_string(conn_state)})
     {:noreply, socket}
   end
 

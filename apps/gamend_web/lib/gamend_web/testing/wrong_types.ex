@@ -37,12 +37,21 @@ defmodule GamendWeb.Testing.WrongTypes do
       with an error code passes; a 5xx or a raise fails.
     * `channel_tests/1` — a test per command in `GamendWeb.RealtimeCommands`,
       on a fresh player's channel. Each must reply, and the channel stay up.
-    * `live_tests/1` — a test per live route, mounted as a fresh admin (a
-      path id is `1`; a page that does not mount with it is skipped), each
+    * `live_tests/1` — a test per live route, mounted as an admin of its
+      own (a path's parameters are `1`, or `params:`'s), each
       declared event sent wrong and odd params. The page must stay up; an
       event that navigates is followed by a fresh mount. `extra_events:`
       adds a page's events declared elsewhere (`%{Page => [Tab, ...]}`, a
-      settings page's tabs).
+      settings page's tabs). A page that attaches them only on one of its
+      paths names it: `%{Page => {"/games/spanish", [Strip]}}`, as does one
+      that does not mount at `1` (`{"/games/spanish/pairs", []}`). A page
+      that does not mount fails, so none passes with its events unsent;
+      `skip:` leaves pages out, each with why (`%{Page => "needs a build"}`).
+      A path may be `{module, function, args}`, called as the test runs (a
+      row it makes), and `{path, extra, as: :visitor}` mounts with no
+      session (a page an account is sent away from); core's own such pages
+      are set up already (`core_pages/0`). `params:` gives a route's
+      parameters real values (`%{"lang" => "spanish"}`), each else `1`.
 
   The caller's module provides the case (`ConnCase` with `@endpoint` and the
   SQL sandbox; `ChannelCase` for the channel tests). The players are made
@@ -50,6 +59,7 @@ defmodule GamendWeb.Testing.WrongTypes do
   """
 
   alias Gamend.Accounts
+  require Gamend.HttpHeader, as: HttpHeader
   alias GamendWeb.Auth.Guardian
   alias OpenApiSpex.{Operation, Parameter, PathItem, Reference, RequestBody, Schema}
 
@@ -70,19 +80,21 @@ defmodule GamendWeb.Testing.WrongTypes do
   @doc "A test per `/api` route, sent the wrong types as an admin."
   defmacro api_tests(opts \\ []) do
     quote bind_quoted: [opts: opts] do
+      alias GamendWeb.Testing.WrongTypes
+
       @moduletag :capture_log
       @moduletag timeout: 600_000
 
-      for route <- GamendWeb.Testing.WrongTypes.api_routes(opts[:router]) do
+      for route <- WrongTypes.api_routes(opts[:router]) do
         @wrong_types_route route
         test "#{route.verb |> to_string() |> String.upcase()} #{route.path} survives wrong types" do
-          conn = GamendWeb.Testing.WrongTypes.api_conn()
+          conn = WrongTypes.api_conn()
           dispatch = fn conn, verb, path, data -> dispatch(conn, @endpoint, verb, path, data) end
-          crashes = GamendWeb.Testing.WrongTypes.api_crashes(conn, @wrong_types_route, dispatch)
+          crashes = WrongTypes.api_crashes(conn, @wrong_types_route, dispatch)
 
           assert crashes == [],
                  "#{length(crashes)} request(s) crashed:\n\n" <>
-                   Enum.map_join(crashes, "\n\n", &GamendWeb.Testing.WrongTypes.describe/1)
+                   Enum.map_join(crashes, "\n\n", &WrongTypes.describe/1)
         end
       end
     end
@@ -91,20 +103,28 @@ defmodule GamendWeb.Testing.WrongTypes do
   @doc "A test per channel command, sent the wrong types on a player's channel."
   defmacro channel_tests(opts \\ []) do
     quote bind_quoted: [opts: opts] do
+      alias GamendWeb.Testing.WrongTypes
+      # Called by name: a case that imports `Phoenix.ConnTest` as well has
+      # two `connect/2`.
+      require Phoenix.ChannelTest
+
       @moduletag :capture_log
       @wrong_types_socket opts[:socket] || GamendWeb.UserSocket
 
       for command <- GamendWeb.RealtimeCommands.all() do
         @wrong_types_command command
         test "#{command.topic} #{command.event} survives wrong types" do
-          topics = GamendWeb.Testing.WrongTypes.channel_topics()
-          {:ok, socket} = connect(@wrong_types_socket, %{"token" => topics.token})
-          topic = Map.fetch!(topics, @wrong_types_command.topic)
-          {:ok, _reply, channel} = subscribe_and_join(socket, topic, %{})
+          topics = WrongTypes.channel_topics()
 
-          for payload <- GamendWeb.Testing.WrongTypes.command_payloads(@wrong_types_command) do
-            GamendWeb.Testing.WrongTypes.reset_rate_limits()
-            ref = push(channel, @wrong_types_command.event, payload)
+          {:ok, socket} =
+            Phoenix.ChannelTest.connect(@wrong_types_socket, %{"token" => topics.token})
+
+          topic = Map.fetch!(topics, @wrong_types_command.topic)
+          {:ok, _reply, channel} = Phoenix.ChannelTest.subscribe_and_join(socket, topic, %{})
+
+          for payload <- WrongTypes.command_payloads(@wrong_types_command) do
+            WrongTypes.reset_rate_limits()
+            ref = Phoenix.ChannelTest.push(channel, @wrong_types_command.event, payload)
 
             assert_receive %Phoenix.Socket.Reply{ref: ^ref},
                            10_000,
@@ -121,22 +141,31 @@ defmodule GamendWeb.Testing.WrongTypes do
   @doc "A test per live route, each declared event sent wrong and odd params as an admin."
   defmacro live_tests(opts \\ []) do
     quote bind_quoted: [opts: opts] do
+      alias GamendWeb.Testing.WrongTypes
+
       import Phoenix.LiveViewTest
 
       @moduletag :capture_log
       @moduletag timeout: 600_000
 
-      for {module, path, events} <-
-            GamendWeb.Testing.WrongTypes.live_routes(opts[:router], opts[:extra_events] || %{}) do
-        @wrong_types_live {module, path, events}
-        test "#{inspect(module)} #{path} survives wrong types" do
+      for {module, path, events, as} <-
+            WrongTypes.live_routes(
+              opts[:router],
+              Map.merge(WrongTypes.core_pages(), opts[:extra_events] || %{}),
+              opts[:params] || %{}
+            ),
+          not Map.has_key?(opts[:skip] || %{}, module) do
+        @wrong_types_live {module, path, events, as}
+        test "#{inspect(module)} #{WrongTypes.path_name(path)} survives wrong types" do
           Process.flag(:trap_exit, true)
-          {_module, path, events} = @wrong_types_live
+          {_module, path, events, as} = @wrong_types_live
+          player = WrongTypes.player(as)
           mount = fn conn, path -> live(conn, path) end
-          crashes = GamendWeb.Testing.WrongTypes.live_crashes(path, events, mount, &render_hook/3)
+          crashes = WrongTypes.live_crashes(path, events, mount, &render_hook/3, player)
 
           assert crashes == [],
-                 "#{length(crashes)} event(s) crashed #{path}:\n\n" <> Enum.join(crashes, "\n\n")
+                 "#{length(crashes)} event(s) crashed #{WrongTypes.path_name(path)}:\n\n" <>
+                   Enum.join(crashes, "\n\n")
         end
       end
     end
@@ -164,18 +193,32 @@ defmodule GamendWeb.Testing.WrongTypes do
 
     Phoenix.ConnTest.build_conn()
     |> Plug.Conn.put_req_header("authorization", "Bearer " <> token)
-    |> Plug.Conn.put_req_header("accept", "application/json")
+    |> Plug.Conn.put_req_header(HttpHeader.accept(), "application/json")
   end
 
-  @doc "A conn signed in to the site as a new admin."
-  @spec live_conn() :: Plug.Conn.t()
-  def live_conn do
-    token = Accounts.generate_user_session_token(admin())
+  @doc "A conn signed in to the site as `user` (a new admin by default)."
+  @spec live_conn(Accounts.User.t()) :: Plug.Conn.t()
+  def live_conn(user \\ admin()) do
+    token = Accounts.generate_user_session_token(user)
 
     Phoenix.ConnTest.build_conn()
     |> Phoenix.ConnTest.init_test_session(%{})
     |> Plug.Conn.put_session(:user_token, token)
   end
+
+  @doc """
+  A live test's player: a new admin, or nil, a visitor with no session (a
+  page an account is sent away from: log in, register).
+  """
+  @spec player(:admin | :visitor) :: Accounts.User.t() | nil
+  def player(:admin), do: admin()
+  def player(:visitor), do: nil
+
+  # A new session for each mount, the player's; a visitor's has none.
+  defp player_conn(nil),
+    do: Phoenix.ConnTest.build_conn() |> Phoenix.ConnTest.init_test_session(%{})
+
+  defp player_conn(user), do: live_conn(user)
 
   @doc "Clears the rate limiter, which would refuse a test's next request."
   @spec reset_rate_limits() :: :ok
@@ -242,13 +285,13 @@ defmodule GamendWeb.Testing.WrongTypes do
     {conn, data} =
       case payload do
         {:raw, body} ->
-          {Plug.Conn.put_req_header(conn, "content-type", "application/json"), body}
+          {Plug.Conn.put_req_header(conn, HttpHeader.content_type(), "application/json"), body}
 
         {:params, params} when verb in [:get, :delete] ->
           {conn, params}
 
         {:params, params} ->
-          {Plug.Conn.put_req_header(conn, "content-type", "application/json"),
+          {Plug.Conn.put_req_header(conn, HttpHeader.content_type(), "application/json"),
            Jason.encode!(params)}
       end
 
@@ -426,13 +469,13 @@ defmodule GamendWeb.Testing.WrongTypes do
           value <- ["", "nope", "-1", "99999999999999999999999999", String.duplicate("x", 5_000)],
           do: Map.put(base, key, value)
 
-    [[1, 2], "text", 12, nil, %{}, base] ++ wrong ++ odd
+    [[1, 2], "words", 12, nil, %{}, base] ++ wrong ++ odd
   end
 
   # ── LiveView ───────────────────────────────────────────────────────────────
 
   @doc false
-  def live_routes(router, extra_events) do
+  def live_routes(router, extra_events, params \\ %{}) do
     case router || GamendWeb.ContractLint.router() do
       nil ->
         []
@@ -441,13 +484,87 @@ defmodule GamendWeb.Testing.WrongTypes do
         for route <- Phoenix.Router.routes(router),
             route.plug == Phoenix.LiveView.Plug and route.verb == :get,
             module = elem(route.metadata.phoenix_live_view, 0),
-            events = events(module, Map.get(extra_events, module, [])),
+            {path, extra, opts} = extra_for(Map.get(extra_events, module, [])),
+            events = events(module, extra),
             events != %{},
             uniq: true,
-            do: {module, String.replace(route.path, ~r/:[a-z_]+|\*[a-z_]+/, "1"), events}
+            do:
+              {module, path || fill_live_path(route.path, params), events,
+               Keyword.get(opts, :as, :admin)}
     end
     |> Enum.uniq_by(&elem(&1, 0))
   end
+
+  # Each `:name` the host's `params:` gives a value, else `1`.
+  defp fill_live_path(path, params) do
+    Regex.replace(~r/[:*]([a-z_]+)/, path, fn _whole, name -> Map.get(params, name, "1") end)
+  end
+
+  @doc """
+  Core's pages that mount only on a row or as a visitor, set up for every
+  host's `live_tests/1` (a host's `extra_events:` wins).
+  """
+  @spec core_pages() :: map()
+  def core_pages do
+    %{
+      GamendWeb.AdminLive.QuestCodes => {{__MODULE__, :quest_codes_path, []}, []},
+      GamendWeb.UserLive.Confirmation => {{__MODULE__, :magic_link_path, []}, [], as: :visitor},
+      GamendWeb.UserLive.Registration => {"/users/register", [], as: :visitor}
+    }
+  end
+
+  @doc "A quest's codes page, on a quest made for it."
+  @spec quest_codes_path(Accounts.User.t() | nil) :: String.t()
+  def quest_codes_path(_player) do
+    {:ok, quest} =
+      Gamend.Quests.create_quest(%{
+        key: "wrong_types_#{System.unique_integer([:positive])}",
+        title: "Codes",
+        code_only: true
+      })
+
+    "/admin/quests/#{quest.key}/codes"
+  end
+
+  @doc "A magic link's page, for a new account."
+  @spec magic_link_path(Accounts.User.t() | nil) :: String.t()
+  def magic_link_path(_visitor) do
+    {:ok, user} =
+      Accounts.register_user(%{
+        "email" => "wrong-types-link#{System.unique_integer([:positive])}@example.com"
+      })
+
+    me = self()
+
+    Accounts.deliver_login_instructions(user, fn token ->
+      send(me, {:wrong_types_token, token})
+      "/users/log_in/#{token}"
+    end)
+
+    receive do
+      {:wrong_types_token, token} -> "/users/log_in/#{token}"
+    end
+  end
+
+  defp extra_for({path, modules}), do: extra_for({path, modules, []})
+
+  defp extra_for({path, modules, opts}) when is_list(modules) and is_list(opts),
+    do: {path, modules, opts}
+
+  defp extra_for(modules) when is_list(modules), do: {nil, modules, []}
+
+  @doc """
+  A page's path: as written, or `{module, function, args}` called with the
+  test's player first when it runs (a path that names a row the test makes,
+  the player's own where the page is its owner's).
+  """
+  @spec path(String.t() | {module(), atom(), list()}, Accounts.User.t() | nil) :: String.t()
+  def path({module, fun, args}, player), do: apply(module, fun, [player | args])
+  def path(path, _player) when is_binary(path), do: path
+
+  @doc false
+  def path_name({module, fun, _args}), do: "#{inspect(module)}.#{fun}()"
+  def path_name(path) when is_binary(path), do: path
 
   defp events(module, extra) do
     for source <- [module | extra],
@@ -458,7 +575,17 @@ defmodule GamendWeb.Testing.WrongTypes do
   end
 
   @doc false
-  def live_crashes(path, events, mount, render_hook) do
+  def live_crashes(spec, events, mount, render_hook, player) do
+    path = path(spec, player)
+
+    mount = fn
+      # An event can delete the page's row: then a new one, its path again.
+      :anew, _path -> mount.(player_conn(player), path(spec, player))
+      # Or delete or sign out the player: then a new admin.
+      :again, path -> mount.(live_conn(), path)
+      :player, path -> mount.(player_conn(player), path)
+    end
+
     case live_mount(mount, path) do
       {:ok, view} ->
         {_view, crashes} =
@@ -472,22 +599,28 @@ defmodule GamendWeb.Testing.WrongTypes do
 
         Enum.reverse(crashes)
 
-      :skip ->
-        []
+      {:skip, why} ->
+        [
+          "#{path} did not mount (#{why}), so none of its events was sent: name a path " <>
+            "it mounts at (`extra_events: %{Page => {path, []}}`), or say why it is left " <>
+            "out (`skip: %{Page => \"why\"}`)"
+        ]
     end
   end
 
-  # A fresh admin each mount: an event can delete or sign out the one before.
-  defp live_mount(mount, path) do
-    case mount.(live_conn(), path) do
+  defp live_mount(mount, path, who \\ :player) do
+    case mount.(who, path) do
       {:ok, view, _html} -> {:ok, view}
-      _ -> :skip
+      other -> {:skip, inspect(other, limit: 4)}
     end
   rescue
-    _ -> :skip
+    error -> {:skip, Exception.message(error)}
   catch
-    :exit, _ -> :skip
+    :exit, reason -> {:skip, inspect(reason, limit: 4)}
   end
+
+  defp send_event(_mount, _render_hook, _path, _event, _params, {:gone, crashes}),
+    do: {:gone, crashes}
 
   defp send_event(mount, render_hook, path, event, params, {view, crashes}) do
     result =
@@ -512,10 +645,15 @@ defmodule GamendWeb.Testing.WrongTypes do
     end
   end
 
-  defp remount(mount, path, old) do
-    case live_mount(mount, path) do
+  # The page again; none (an event deleted all it needs) sends the rest
+  # nowhere, rather than to the page that is gone.
+  defp remount(mount, path, _old) do
+    with {:skip, _why} <- live_mount(mount, path),
+         {:skip, _why} <- live_mount(mount, path, :anew),
+         {:skip, _why} <- live_mount(mount, path, :again) do
+      :gone
+    else
       {:ok, view} -> view
-      :skip -> old
     end
   end
 
@@ -535,9 +673,16 @@ defmodule GamendWeb.Testing.WrongTypes do
           value <- @odd_strings,
           do: Map.put(base, key, value)
 
+    # An id the page drew may come as a number: odd ones of those too.
+    numbers =
+      for {key, type} <- keys,
+          bare(type) == :id,
+          value <- [0, -1, 99_999_999_999_999_999_999],
+          do: Map.put(base, key, value)
+
     left_out = for {key, {:optional, _}} <- declaration, do: Map.delete(base, to_string(key))
 
-    [%{}, base] ++ wrong ++ odd ++ left_out
+    [%{}, base] ++ wrong ++ odd ++ numbers ++ left_out
   end
 
   defp bare({:optional, type}), do: bare(type)
@@ -547,6 +692,7 @@ defmodule GamendWeb.Testing.WrongTypes do
   # A value of the declared type, so each wrong one is the only thing wrong.
   defp plain(:string), do: "1"
   defp plain(:uuid), do: "00000000-0000-0000-0000-000000000000"
+  defp plain(:id), do: "1"
   defp plain(:integer), do: "1"
   defp plain(:boolean), do: "true"
   defp plain({:in, [value | _]}), do: value
@@ -559,5 +705,5 @@ defmodule GamendWeb.Testing.WrongTypes do
     do: Map.new(keys, fn {k, t} -> {to_string(k), plain(bare(t))} end)
 
   defp text_type?(type),
-    do: bare(type) in [:string, :integer, :uuid] or match?({:free, _}, bare(type))
+    do: bare(type) in [:string, :id, :integer, :uuid] or match?({:free, _}, bare(type))
 end

@@ -20,6 +20,7 @@ defmodule GamendWeb.AdminLive.Plugins do
   alias GamendWeb.AdminLive.PluginFunctions
 
   require GamendWeb.WsFormat, as: WsFormat
+  require Logger
 
   use GamendWeb.UrlState,
     reload: :assign_call,
@@ -80,7 +81,19 @@ defmodule GamendWeb.AdminLive.Plugins do
   event("reload_plugins")
   @impl true
   def handle_event("reload_plugins", _params, socket) do
-    result = PluginManager.reload_and_after_startup()
+    # The manager not running (a host that starts no plugins) is said, not
+    # a crash.
+    result =
+      try do
+        PluginManager.reload_and_after_startup()
+      catch
+        :exit, reason ->
+          Logger.info(
+            "plugins: reload refused, the plugin manager is not running: #{inspect(reason)}"
+          )
+
+          {:error, :not_running}
+      end
 
     {:noreply,
      socket

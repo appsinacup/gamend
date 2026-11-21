@@ -22,6 +22,7 @@ defmodule GamendWeb.Schemas.PlayResult do
   """
   require OpenApiSpex
   alias Gamend.Results.ResultStatus
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   require Gamend.Results.ResultVisibility, as: ResultVisibility
@@ -47,8 +48,7 @@ defmodule GamendWeb.Schemas.PlayResult do
         ]
       },
       status: %Schema{type: :string, enum: ResultStatus.all()},
-      metadata:
-        GamendWeb.Schemas.FreeForm.metadata(description: "What the play was: its settings"),
+      metadata: FreeForm.metadata(description: "What the play was: its settings"),
       started_at: %Schema{type: :string, format: :"date-time"},
       ended_at: %Schema{type: :string, format: :"date-time", nullable: true},
       stats: %Schema{
@@ -74,6 +74,7 @@ end
 defmodule GamendWeb.Schemas.PlayResultEvent do
   @moduledoc "One thing that happened in a play, at its time into it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -86,7 +87,7 @@ defmodule GamendWeb.Schemas.PlayResultEvent do
       elapsed_ms: %Schema{type: :integer, description: "Milliseconds since the play began"},
       key: %Schema{type: :string, description: "What happened"},
       value: %Schema{type: :number, nullable: true},
-      metadata: GamendWeb.Schemas.FreeForm.metadata()
+      metadata: FreeForm.metadata()
     },
     required: [:id, :result_id, :elapsed_ms, :key, :metadata]
   })

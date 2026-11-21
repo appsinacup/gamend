@@ -239,10 +239,11 @@ declaration, before the handler runs:
 |---|---|---|---|
 | HTTP API | the operation's OpenAPI path, query and body schemas | `GamendWeb.Plugs.RequestContract`, plugged into every controller (after the router's gates, so 401 and 403 come first) | 422 `validation_failed`, per field |
 | Channel command | its row in `GamendWeb.RealtimeCommands` (`name: type`) | `GamendWeb.ChannelContract`, around every `handle_in/3` (`use GamendWeb, :channel`) and the WebRTC data channel's `call_hook` | `{:error, %{error: "validation_failed", errors: ...}}`, channel kept |
-| LiveView event | `event("name", key: type)` beside its handler | `GamendWeb.LiveEvents`, around every `handle_event/3` (`use GamendWeb, :live_view`, `:live_component`) | refused, logged at info, socket unchanged |
+| LiveView event | `event("name", key: type)` beside its handler | `GamendWeb.LiveEvents`, around every `handle_event/3` (`use GamendWeb, :live_view`, `:live_component`), and a `:handle_event` hook attached through `LiveEvents.hook/2` | refused, logged at info, socket unchanged (a hook halts) |
 
 The channel and LiveView types are `GamendWeb.PayloadContract`'s: `:string`,
-`:uuid`, `:integer`, `:boolean`, `{:in, values}`, `{:or_blank, type}`, a
+`:uuid` (a row's id), `:id` (a string or an integer: an id the page drew
+itself), `:integer` (an integer or its digits), `:boolean`, `{:in, values}`, `{:or_blank, type}`, a
 nested keyword list, `{:schema, EctoModule}` (a form over a changeset),
 `{:list, type}`, `{:map_of, type}`, each `{:optional, type}` when it may be
 left out. There is no bare `:map`, `:list` or `:any`: a value no schema can
@@ -269,8 +270,13 @@ registered command) and `live_tests/1` (every live route, as an admin, each
 declared event).
 
 **In a host.** The checks come with `use GamendWeb, :controller`, `:channel`,
-`:live_view` and `:live_component`. To adopt them: draft the LiveView
-declarations with `mix gamend.live_events.draft --apply` and review each; give
+`:live_view` and `:live_component`. A module whose events a hook takes
+(`attach_hook(socket, name, :handle_event, fun)`) uses
+`GamendWeb.LiveEvents, hook: :on_event` and attaches
+`LiveEvents.hook(__MODULE__, &on_event/3)`. To adopt them: draft the LiveView
+declarations with `mix gamend.live_events.draft --apply` and review each
+against what the page sends (a draft is the handler's pattern, not the
+template's: a form is a map, a `pushEvent` id may be a number); give
 every `/api/v1` route its operation; add `gamend.contract.lint` to `precommit`;
 and add one test module per kind:
 
@@ -280,9 +286,29 @@ defmodule MyAppWeb.WrongTypesTest do
   require GamendWeb.Testing.WrongTypes, as: WrongTypes
 
   WrongTypes.api_tests()
-  WrongTypes.live_tests()
+  WrongTypes.channel_tests()
+
+  WrongTypes.live_tests(
+    # A route's parameters as a real page has them (else `1`).
+    params: %{"lang" => "spanish"},
+    # A page whose events a hook or another module takes names them; one
+    # that needs a row is opened on one made as the test runs, for its
+    # player (`{module, function, args}`, called with the player first).
+    extra_events: %{
+      MyAppWeb.GameLive => [MyAppWeb.Strip],
+      MyAppWeb.ProjectLive => {{__MODULE__, :project_path, []}, []}
+    },
+    # A page no request reaches, with why.
+    skip: %{GamendWeb.QuestsLive => "this site has no quests"}
+  )
+
+  def project_path(player), do: "/projects/#{MyApp.create_project(player).id}"
 end
 ```
+
+A live route that does not mount fails its test, so no page passes with its
+events unsent. Core's own pages that need a row or a visitor are set up
+already (`WrongTypes.core_pages/0`).
 
 ## Authentication in the document
 

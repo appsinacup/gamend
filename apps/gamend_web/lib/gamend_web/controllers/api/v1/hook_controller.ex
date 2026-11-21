@@ -9,7 +9,7 @@ defmodule GamendWeb.Api.V1.HookController do
   alias GamendWeb.HookErrors
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{HookCallResponse, HookFunctionPage}
+  alias GamendWeb.Schemas.{FreeForm, HookCallResponse, HookFunctionPage}
   alias OpenApiSpex.Schema
   require Logger
   require GamendWeb.ChannelError, as: ChannelError
@@ -121,7 +121,7 @@ defmodule GamendWeb.Api.V1.HookController do
 
   # An argument is whatever the hook takes: a number, a string, a list or an
   # object (`args: [1, 2]` is a plugin's own call). No `type`: any JSON value.
-  @json_schema GamendWeb.Schemas.FreeForm.value("a plugin function's own argument")
+  @json_schema FreeForm.value("a plugin function's own argument")
 
   operation(:invoke,
     operation_id: @call_hook,

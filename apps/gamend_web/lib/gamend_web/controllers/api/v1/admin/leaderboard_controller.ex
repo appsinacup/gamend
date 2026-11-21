@@ -5,7 +5,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
   alias Gamend.Leaderboards
   alias Gamend.Leaderboards.ScoreOperator
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{LeaderboardResponse, OkResponse, UploadTicketResponse}
+  alias GamendWeb.Schemas.{FreeForm, LeaderboardResponse, OkResponse, UploadTicketResponse}
   alias GamendWeb.Serializers
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
@@ -37,7 +37,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           },
           starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          metadata: FreeForm.metadata()
         },
         required: [:slug, :title]
       }
@@ -78,7 +78,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           icon_url: %Schema{type: :string},
           starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          metadata: FreeForm.metadata()
         }
       }
     },

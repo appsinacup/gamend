@@ -10,6 +10,7 @@ defmodule GamendWeb.Api.V1.GroupController do
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
+    FreeForm,
     GroupInviteLinkPreviewResponse,
     GroupInviteLinkResponse,
     GroupInviteOutcomeResponse,
@@ -140,7 +141,7 @@ defmodule GamendWeb.Api.V1.GroupController do
             type: :integer,
             description: "Max members (default: 100; ignored when the host fixes it)"
           },
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Server metadata"),
+          metadata: FreeForm.metadata(description: "Server metadata"),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
@@ -200,7 +201,7 @@ defmodule GamendWeb.Api.V1.GroupController do
             type: :integer,
             description: "Ignored when the host fixes every group's"
           },
-          metadata: GamendWeb.Schemas.FreeForm.metadata(),
+          metadata: FreeForm.metadata(),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"

@@ -33,6 +33,7 @@ defmodule GamendWeb.Plugs.RequestContract do
 
   import GamendWeb.Reply, only: [reply_error: 3]
 
+  require Gamend.HttpHeader, as: HttpHeader
   require Logger
 
   alias GamendWeb.ChangesetErrors
@@ -143,14 +144,19 @@ defmodule GamendWeb.Plugs.RequestContract do
   # the body (a DELETE's, as Phoenix merges them): both are read there.
   defp documented_type(conn, %Operation{requestBody: %{content: content}} = operation)
        when is_map(content) and map_size(content) > 0 do
-    sent = conn |> Plug.Conn.get_req_header("content-type") |> List.first("") |> media_type()
+    sent =
+      conn
+      |> Plug.Conn.get_req_header(HttpHeader.content_type())
+      |> List.first("")
+      |> media_type()
 
     cond do
       Map.has_key?(content, sent) ->
         {conn, operation}
 
       sent in @parsed_types ->
-        {Plug.Conn.put_req_header(conn, "content-type", documented(content)), operation}
+        {Plug.Conn.put_req_header(conn, HttpHeader.content_type(), documented(content)),
+         operation}
 
       true ->
         {conn, %{operation | requestBody: nil}}

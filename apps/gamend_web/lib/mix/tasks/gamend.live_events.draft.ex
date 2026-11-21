@@ -11,14 +11,22 @@ defmodule Mix.Tasks.Gamend.LiveEvents.Draft do
       mix gamend.live_events.draft --apply      # write them
       mix gamend.live_events.draft lib/my_app_web/live/page_live.ex --apply
 
+  Besides `handle_event/3`, it reads the hook a module names
+  (`use GamendWeb.LiveEvents, hook: :on_event`) and the functions it hands
+  events to (`@live_event_handlers [run: 3]`).
+
   A draft is a guess to review, never the answer:
 
     * a key every clause of the event matches is required, one only some
       match is `{:optional, ...}`;
-    * a literal string value, or a variable a guard holds to a list of
-      strings, is `:string`; `is_integer/1` is `:integer`, `is_boolean/1`
-      `:boolean`; a nested `%{...}` pattern is its own keys;
-    * a key named `id`, `*_id` or `*-id` is `:uuid`, the engine's ids;
+    * a literal string value is `:string`, a literal list `{:list, :string}`
+      (a form's `_target`); a guard `is_integer/1` is
+      `:integer`, `is_boolean/1` `:boolean`, `x in ["a", "b"]`
+      `{:in, ["a", "b"]}`; a nested `%{...}` pattern is its own keys;
+    * a key named `id`, `*_id` or `*-id` that no guard types is `:id` (a
+      string or an integer); one that names a row is `:uuid`, which the
+      wrong-types tests say where it is missing (a query raising on "nope");
+    * `is_map/1` is `{:map_of, :string}`;
     * a variable named `*params` (a form's fields) is `{:map_of, :string}`;
       a form over a changeset reads better as `{:schema, Module}`.
 
@@ -54,7 +62,7 @@ defmodule Mix.Tasks.Gamend.LiveEvents.Draft do
         |> Regex.scan(source, capture: :all_but_first)
         |> List.flatten()
 
-      events = ast |> clauses() |> undeclared(declared)
+      events = ast |> clauses(handlers(ast)) |> undeclared(declared)
 
       for {_line, name, declaration} <- events,
           do: Mix.shell().info("#{file}: event(#{inspect(name)}#{render_keys(declaration)})")
@@ -66,24 +74,54 @@ defmodule Mix.Tasks.Gamend.LiveEvents.Draft do
     end
   end
 
-  # Every `def handle_event(name, pattern, socket)` with a literal name: its
-  # line, name, pattern and guard.
-  defp clauses(ast) do
+  # The functions that take events: `handle_event/3`, a named hook, and the
+  # `@live_event_handlers` a module lists.
+  defp handlers(ast) do
+    {_ast, found} =
+      Macro.prewalk(ast, [{:handle_event, 3}], fn
+        {:use, _, [{:__aliases__, _, [:GamendWeb, :LiveEvents]}, opts]} = node, acc
+        when is_list(opts) ->
+          {node, acc ++ hook(opts[:hook])}
+
+        {:@, _, [{:live_event_handlers, _, [list]}]} = node, acc when is_list(list) ->
+          {node, acc ++ list}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    found
+  end
+
+  defp hook(nil), do: []
+  defp hook({:{}, _, [name, arity]}), do: [{name, arity}]
+  defp hook({name, arity}), do: [{name, arity}]
+  defp hook(name) when is_atom(name), do: [{name, 3}]
+
+  # Every clause of those with a literal event name: its line, name, pattern
+  # and guard.
+  defp clauses(ast, handlers) do
     {_ast, found} =
       Macro.prewalk(ast, [], fn
-        {:def, meta, [{:when, _, [{:handle_event, _, [name, pattern, _socket]}, guard]} | _]} =
-            node,
-        acc ->
-          {node, [{meta[:line], literal(name), pattern, guard} | acc]}
+        {kind, meta, [{:when, _, [{fun, _, [name, pattern | _] = args}, guard]} | _]} = node, acc
+        when kind in [:def, :defp] and is_atom(fun) and is_list(args) ->
+          {node, clause(handlers, fun, args, meta, name, pattern, guard, acc)}
 
-        {:def, meta, [{:handle_event, _, [name, pattern, _socket]} | _]} = node, acc ->
-          {node, [{meta[:line], literal(name), pattern, nil} | acc]}
+        {kind, meta, [{fun, _, [name, pattern | _] = args} | _]} = node, acc
+        when kind in [:def, :defp] and is_atom(fun) and is_list(args) ->
+          {node, clause(handlers, fun, args, meta, name, pattern, nil, acc)}
 
         node, acc ->
           {node, acc}
       end)
 
     found |> Enum.reverse() |> Enum.reject(&is_nil(elem(&1, 1)))
+  end
+
+  defp clause(handlers, fun, args, meta, name, pattern, guard, acc) do
+    if {fun, length(args)} in handlers,
+      do: [{meta[:line], literal(name), pattern, guard} | acc],
+      else: acc
   end
 
   defp literal(name) when is_binary(name), do: name
@@ -111,22 +149,44 @@ defmodule Mix.Tasks.Gamend.LiveEvents.Draft do
 
   defp keys(_pattern, _guard), do: []
 
+  # A guard says more than a name, so it is read first.
   defp type(key, value, guard) do
     var = var(value)
 
     cond do
       match?({:%{}, _, _}, value) -> keys(value, guard)
-      id_key?(key) -> :uuid
       is_binary(value) -> :string
+      # A literal list: a form's `_target`, `["q"]`.
+      is_list(value) -> {:list, :string}
       var && guarded?(guard, var, :is_integer) -> :integer
       var && guarded?(guard, var, :is_boolean) -> :boolean
       var && guarded?(guard, var, :is_list) -> {:list, :string}
+      var && guarded?(guard, var, :is_map) -> {:map_of, :string}
+      var && in_list(guard, var) -> {:in, in_list(guard, var)}
+      id_key?(key) -> :id
       var && String.ends_with?(Atom.to_string(var), "params") -> {:map_of, :string}
       true -> :string
     end
   end
 
+  # The literal strings a `var in [...]` guard holds it to, or nil.
+  defp in_list(nil, _var), do: nil
+
+  defp in_list(guard, var) do
+    {_ast, found} =
+      Macro.prewalk(guard, nil, fn
+        {:in, _, [{^var, _, _}, values]} = node, nil when is_list(values) ->
+          {node, if(Enum.all?(values, &is_binary/1), do: values)}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    found
+  end
+
   defp id_key?(key),
+    # literal-ok: the engine's id key, by its name in a pattern
     do: key == "id" or String.ends_with?(key, "_id") or String.ends_with?(key, "-id")
 
   defp var({:=, _, [left, right]}), do: var(left) || var(right)
@@ -173,6 +233,7 @@ defmodule Mix.Tasks.Gamend.LiveEvents.Draft do
 
   defp render_type({:optional, type}), do: "{:optional, #{render_type(type)}}"
   defp render_type({:list, type}), do: "{:list, #{render_type(type)}}"
+  defp render_type({:in, values}), do: "{:in, #{inspect(values)}}"
   defp render_type({:map_of, type}), do: "{:map_of, #{render_type(type)}}"
   defp render_type(keys) when is_list(keys), do: "[" <> render(keys) <> "]"
   defp render_type(type) when is_atom(type), do: inspect(type)

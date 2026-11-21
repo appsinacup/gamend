@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.AdminKvEntry do
   @moduledoc "A key/value entry as stored: the player's `KvEntry` plus its row id and times."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -12,8 +13,8 @@ defmodule GamendWeb.Schemas.AdminKvEntry do
       key: %Schema{type: :string},
       user_id: %Schema{type: :string, description: "Empty when not user-scoped"},
       lobby_id: %Schema{type: :string, description: "Empty when not lobby-scoped"},
-      data: GamendWeb.Schemas.FreeForm.kv_value(),
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      data: FreeForm.kv_value(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },

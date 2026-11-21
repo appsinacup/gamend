@@ -4850,10 +4850,10 @@ class PlayResultEvent:
 		service.field = __key
 		data[__key.tag] = service
 		
-		__value = PBField.new("value", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 5, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
+		__value_json = PBField.new("value_json", PB_DATA_TYPE.BYTES, PB_RULE.OPTIONAL, 5, true, DEFAULT_VALUES_3[PB_DATA_TYPE.BYTES])
 		service = PBServiceField.new()
-		service.field = __value
-		data[__value.tag] = service
+		service.field = __value_json
+		data[__value_json.tag] = service
 		
 		__metadata_json = PBField.new("metadata_json", PB_DATA_TYPE.BYTES, PB_RULE.OPTIONAL, 6, true, DEFAULT_VALUES_3[PB_DATA_TYPE.BYTES])
 		service = PBServiceField.new()
@@ -4906,16 +4906,16 @@ class PlayResultEvent:
 	func set_key(value : String) -> void:
 		__key.value = value
 	
-	var __value: PBField
-	func has_value() -> bool:
+	var __value_json: PBField
+	func has_value_json() -> bool:
 		return data[5].state == PB_SERVICE_STATE.FILLED
-	func get_value() -> float:
-		return __value.value
-	func clear_value() -> void:
+	func get_value_json() -> PackedByteArray:
+		return __value_json.value
+	func clear_value_json() -> void:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
-		__value.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
-	func set_value(value : float) -> void:
-		__value.value = value
+		__value_json.value = DEFAULT_VALUES_3[PB_DATA_TYPE.BYTES]
+	func set_value_json(value : PackedByteArray) -> void:
+		__value_json.value = value
 	
 	var __metadata_json: PBField
 	func has_metadata_json() -> bool:

@@ -27,11 +27,13 @@ FROM ${ELIXIR_IMAGE}
 #   git, git-lfs                              git dependencies, and repositories a host clones
 #   optipng, pngquant, imagemagick            image optimisation at build time
 #   brotli                                    the .br copies `phx.digest` does not make
+#   ffmpeg                                    audio a host makes at run time (trimming a
+#                                             text-to-speech take, Polyglot's word recordings)
 #   podman-remote, as `podman`                Gamend.Containers, from inside a container,
 #                                             through the host's socket (CONTAINER_HOST)
 RUN apt-get update && \
     apt-get install -y git git-lfs build-essential cmake pkg-config ca-certificates curl libssl-dev \
-      libsqlite3-dev sqlite3 libsrtp2-dev libsctp1 optipng pngquant imagemagick brotli podman-remote && \
+      libsqlite3-dev sqlite3 libsrtp2-dev libsctp1 optipng pngquant imagemagick brotli ffmpeg podman-remote && \
     ln -s /usr/bin/podman-remote /usr/local/bin/podman && \
     rm -rf /var/lib/apt/lists/*
 

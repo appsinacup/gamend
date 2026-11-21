@@ -12,7 +12,7 @@ defmodule GamendWeb.Api.V1.PushTokenController do
   alias Gamend.Push.PushProvider
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{PushTokenPage, PushTokenResponse}
+  alias GamendWeb.Schemas.{FreeForm, PushTokenPage, PushTokenResponse}
   alias OpenApiSpex.Schema
 
   tags(["Push"])
@@ -38,7 +38,7 @@ defmodule GamendWeb.Api.V1.PushTokenController do
            },
            provider: %Schema{type: :string, enum: PushProvider.all()},
            device_id: %Schema{type: :string},
-           metadata: GamendWeb.Schemas.FreeForm.metadata()
+           metadata: FreeForm.metadata()
          }
        }},
     responses: [

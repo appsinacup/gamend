@@ -6,6 +6,7 @@ defmodule GamendWeb.Schemas.Group do
   required.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   require Gamend.Groups.GroupType, as: GroupType
@@ -31,7 +32,7 @@ defmodule GamendWeb.Schemas.Group do
         description: "Who may join and who may see it"
       },
       max_members: %Schema{type: :integer},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Server-managed metadata"),
+      metadata: FreeForm.metadata(description: "Server-managed metadata"),
       creator_id: %Schema{
         type: :string,
         description: "Creator's user id; empty for a system group"

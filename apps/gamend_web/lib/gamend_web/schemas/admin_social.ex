@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.AdminUser do
   @moduledoc "A user as the admin API sends it: the account flags a player never sees."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -14,7 +15,7 @@ defmodule GamendWeb.Schemas.AdminUser do
       display_name: %Schema{type: :string},
       is_admin: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       lobby_id: %Schema{type: :string, description: "Empty when not in a lobby"},
       party_id: %Schema{type: :string, description: "Empty when not in a party"},
       is_online: %Schema{type: :boolean},

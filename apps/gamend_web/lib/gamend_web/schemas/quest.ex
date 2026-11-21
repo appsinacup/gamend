@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.QuestObjective do
   @moduledoc "One objective of a quest: count `target` occurrences of `event`."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -11,7 +12,7 @@ defmodule GamendWeb.Schemas.QuestObjective do
       event: %Schema{type: :string, description: "Event name the objective counts"},
       target: %Schema{type: :integer, description: "Occurrences required"},
       params:
-        GamendWeb.Schemas.FreeForm.object(
+        FreeForm.object(
           "the meta an objective's event must carry, the game's own",
           description: "Event meta constraints (all must match)"
         )
@@ -93,7 +94,7 @@ defmodule GamendWeb.Schemas.Quest do
   """
   require OpenApiSpex
   alias Gamend.Quests.Quest
-  alias GamendWeb.Schemas.{QuestObjective, QuestProgress, QuestReward}
+  alias GamendWeb.Schemas.{FreeForm, QuestObjective, QuestProgress, QuestReward}
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -144,7 +145,7 @@ defmodule GamendWeb.Schemas.Quest do
       },
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
       ends_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       progress: %Schema{
         allOf: [QuestProgress],
         nullable: true,

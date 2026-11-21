@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.PaymentProduct do
   @moduledoc "A product in the store, whichever provider sells it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -13,7 +14,7 @@ defmodule GamendWeb.Schemas.PaymentProduct do
       title: %Schema{type: :string},
       description: %Schema{type: :string},
       kind: %Schema{type: :string, description: "What buying it grants, e.g. `entitlement`"},
-      metadata: GamendWeb.Schemas.FreeForm.metadata()
+      metadata: FreeForm.metadata()
     },
     required: [:id, :sku, :title, :description, :kind, :metadata]
   })
@@ -22,6 +23,7 @@ end
 defmodule GamendWeb.Schemas.PaymentCatalogEntry do
   @moduledoc "A product as one provider sells it: its id there and its price."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias GamendWeb.Schemas.PaymentProduct
   alias OpenApiSpex.Schema
 
@@ -39,7 +41,7 @@ defmodule GamendWeb.Schemas.PaymentCatalogEntry do
         nullable: true,
         description: "Price in the currency's minor unit; null when the provider prices it"
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       product: PaymentProduct
     },
     required: [:id, :provider, :external_id, :currency, :unit_amount, :metadata, :product]
@@ -103,6 +105,7 @@ end
 defmodule GamendWeb.Schemas.Entitlement do
   @moduledoc "Something the caller owns, granted by a purchase or by the server."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -126,7 +129,7 @@ defmodule GamendWeb.Schemas.Entitlement do
         description: "Null for a permanent entitlement"
       },
       revoked_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: GamendWeb.Schemas.FreeForm.metadata()
+      metadata: FreeForm.metadata()
     },
     required: [
       :id,

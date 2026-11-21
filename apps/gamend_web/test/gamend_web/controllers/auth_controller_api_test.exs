@@ -217,21 +217,6 @@ defmodule GamendWeb.AuthControllerApiTest do
              "name" => "FetchedG"
            }}
         end
-
-        def exchange_google_code("valid_ticket", _cid, _sec, _redirect, opts)
-            when is_list(opts) do
-          if Keyword.get(opts, :fetch_profile, false) == false do
-            {:ok, %{"id" => "g2"}}
-          else
-            {:ok,
-             %{
-               "id" => "g2",
-               "email" => "g2@example.com",
-               "picture" => "https://g2",
-               "name" => "FetchedG"
-             }}
-          end
-        end
       end
 
       Application.put_env(:gamend_web, :oauth_exchanger, MockExchangerGoogleFetch)

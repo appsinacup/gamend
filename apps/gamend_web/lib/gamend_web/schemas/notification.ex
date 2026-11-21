@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.Notification do
   @moduledoc "A notification as `GamendWeb.Serializers.serialize_notification/1` sends it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -19,7 +20,7 @@ defmodule GamendWeb.Schemas.Notification do
         type: :string,
         description: "The notification group it belongs to (`social`, `chat`, …). Empty for none"
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [

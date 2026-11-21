@@ -3,7 +3,7 @@ import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
 const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
-const $Object = $util.global.Object, $undefined = $util.global.undefined, $Error = $util.global.Error, $RangeError = $util.global.RangeError, $TypeError = $util.global.TypeError, $Boolean = $util.global.Boolean, $String = $util.global.String, $parseInt = $util.global.parseInt, $Array = $util.global.Array, $BigInt = $util.global.BigInt, $Number = $util.global.Number, $isFinite = $util.global.isFinite;
+const $Object = $util.global.Object, $undefined = $util.global.undefined, $Error = $util.global.Error, $RangeError = $util.global.RangeError, $TypeError = $util.global.TypeError, $Boolean = $util.global.Boolean, $String = $util.global.String, $parseInt = $util.global.parseInt, $Array = $util.global.Array, $BigInt = $util.global.BigInt, $Number = $util.global.Number;
 
 // Exported root namespace
 const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
@@ -11280,7 +11280,7 @@ export const gamend = $root.gamend = (() => {
                  * @property {string|null} [result_id] PlayResultEvent result_id
                  * @property {number|Long|null} [elapsed_ms] PlayResultEvent elapsed_ms
                  * @property {string|null} [key] PlayResultEvent key
-                 * @property {number|null} [value] PlayResultEvent value
+                 * @property {Uint8Array|null} [value_json] PlayResultEvent value_json
                  * @property {Uint8Array|null} [metadata_json] PlayResultEvent metadata_json
                  * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
                  */
@@ -11346,12 +11346,12 @@ export const gamend = $root.gamend = (() => {
                 PlayResultEvent.prototype.key = "";
 
                 /**
-                 * PlayResultEvent value.
-                 * @member {number|null|undefined} value
+                 * PlayResultEvent value_json.
+                 * @member {Uint8Array} value_json
                  * @memberof gamend.realtime.v1.PlayResultEvent
                  * @instance
                  */
-                PlayResultEvent.prototype.value = null;
+                PlayResultEvent.prototype.value_json = $util.newBuffer([]);
 
                 /**
                  * PlayResultEvent metadata_json.
@@ -11360,15 +11360,6 @@ export const gamend = $root.gamend = (() => {
                  * @instance
                  */
                 PlayResultEvent.prototype.metadata_json = $util.newBuffer([]);
-
-                // OneOf field names bound to virtual getters and setters
-                let $oneOfFields;
-
-                // Virtual OneOf for proto3 optional field
-                $Object.defineProperty(PlayResultEvent.prototype, "_value", {
-                    get: $util.oneOfGetter($oneOfFields = ["value"]),
-                    set: $util.oneOfSetter($oneOfFields)
-                });
 
                 /**
                  * Encodes the specified PlayResultEvent message. Does not implicitly {@link gamend.realtime.v1.PlayResultEvent.verify|verify} messages.
@@ -11394,8 +11385,8 @@ export const gamend = $root.gamend = (() => {
                         writer.uint32(/* id 3, wireType 0 =*/24).int64(message.elapsed_ms);
                     if (message.key != null && $Object.hasOwnProperty.call(message, "key") && message.key !== "")
                         writer.uint32(/* id 4, wireType 2 =*/34).string(message.key);
-                    if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
-                        writer.uint32(/* id 5, wireType 1 =*/41).double(message.value);
+                    if (message.value_json != null && $Object.hasOwnProperty.call(message, "value_json") && message.value_json.length)
+                        writer.uint32(/* id 5, wireType 2 =*/42).bytes(message.value_json);
                     if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json") && message.metadata_json.length)
                         writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.metadata_json);
                     if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
@@ -11479,10 +11470,12 @@ export const gamend = $root.gamend = (() => {
                                 continue;
                             }
                         case 5: {
-                                if (wireType !== 1)
+                                if (wireType !== 2)
                                     break;
-                                message.value = reader.double();
-                                message._value = "value";
+                                if ((value = reader.bytes()).length)
+                                    message.value_json = value;
+                                else
+                                    delete message.value_json;
                                 continue;
                             }
                         case 6: {
@@ -11548,8 +11541,12 @@ export const gamend = $root.gamend = (() => {
                     if (object.key != null)
                         if (typeof object.key !== "string" || object.key.length)
                             message.key = $String(object.key);
-                    if (object.value != null)
-                        message.value = $Number(object.value);
+                    if (object.value_json != null)
+                        if (object.value_json.length)
+                            if (typeof object.value_json === "string")
+                                $util.base64.decode(object.value_json, message.value_json = $util.newBuffer($util.base64.length(object.value_json)), 0);
+                            else if (object.value_json.length >= 0)
+                                message.value_json = object.value_json;
                     if (object.metadata_json != null)
                         if (object.metadata_json.length)
                             if (typeof object.metadata_json === "string")
@@ -11586,6 +11583,13 @@ export const gamend = $root.gamend = (() => {
                             object.elapsed_ms = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                         object.key = "";
                         if (options.bytes === $String)
+                            object.value_json = "";
+                        else {
+                            object.value_json = [];
+                            if (options.bytes !== $Array)
+                                object.value_json = $util.newBuffer(object.value_json);
+                        }
+                        if (options.bytes === $String)
                             object.metadata_json = "";
                         else {
                             object.metadata_json = [];
@@ -11606,8 +11610,8 @@ export const gamend = $root.gamend = (() => {
                             object.elapsed_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.elapsed_ms) : options.longs === $Number ? new $util.LongBits(message.elapsed_ms.low >>> 0, message.elapsed_ms.high >>> 0).toNumber() : message.elapsed_ms;
                     if (message.key != null && $Object.hasOwnProperty.call(message, "key"))
                         object.key = message.key;
-                    if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
-                        object.value = options.json && !$isFinite(message.value) ? $String(message.value) : message.value;
+                    if (message.value_json != null && $Object.hasOwnProperty.call(message, "value_json"))
+                        object.value_json = options.bytes === $String ? $util.base64.encode(message.value_json, 0, message.value_json.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.value_json) : message.value_json;
                     if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json"))
                         object.metadata_json = options.bytes === $String ? $util.base64.encode(message.metadata_json, 0, message.metadata_json.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.metadata_json) : message.metadata_json;
                     return object;

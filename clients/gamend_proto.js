@@ -262,7 +262,11 @@ function decodePlayResultEvent(bin) {
     defaults: true,
     longs: Number,
   })
-  if (out.event) withParsedJson(out.event, [['metadata_json', 'metadata']])
+  if (out.event) {
+    withParsedJson(out.event, [['metadata_json', 'metadata']])
+    out.event.value = fromJsonBytes(out.event.value_json, null)
+    delete out.event.value_json
+  }
   return out
 }
 

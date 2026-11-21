@@ -6,7 +6,7 @@ defmodule GamendWeb.Api.V1.Admin.KvEntryController do
 
   alias Gamend.KV
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{AdminKvEntryPage, AdminKvEntryResponse, OkResponse}
+  alias GamendWeb.Schemas.{AdminKvEntryPage, AdminKvEntryResponse, FreeForm, OkResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -72,8 +72,8 @@ defmodule GamendWeb.Api.V1.Admin.KvEntryController do
           key: %Schema{type: :string},
           user_id: %Schema{type: :string, description: "Owning user; omit or empty for none"},
           lobby_id: %Schema{type: :string, description: "Owning lobby; omit or empty for none"},
-          data: GamendWeb.Schemas.FreeForm.kv_value(),
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          data: FreeForm.kv_value(),
+          metadata: FreeForm.metadata()
         },
         required: [:key, :data]
       }
@@ -120,8 +120,8 @@ defmodule GamendWeb.Api.V1.Admin.KvEntryController do
           key: %Schema{type: :string},
           user_id: %Schema{type: :string, description: "Owning user; omit or empty for none"},
           lobby_id: %Schema{type: :string, description: "Owning lobby; omit or empty for none"},
-          data: GamendWeb.Schemas.FreeForm.kv_value(),
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          data: FreeForm.kv_value(),
+          metadata: FreeForm.metadata()
         }
       }
     },

@@ -2382,6 +2382,12 @@ func admin_storage_admin_storage_usage(prefix = "") -> GamendResult:
 	return await _call_api(AdminStorageApi.new(_config), "admin_storage_usage", [prefix])
 
 
+## PUT /api/v1/storage/upload: a file's bytes to the URL a local-storage
+## upload ticket names (an S3 ticket names its bucket instead).
+func storage_upload(token: String, key = null, body = null) -> GamendResult:
+	return await _call_api(StorageApi.new(_config), "storage_upload", [token, key, body])
+
+
 ## Upload or overwrite an object at any key (admin)
 ## Operation adminUploadStorageObject → PUT /api/v1/admin/storage/object
 func admin_storage_admin_upload_storage_object(key: String, body = null) -> GamendResult:

@@ -9,7 +9,7 @@ defmodule GamendWeb.Api.V1.NotificationController do
   alias Gamend.Notifications
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{DeletedCountResponse, NotificationPage, NotificationResponse}
+  alias GamendWeb.Schemas.{DeletedCountResponse, FreeForm, NotificationPage, NotificationResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -70,7 +70,7 @@ defmodule GamendWeb.Api.V1.NotificationController do
             nullable: true
           },
           metadata:
-            GamendWeb.Schemas.FreeForm.metadata(
+            FreeForm.metadata(
               description: "Arbitrary metadata (optional)",
               nullable: true
             )

@@ -51,6 +51,7 @@ defmodule GamendWeb.Schemas.ReportRequest do
   (`Gamend.Reports.Kind.cast/2` reads them); `attachments` are base64 images.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   require Gamend.LocaleCode, as: LocaleCode
@@ -65,11 +66,11 @@ defmodule GamendWeb.Schemas.ReportRequest do
       kind: %Schema{type: :string, description: "A key from GET /reports/kinds", example: @page},
       topic: %Schema{type: :string, description: "One of the kind's topics, if it has any"},
       subject:
-        GamendWeb.Schemas.FreeForm.object("what is reported, in the report kind's own shape",
+        FreeForm.object("what is reported, in the report kind's own shape",
           description: "What is reported, in the kind's own shape"
         ),
       data:
-        GamendWeb.Schemas.FreeForm.object("a report kind's own extra fields",
+        FreeForm.object("a report kind's own extra fields",
           description: "The kind's extra fields (a suggested correction)"
         ),
       description: %Schema{type: :string, maxLength: 2000, description: "What happened"},
@@ -104,8 +105,7 @@ defmodule GamendWeb.Schemas.ReportReceipt do
     properties: %{
       id: %Schema{
         type: :string,
-        nullable: true,
-        description: "Report id; null when the kind took the report elsewhere"
+        description: "Report id; empty when the kind took the report elsewhere"
       },
       kind: %Schema{type: :string},
       status: %Schema{

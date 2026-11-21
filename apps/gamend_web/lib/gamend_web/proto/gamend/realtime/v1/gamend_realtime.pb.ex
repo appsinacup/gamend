@@ -578,7 +578,7 @@ defmodule Gamend.Realtime.V1.PlayResultEvent do
   field :result_id, 2, type: :string, json_name: "resultId"
   field :elapsed_ms, 3, type: :int64, json_name: "elapsedMs"
   field :key, 4, type: :string
-  field :value, 5, proto3_optional: true, type: :double
+  field :value_json, 5, type: :bytes, json_name: "valueJson"
   field :metadata_json, 6, type: :bytes, json_name: "metadataJson"
 end
 

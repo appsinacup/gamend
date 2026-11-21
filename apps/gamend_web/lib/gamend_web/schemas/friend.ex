@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.Friend do
   @moduledoc "A friend: the member-list row plus the friendship's id, which the friend actions take."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -17,7 +18,7 @@ defmodule GamendWeb.Schemas.Friend do
       username: %Schema{type: :string},
       display_name: %Schema{type: :string},
       profile_url: %Schema{type: :string},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
       last_seen_at: %Schema{type: :string, format: :"date-time"}

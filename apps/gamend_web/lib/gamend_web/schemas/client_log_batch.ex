@@ -67,6 +67,7 @@ defmodule GamendWeb.Schemas.ClientLogSession do
   """
   require OpenApiSpex
   alias Gamend.ClientLogs.Session
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   require Gamend.ClientLogs.BuildKind, as: BuildKind
@@ -106,7 +107,7 @@ defmodule GamendWeb.Schemas.ClientLogSession do
         description: "When the run began, client clock, seconds since the Unix epoch."
       },
       meta:
-        GamendWeb.Schemas.FreeForm.object("device facts the client reports",
+        FreeForm.object("device facts the client reports",
           description: "Free-form device facts: model, GPU, screen size. Capped server-side."
         )
     },

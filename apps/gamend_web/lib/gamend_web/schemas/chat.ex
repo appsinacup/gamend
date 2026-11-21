@@ -4,6 +4,7 @@ defmodule GamendWeb.Schemas.ChatMessage do
   The chat endpoints ask for `updated_at`; `sender_email` is admin-only.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   require Gamend.Chat.ChatType, as: ChatType
@@ -15,7 +16,7 @@ defmodule GamendWeb.Schemas.ChatMessage do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       content: %Schema{type: :string},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       sender_id: %Schema{type: :string, format: :uuid},
       sender_name: %Schema{type: :string, description: "Sender's display name"},
       chat_type: %Schema{

@@ -607,12 +607,39 @@ defmodule GamendWeb.AuthController do
              AuthProvider.github(),
              AuthProvider.apple()
            ] do
-    case OAuthExchange.exchange_code(provider, code) do
-      {:ok, user_params} ->
-        handle_oauth_state_success(conn, provider, user_params, params["state"])
+    # The state is checked before the code is traded: a provider's code works
+    # once, so a replayed callback (back, refresh, a prefetcher) traded again
+    # gets `invalid_grant` and logged an error for a sign-in that worked. A
+    # forged state spends no code either.
+    case dispatch_oauth_state(conn, params["state"]) do
+      {:browser, conn} ->
+        case OAuthExchange.exchange_code(provider, code) do
+          {:ok, user_params} -> handle_browser_oauth_callback(conn, provider, user_params)
+          {:error, error} -> browser_oauth_error_redirect(conn, provider, error)
+        end
 
-      {:error, error} ->
-        handle_oauth_state_error(conn, provider, error, params["state"])
+      {:api, session_id} ->
+        case OAuthExchange.exchange_code(provider, code) do
+          {:ok, user_params} ->
+            handle_session_oauth_callback(conn, session_id, user_params, provider)
+
+          {:error, _error} ->
+            Gamend.OAuthSessions.create_session(
+              session_id,
+              session_error(
+                AuthError.authentication_failed(),
+                "The provider did not sign the player in"
+              )
+            )
+
+            redirect(conn, to: ~p"/auth/success?session_id=#{session_id}")
+        end
+
+      {:state_replayed, conn} ->
+        browser_oauth_replay_redirect(conn, provider)
+
+      {:csrf_error, conn} ->
+        browser_oauth_error_redirect(conn, provider, "csrf_validation_failed")
     end
   end
 
@@ -695,46 +722,6 @@ defmodule GamendWeb.AuthController do
     conn
     |> put_flash(:error, gettext("Failed"))
     |> redirect(to: ~p"/users/log_in")
-  end
-
-  defp handle_oauth_state_success(conn, provider, user_params, state) do
-    case dispatch_oauth_state(conn, state) do
-      {:browser, conn} ->
-        handle_browser_oauth_callback(conn, provider, user_params)
-
-      {:api, session_id} ->
-        handle_session_oauth_callback(conn, session_id, user_params, provider)
-
-      {:state_replayed, conn} ->
-        browser_oauth_replay_redirect(conn, provider)
-
-      {:csrf_error, conn} ->
-        browser_oauth_error_redirect(conn, provider, "csrf_validation_failed")
-    end
-  end
-
-  defp handle_oauth_state_error(conn, provider, error, state) do
-    case dispatch_oauth_state(conn, state) do
-      {:browser, conn} ->
-        browser_oauth_error_redirect(conn, provider, error)
-
-      {:api, session_id} ->
-        Gamend.OAuthSessions.create_session(
-          session_id,
-          session_error(
-            AuthError.authentication_failed(),
-            "The provider did not sign the player in"
-          )
-        )
-
-        redirect(conn, to: ~p"/auth/success?session_id=#{session_id}")
-
-      {:state_replayed, conn} ->
-        browser_oauth_replay_redirect(conn, provider)
-
-      {:csrf_error, conn} ->
-        browser_oauth_error_redirect(conn, provider, "csrf_validation_failed")
-    end
   end
 
   def delete(conn, _params) do

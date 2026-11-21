@@ -31,6 +31,7 @@ defmodule GamendWeb.Schemas.ReadyCheckState do
   require OpenApiSpex
   alias Gamend.ReadyChecks.CheckKind
   alias Gamend.ReadyChecks.CheckStatus
+  alias GamendWeb.Schemas.FreeForm
   alias GamendWeb.Schemas.ReadyCheckParticipant
   alias OpenApiSpex.Schema
 
@@ -58,7 +59,7 @@ defmodule GamendWeb.Schemas.ReadyCheckState do
         type: :string,
         description: "Why it failed: `declined`, `timeout` or `cancelled`; empty otherwise"
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       total: %Schema{type: :integer},
       ready_count: %Schema{type: :integer},
       your_state: %Schema{

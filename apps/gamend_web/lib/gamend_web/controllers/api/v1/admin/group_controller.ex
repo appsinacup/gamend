@@ -7,7 +7,7 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
   alias Gamend.Groups
   alias Gamend.Groups.GroupType
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{GroupPage, GroupResponse, OkResponse}
+  alias GamendWeb.Schemas.{FreeForm, GroupPage, GroupResponse, OkResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -74,7 +74,7 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
           description: %Schema{type: :string},
           type: %Schema{type: :string},
           max_members: %Schema{type: :integer},
-          metadata: GamendWeb.Schemas.FreeForm.metadata(),
+          metadata: FreeForm.metadata(),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"

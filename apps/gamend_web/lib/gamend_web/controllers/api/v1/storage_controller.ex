@@ -23,8 +23,8 @@ defmodule GamendWeb.Api.V1.StorageController do
   alias Gamend.Storage
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.OkResponse
-  alias OpenApiSpex.Schema
   alias GamendWeb.Uploads
+  alias OpenApiSpex.Schema
 
   # Content types this route will name in a response. Everything else is served
   # as an opaque download.

@@ -20,6 +20,7 @@ defmodule GamendWeb.EventCodec do
   alias Gamend.Realtime.V1, as: PB
 
   require GamendWeb.ChannelTopic, as: ChannelTopic
+  require GamendWeb.WebrtcEvent, as: WebrtcEvent
   require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   @doc """
@@ -250,7 +251,7 @@ defmodule GamendWeb.EventCodec do
     do: %PB.AccountBan{expires_at_ms: ms(p, :expires_at), reason: get(p, :reason) || ""}
 
   defp message_for(ChannelTopic.user(), event, _p)
-       when event in [RealtimeEvent.account_unbanned(), "webrtc:channel_closed"],
+       when event in [RealtimeEvent.account_unbanned(), WebrtcEvent.channel_closed()],
        do: %PB.Empty{}
 
   defp message_for(ChannelTopic.user(), event, p)
@@ -272,10 +273,10 @@ defmodule GamendWeb.EventCodec do
        }
 
   # WebRTC signalling with the server, on the user channel.
-  defp message_for(ChannelTopic.user(), "webrtc:answer", p),
+  defp message_for(ChannelTopic.user(), WebrtcEvent.answer(), p),
     do: %PB.WebrtcAnswer{sdp: get(p, :sdp) || "", type: get(p, :type) || ""}
 
-  defp message_for(ChannelTopic.user(), "webrtc:ice", p),
+  defp message_for(ChannelTopic.user(), WebrtcEvent.ice(), p),
     do: %PB.WebrtcIce{
       candidate: get(p, :candidate) || "",
       sdpMid: get(p, :sdpMid),
@@ -283,10 +284,10 @@ defmodule GamendWeb.EventCodec do
       usernameFragment: get(p, :usernameFragment)
     }
 
-  defp message_for(ChannelTopic.user(), "webrtc:channel_open", p),
+  defp message_for(ChannelTopic.user(), WebrtcEvent.channel_open(), p),
     do: %PB.WebrtcChannelOpen{channel: get(p, :channel) || ""}
 
-  defp message_for(ChannelTopic.user(), "webrtc:state", p),
+  defp message_for(ChannelTopic.user(), WebrtcEvent.state(), p),
     do: %PB.WebrtcState{state: get(p, :state) || ""}
 
   # Peer-to-peer signalling, on the signaling channel.
@@ -334,12 +335,9 @@ defmodule GamendWeb.EventCodec do
       result_id: get(p, :result_id) || "",
       elapsed_ms: get(p, :elapsed_ms) || 0,
       key: get(p, :key) || "",
-      value: number(get(p, :value)),
+      value_json: json_bytes(p, :value) || "",
       metadata_json: json_bytes(p, :metadata) || ""
     }
-
-  defp number(nil), do: nil
-  defp number(value) when is_number(value), do: value / 1
 
   defp stringify_map(map) when is_map(map) do
     Map.new(map, fn {k, v} -> {to_string(k), to_string(v)} end)

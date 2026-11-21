@@ -53,9 +53,9 @@ defmodule Gamend.OAuth.Exchanger do
     end
   end
 
-  @spec exchange_google_code(String.t(), String.t(), String.t(), String.t(), keyword()) ::
+  @spec exchange_google_code(String.t(), String.t(), String.t(), String.t()) ::
           {:ok, map()} | {:error, term()}
-  def exchange_google_code(code, client_id, client_secret, redirect_uri, opts \\ []) do
+  def exchange_google_code(code, client_id, client_secret, redirect_uri) do
     url = "https://oauth2.googleapis.com/token"
 
     body = %{
@@ -70,36 +70,11 @@ defmodule Gamend.OAuth.Exchanger do
 
     case http_client().post(url, form: body, headers: headers) do
       {:ok, %{status: 200, body: body}} ->
-        if Keyword.get(opts, :fetch_profile, true) == false do
-          google_handle_minimal(body, code, client_id, client_secret, redirect_uri)
-        else
-          google_handle_full(body)
-        end
+        google_handle_full(body)
 
       other ->
         log_oauth_failure("Google", "token exchange", other)
         {:error, "Failed to exchange code"}
-    end
-  end
-
-  defp google_handle_minimal(body, code, client_id, client_secret, redirect_uri) do
-    case Map.get(body, "id_token") do
-      id_token when is_binary(id_token) ->
-        case parse_id_token(id_token) do
-          {:ok, parsed} when is_map(parsed) ->
-            id = parsed["sub"] || parsed["id"]
-            {:ok, Map.put(parsed, "id", id)}
-
-          _ ->
-            # cannot parse id_token -> fall back to full profile flow
-            exchange_google_code(code, client_id, client_secret, redirect_uri,
-              fetch_profile: true
-            )
-        end
-
-      _ ->
-        # no id_token -> perform full flow
-        exchange_google_code(code, client_id, client_secret, redirect_uri, fetch_profile: true)
     end
   end
 
@@ -306,12 +281,6 @@ defmodule Gamend.OAuth.Exchanger do
     else
       {:error, reason} -> {:error, reason}
     end
-  end
-
-  @doc false
-  # Generic id_token parser usable for OpenID id_tokens across providers
-  defp parse_id_token(id_token) do
-    parse_jwt_part(id_token, 1)
   end
 
   defp parse_jwt_part(id_token, index) do

@@ -8,6 +8,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
 
   alias GamendWeb.Schemas.{
     AdminTournamentResponse,
+    FreeForm,
     OkResponse,
     TournamentMatchResponse,
     UploadTicketResponse
@@ -41,7 +42,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
         type: :string,
         enum: ["forfeit_both", "advance_first_slot", "random"]
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata()
+      metadata: FreeForm.metadata()
     },
     required: [:slug, :title, :round_window_sec]
   }

@@ -6,7 +6,7 @@ defmodule GamendWeb.Api.V1.Admin.LobbyController do
 
   alias Gamend.Lobbies
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{LobbyPage, LobbyResponse, OkResponse}
+  alias GamendWeb.Schemas.{FreeForm, LobbyPage, LobbyResponse, OkResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -81,7 +81,7 @@ defmodule GamendWeb.Api.V1.Admin.LobbyController do
           is_hidden: %Schema{type: :boolean},
           is_locked: %Schema{type: :boolean},
           password: %Schema{type: :string},
-          metadata: GamendWeb.Schemas.FreeForm.metadata(),
+          metadata: FreeForm.metadata(),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled)"

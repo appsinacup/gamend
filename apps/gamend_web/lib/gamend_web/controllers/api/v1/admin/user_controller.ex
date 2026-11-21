@@ -6,7 +6,7 @@ defmodule GamendWeb.Api.V1.Admin.UserController do
   alias Gamend.Accounts.User
   alias Gamend.Async
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{AdminUserResponse, OkResponse}
+  alias GamendWeb.Schemas.{AdminUserResponse, FreeForm, OkResponse}
   alias OpenApiSpex.Schema
 
   tags(["Admin – Users"])
@@ -27,7 +27,7 @@ defmodule GamendWeb.Api.V1.Admin.UserController do
           is_admin: %Schema{type: :boolean},
           is_activated: %Schema{type: :boolean},
           display_name: %Schema{type: :string},
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          metadata: FreeForm.metadata()
         }
       }
     },

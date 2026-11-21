@@ -43,10 +43,17 @@ defmodule GamendWeb.RealtimeEventsDriftTest do
           source
         )
 
+      # A WebRTC event is a macro of `GamendWeb.WebrtcEvent`, its value
+      # the macro's name behind `webrtc:`.
+      webrtc =
+        ~r/push(?:_event)?\(\s*socket,\s*WebrtcEvent\.([a-z_0-9]+)\(\)/
+        |> Regex.scan(source, capture: :all_but_first)
+        |> Enum.map(fn [name] -> "webrtc:" <> name end)
+
       # A macro of `Gamend.Realtime.RealtimeEvent` is named after its value.
       Enum.map(direct ++ member_updated, fn [_ | events] ->
         Enum.find(events, &(&1 != ""))
-      end)
+      end) ++ webrtc
     end)
     |> MapSet.new()
   end

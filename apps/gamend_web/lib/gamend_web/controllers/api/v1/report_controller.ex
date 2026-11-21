@@ -98,7 +98,7 @@ defmodule GamendWeb.Api.V1.ReportController do
   # Taken elsewhere by its kind (`Gamend.Reports.Kind.take/1`): received,
   # with no row to name.
   defp receipt(conn, :taken, params),
-    do: reply_data(conn, :created, %{id: nil, kind: params["kind"], status: ReportStatus.taken()})
+    do: reply_data(conn, :created, %{id: "", kind: params["kind"], status: ReportStatus.taken()})
 
   defp receipt(conn, report, _params),
     do: reply_data(conn, :created, %{id: report.id, kind: report.kind, status: report.status})

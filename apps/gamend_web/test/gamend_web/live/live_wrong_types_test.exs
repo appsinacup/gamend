@@ -2,7 +2,8 @@ defmodule GamendWeb.LiveWrongTypesTest do
   @moduledoc """
   Every core LiveView, sent each of its events with wrong and odd params,
   stays up (`GamendWeb.Testing.WrongTypes.live_tests/1`). The settings
-  page's events are its tabs'.
+  page's events are its tabs'. The pages that need a row or a visitor are
+  `WrongTypes.core_pages/0`'s.
   """
   use GamendWeb.ConnCase, async: false
   require GamendWeb.Testing.WrongTypes, as: WrongTypes

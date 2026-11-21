@@ -5,6 +5,7 @@ defmodule GamendWeb.Schemas.AdminLeaderboardRecord do
   `label`.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -18,7 +19,7 @@ defmodule GamendWeb.Schemas.AdminLeaderboardRecord do
       label: %Schema{type: :string, description: "Empty for a user's record"},
       score: %Schema{type: :integer},
       rank: %Schema{type: :integer, nullable: true, description: "Null until ranked"},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -41,6 +42,7 @@ defmodule GamendWeb.Schemas.AdminTournament do
   require OpenApiSpex
   alias Gamend.Tournaments.Tournament
   alias Gamend.Tournaments.TournamentState
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -70,7 +72,7 @@ defmodule GamendWeb.Schemas.AdminTournament do
         enum: Tournament.deadline_policies(),
         description: "What an unplayed match comes to at its deadline"
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -101,7 +103,7 @@ defmodule GamendWeb.Schemas.AdminQuest do
   @moduledoc "A quest's definition, as an admin edits it: no player's progress."
   require OpenApiSpex
   alias Gamend.Quests.Quest
-  alias GamendWeb.Schemas.{QuestObjective, QuestReward}
+  alias GamendWeb.Schemas.{FreeForm, QuestObjective, QuestReward}
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -129,7 +131,7 @@ defmodule GamendWeb.Schemas.AdminQuest do
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
       ends_at: %Schema{type: :string, format: :"date-time", nullable: true},
       active: %Schema{type: :boolean},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -168,6 +170,7 @@ defmodule GamendWeb.Schemas.AdminQuestProgress do
   """
   require OpenApiSpex
   alias Gamend.Quests.QuestStatus
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -186,7 +189,7 @@ defmodule GamendWeb.Schemas.AdminQuestProgress do
       },
       completed_at: %Schema{type: :string, format: :"date-time", nullable: true},
       claimed_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -260,6 +263,7 @@ end
 defmodule GamendWeb.Schemas.AdminLedgerEntry do
   @moduledoc "A wallet change, with the user it belongs to: the admin's `LedgerEntry`."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -273,7 +277,7 @@ defmodule GamendWeb.Schemas.AdminLedgerEntry do
       delta: %Schema{type: :integer},
       balance_after: %Schema{type: :integer},
       reason: %Schema{type: :string},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [
@@ -292,6 +296,7 @@ end
 defmodule GamendWeb.Schemas.AdminInventoryItem do
   @moduledoc "One user's stack of one item."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -303,7 +308,7 @@ defmodule GamendWeb.Schemas.AdminInventoryItem do
       user_id: %Schema{type: :string, format: :uuid},
       item: %Schema{type: :string},
       quantity: %Schema{type: :integer},
-      metadata: GamendWeb.Schemas.FreeForm.metadata()
+      metadata: FreeForm.metadata()
     },
     required: [:id, :user_id, :item, :quantity, :metadata]
   })
@@ -369,6 +374,7 @@ defmodule GamendWeb.Schemas.AdminQuestCode do
   @moduledoc "One redemption code of a code-only quest."
   require OpenApiSpex
   alias Gamend.Quests.QuestCodeStatus
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -387,7 +393,7 @@ defmodule GamendWeb.Schemas.AdminQuestCode do
       uses: %Schema{type: :integer, description: "How many players redeemed it"},
       status: %Schema{type: :string, enum: QuestCodeStatus.all()},
       metadata:
-        GamendWeb.Schemas.FreeForm.metadata(
+        FreeForm.metadata(
           description: "Copied onto each player's progress row, where they can read it"
         ),
       inserted_at: %Schema{type: :string, format: :"date-time"},

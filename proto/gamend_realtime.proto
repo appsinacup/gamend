@@ -403,13 +403,14 @@ message PlayResult {
   optional int64 ended_at_ms = 9;
 }
 
-// One event of a play, as the REST API's PlayResultEvent has it.
+// One event of a play, as the REST API's PlayResultEvent has it. Its
+// `value` (a number, or none) rides as JSON bytes, as every free value does.
 message PlayResultEvent {
   string id = 1;
   string result_id = 2;
   int64 elapsed_ms = 3;
   string key = 4;
-  optional double value = 5;
+  bytes value_json = 5;
   bytes metadata_json = 6;
 }
 

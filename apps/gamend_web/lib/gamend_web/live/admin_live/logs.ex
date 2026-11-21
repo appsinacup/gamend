@@ -942,7 +942,8 @@ defmodule GamendWeb.AdminLive.Logs do
     level_ok? =
       case assigns.level_filter do
         FilterValue.everything() -> true
-        level -> entry.level == String.to_existing_atom(level)
+        # Compared as text: a level the page never offered matches nothing.
+        level -> Atom.to_string(entry.level) == level
       end
 
     module_ok? =

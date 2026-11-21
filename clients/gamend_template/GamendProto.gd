@@ -267,10 +267,9 @@ static func _play_result_to_dict(m) -> Dictionary:
 static func _play_result_event_to_dict(m) -> Dictionary:
 	var d := {
 		"id": m.get_id(), "result_id": m.get_result_id(), "elapsed_ms": m.get_elapsed_ms(),
-		"key": m.get_key(), "metadata": _json_bytes(m.get_metadata_json(), {})
+		"key": m.get_key(), "metadata": _json_bytes(m.get_metadata_json(), {}),
+		"value": _json_bytes(m.get_value_json(), null)
 	}
-	if m.has_value():
-		d["value"] = m.get_value()
 	return d
 
 

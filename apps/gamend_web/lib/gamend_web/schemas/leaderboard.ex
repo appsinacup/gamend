@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.Leaderboard do
   @moduledoc "A leaderboard as `GamendWeb.Api.V1.LeaderboardController` sends it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   require Gamend.SortDirection, as: SortDirection
@@ -58,7 +59,7 @@ defmodule GamendWeb.Schemas.Leaderboard do
         },
         required: [:label, :path]
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -106,6 +107,7 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
   `display_name`.
   """
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -146,7 +148,7 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
         type: :string,
         description: "The host's badge beside the name (Pro); empty for none"
       },
-      metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Per-record metadata"),
+      metadata: FreeForm.metadata(description: "Per-record metadata"),
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [

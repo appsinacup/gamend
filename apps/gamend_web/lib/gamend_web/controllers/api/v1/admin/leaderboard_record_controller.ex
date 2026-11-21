@@ -5,7 +5,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardRecordController do
   alias Gamend.Leaderboards
   alias Gamend.Leaderboards.Record
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{AdminLeaderboardRecordResponse, OkResponse}
+  alias GamendWeb.Schemas.{AdminLeaderboardRecordResponse, FreeForm, OkResponse}
   alias OpenApiSpex.Schema
 
   tags(["Admin – Leaderboards"])
@@ -33,7 +33,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardRecordController do
             description: "Label (for non-user records, e.g. \"English\")"
           },
           score: %Schema{type: :integer},
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          metadata: FreeForm.metadata()
         },
         required: [:score]
       }
@@ -109,7 +109,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardRecordController do
         type: :object,
         properties: %{
           score: %Schema{type: :integer},
-          metadata: GamendWeb.Schemas.FreeForm.metadata()
+          metadata: FreeForm.metadata()
         }
       }
     },

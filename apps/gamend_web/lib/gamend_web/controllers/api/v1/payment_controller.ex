@@ -10,6 +10,7 @@ defmodule GamendWeb.Api.V1.PaymentController do
 
   alias GamendWeb.Schemas.{
     EntitlementPage,
+    FreeForm,
     PaymentCatalogEntryPage,
     PurchaseResponse,
     PurchaseValidationResponse,
@@ -195,7 +196,7 @@ defmodule GamendWeb.Api.V1.PaymentController do
     ],
     request_body:
       {"Provider receipt payload", "application/json",
-       GamendWeb.Schemas.FreeForm.object("the payment provider's own receipt")},
+       FreeForm.object("the payment provider's own receipt")},
     responses:
       [ok: {"Validated purchase", "application/json", PurchaseValidationResponse}] ++
         @checkout_errors

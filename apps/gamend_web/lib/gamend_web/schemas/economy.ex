@@ -29,6 +29,7 @@ end
 defmodule GamendWeb.Schemas.LedgerEntry do
   @moduledoc "One wallet change, as `Gamend.Economy` records it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -41,7 +42,7 @@ defmodule GamendWeb.Schemas.LedgerEntry do
       delta: %Schema{type: :integer, description: "Positive for a grant, negative for a spend"},
       balance_after: %Schema{type: :integer, description: "The balance right after this change"},
       reason: %Schema{type: :string, description: "Why, as the granting code named it"},
-      metadata: GamendWeb.Schemas.FreeForm.metadata(),
+      metadata: FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [:id, :currency, :delta, :balance_after, :reason, :metadata, :inserted_at]

@@ -7,6 +7,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
   alias Gamend.Payments
   alias GamendWeb.Api.V1.PaymentErrors
   alias GamendWeb.Schemas
+  alias GamendWeb.Schemas.FreeForm
   alias GamendWeb.Schemas.PaymentWebhookReceiptResponse
 
   require Gamend.Payments.ProviderId, as: ProviderId
@@ -26,7 +27,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
     summary: "Receive Stripe webhook events",
     request_body:
       {"Stripe event", "application/json",
-       GamendWeb.Schemas.FreeForm.object("Stripe's own event, checked by its signature")},
+       FreeForm.object("Stripe's own event, checked by its signature")},
     responses: @responses
   )
 
@@ -48,7 +49,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
     summary: "Receive Google Play RTDN Pub/Sub push events",
     request_body:
       {"Google RTDN event", "application/json",
-       GamendWeb.Schemas.FreeForm.object("Google's own notification, checked by its token")},
+       FreeForm.object("Google's own notification, checked by its token")},
     responses: @responses
   )
 
@@ -87,7 +88,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
     summary: "Receive App Store Server Notification v2 events",
     request_body:
       {"Apple notification", "application/json",
-       GamendWeb.Schemas.FreeForm.object("Apple's own signed notification")},
+       FreeForm.object("Apple's own signed notification")},
     responses: @responses
   )
 

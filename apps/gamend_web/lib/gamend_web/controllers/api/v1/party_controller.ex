@@ -10,6 +10,7 @@ defmodule GamendWeb.Api.V1.PartyController do
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
+    FreeForm,
     LobbyResponse,
     OkResponse,
     PartyInvitePage,
@@ -51,7 +52,7 @@ defmodule GamendWeb.Api.V1.PartyController do
             description: "Maximum members allowed (default: 4, min: 2, max: 32)",
             default: 4
           },
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Arbitrary metadata")
+          metadata: FreeForm.metadata(description: "Arbitrary metadata")
         },
         example: %{max_size: 4}
       }
@@ -301,7 +302,7 @@ defmodule GamendWeb.Api.V1.PartyController do
         type: :object,
         properties: %{
           max_size: %Schema{type: :integer, description: "New maximum size"},
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "New metadata")
+          metadata: FreeForm.metadata(description: "New metadata")
         },
         example: %{max_size: 6}
       }
@@ -333,7 +334,7 @@ defmodule GamendWeb.Api.V1.PartyController do
           is_hidden: %Schema{type: :boolean, description: "Hide from public listings"},
           is_locked: %Schema{type: :boolean, description: "Lock the lobby"},
           password: %Schema{type: :string, description: "Optional password"},
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Arbitrary metadata")
+          metadata: FreeForm.metadata(description: "Arbitrary metadata")
         },
         example: %{title: "Party Lobby", max_users: 8}
       }

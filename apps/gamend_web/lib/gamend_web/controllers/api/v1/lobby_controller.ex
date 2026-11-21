@@ -10,7 +10,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
   alias Gamend.Lobbies
   alias Gamend.Parties
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{LobbyPage, LobbyResponse, LobbyStatsResponse, OkResponse}
+  alias GamendWeb.Schemas.{FreeForm, LobbyPage, LobbyResponse, LobbyStatsResponse, OkResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -107,7 +107,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
             type: :string,
             description: "Optional password to protect the lobby"
           },
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Arbitrary metadata"),
+          metadata: FreeForm.metadata(description: "Arbitrary metadata"),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
@@ -216,7 +216,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
           is_hidden: %Schema{type: :boolean, description: "Hide from public listings"},
           is_locked: %Schema{type: :boolean, description: "Lock the lobby"},
           password: %Schema{type: :string, description: "New password (empty string to clear)"},
-          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "New metadata"),
+          metadata: FreeForm.metadata(description: "New metadata"),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
@@ -357,7 +357,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
           metadata: %Schema{
             description:
               "Optional metadata to match (substring match): an object, or the object as JSON text",
-            oneOf: [GamendWeb.Schemas.FreeForm.metadata(), %Schema{type: :string}]
+            oneOf: [FreeForm.metadata(), %Schema{type: :string}]
           }
         }
       }

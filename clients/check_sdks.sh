@@ -98,7 +98,8 @@ live_godot() {
 needs() {
   case "$1" in
     cpp) command -v cmake ;;
-    csharp) command -v dotnet ;;
+    # The tests and the conformance client target .NET 10.
+    csharp) dotnet --list-sdks | grep -q '^1[0-9]\.' ;;
     unity) command -v dotnet && command -v node ;;
     rust) command -v cargo ;;
     typescript) command -v npx && test -f clients/javascript/dist/index.js ;;

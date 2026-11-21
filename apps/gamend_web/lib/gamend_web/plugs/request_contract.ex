@@ -132,7 +132,7 @@ defmodule GamendWeb.Plugs.RequestContract do
   end
 
   defp path_names(%Operation{parameters: parameters}) do
-    for %Parameter{in: :path, name: name} <- parameters || [], do: to_string(name)
+    for %Parameter{in: :path, name: name} <- List.wrap(parameters), do: to_string(name)
   end
 
   # What is checked is what the action reads.
@@ -169,13 +169,13 @@ defmodule GamendWeb.Plugs.RequestContract do
 
   # An empty query value (`?index`, an SDK's unset parameter) is no value, as
   # every action reads it.
-  defp without_empty_query(%{query_params: %{} = query} = conn),
+  defp without_empty_query(%{query_params: %Plug.Conn.Unfetched{}} = conn), do: conn
+
+  defp without_empty_query(%{query_params: query} = conn),
     do: %{conn | query_params: Map.reject(query, fn {_key, value} -> value == "" end)}
 
-  defp without_empty_query(conn), do: conn
-
-  defp body_params(%{body_params: %{} = params}), do: params
-  defp body_params(_conn), do: %{}
+  defp body_params(%{body_params: %Plug.Conn.Unfetched{}}), do: %{}
+  defp body_params(%{body_params: params}), do: params
 
   defp media_type(header), do: header |> String.split(";") |> hd() |> String.trim()
 

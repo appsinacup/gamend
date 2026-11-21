@@ -55,7 +55,7 @@ defmodule Mix.Tasks.Gamend.LiveEvents.Draft do
   defp draft(file, apply?) do
     source = File.read!(file)
 
-    with true <- String.contains?(source, "def handle_event("),
+    with true <- String.contains?(source, "handle_event("),
          {:ok, ast} <- Code.string_to_quoted(source, columns: true) do
       declared =
         ~r/^\s*event\(\s*"([^"]+)"/m

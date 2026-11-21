@@ -555,9 +555,14 @@ def write_proto_schema(model: Model) -> str:
             rows.append(
                 f'    {{{f["number"]}, "{f["name"]}", Label::{f["label"]}, Type::{type_}, {message}}},'
             )
-        tables.append(f"constexpr Field k{name}[] = {{\n" + "\n".join(rows) + "\n};")
+        # A message with no fields has no table: C++ has no array of none.
+        if rows:
+            tables.append(f"constexpr Field k{name}[] = {{\n" + "\n".join(rows) + "\n};")
     entries = ",\n".join(
-        f'    {{"{name}", k{name}, sizeof(k{name}) / sizeof(Field)}}' for name, _ in messages
+        f'    {{"{name}", k{name}, sizeof(k{name}) / sizeof(Field)}}'
+        if fields
+        else f'    {{"{name}", nullptr, 0}}'
+        for name, fields in messages
     )
     return (
         BANNER

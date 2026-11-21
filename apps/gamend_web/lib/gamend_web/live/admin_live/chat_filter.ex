@@ -84,6 +84,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
 
   def handle_params(_params, _uri, socket), do: {:noreply, socket}
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -95,12 +96,16 @@ defmodule GamendWeb.AdminLive.ChatFilter do
      |> reload()}
   end
 
+  event("word_form_change")
+
   def handle_event("word_form_change", params, socket) do
     form =
       Map.merge(socket.assigns.word_form, Map.take(params, ~w(word severity match_mode lang)))
 
     {:noreply, assign(socket, :word_form, form)}
   end
+
+  event("save_word")
 
   def handle_event("save_word", _params, socket) do
     form = socket.assigns.word_form
@@ -132,6 +137,8 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     {:noreply, reload(socket)}
   end
 
+  event("edit_word", id: :uuid)
+
   def handle_event("edit_word", %{"id" => id}, socket) do
     socket =
       case Moderation.get_filter_word(id) do
@@ -151,9 +158,13 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     {:noreply, socket}
   end
 
+  event("cancel_edit")
+
   def handle_event("cancel_edit", _params, socket) do
     {:noreply, assign(socket, :word_form, @blank_word)}
   end
+
+  event("delete_word", id: :uuid)
 
   def handle_event("delete_word", %{"id" => id}, socket) do
     socket =
@@ -165,10 +176,14 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     {:noreply, reload(socket)}
   end
 
+  event("import_change")
+
   def handle_event("import_change", params, socket) do
     form = Map.merge(socket.assigns.import_form, Map.take(params, ~w(lang severity)))
     {:noreply, assign(socket, :import_form, form)}
   end
+
+  event("import_list")
 
   def handle_event("import_list", _params, socket) do
     %{"lang" => lang, "severity" => severity} = socket.assigns.import_form
@@ -200,6 +215,8 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     {:noreply, reload(socket)}
   end
 
+  event("remove_list")
+
   def handle_event("remove_list", _params, socket) do
     lang = socket.assigns.import_form["lang"]
     count = Moderation.delete_filter_words_by_lang(lang)
@@ -218,6 +235,8 @@ defmodule GamendWeb.AdminLive.ChatFilter do
      |> reload()}
   end
 
+  event("test_change")
+
   def handle_event("test_change", params, socket) do
     {:noreply,
      socket
@@ -225,15 +244,22 @@ defmodule GamendWeb.AdminLive.ChatFilter do
      |> assign_test_result()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}
 
+  event("refresh")
   def handle_event("refresh", _params, socket), do: {:noreply, reload(socket)}
 
   # ── data ──────────────────────────────────────────────────────────────────

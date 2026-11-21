@@ -387,6 +387,120 @@ message KvEntry {
 // JSON RPC protocol, requests carry an id so concurrent calls to the same
 // function can be correlated.
 
+// ── Plays (Gamend.Results) ───────────────────────────────────────────────
+
+// "result_started", "result_ended" (user and lobby channels): a play as the
+// REST API's PlayResult has it.
+message PlayResult {
+  string id = 1;
+  string user_id = 2;
+  string lobby_id = 3;
+  string kind = 4;
+  string visibility = 5;
+  string status = 6;
+  bytes metadata_json = 7;
+  optional int64 started_at_ms = 8;
+  optional int64 ended_at_ms = 9;
+}
+
+// One event of a play, as the REST API's PlayResultEvent has it.
+message PlayResultEvent {
+  string id = 1;
+  string result_id = 2;
+  int64 elapsed_ms = 3;
+  string key = 4;
+  optional double value = 5;
+  bytes metadata_json = 6;
+}
+
+// "result_event" (user and lobby channels): something happened in a play.
+message PlayResultEventPushed {
+  string result_id = 1;
+  PlayResultEvent event = 2;
+}
+
+// ── Account ──────────────────────────────────────────────────────────────
+
+// "account_banned": the account's ban. No `expires_at_ms` is a ban for good.
+message AccountBan {
+  optional int64 expires_at_ms = 1;
+  string reason = 2;
+}
+
+// An event with nothing to say but its name: "account_unbanned",
+// "webrtc:channel_closed".
+message Empty {
+}
+
+// ── Friends ──────────────────────────────────────────────────────────────
+
+// "outgoing_request", "incoming_request", "request_cancelled",
+// "friend_accepted", "friend_rejected", "friend_removed", "friend_blocked",
+// "friend_unblocked": the friendship row the change is about.
+message Friendship {
+  string id = 1;
+  string requester_id = 2;
+  string target_id = 3;
+  string status = 4;
+}
+
+// ── WebRTC (user channel) ────────────────────────────────────────────────
+
+// "webrtc:answer": the server's SDP answer.
+message WebrtcAnswer {
+  string sdp = 1;
+  string type = 2;
+}
+
+// "webrtc:ice": a server ICE candidate, in the browser's field names.
+message WebrtcIce {
+  string candidate = 1;
+  optional string sdpMid = 2;
+  optional int32 sdpMLineIndex = 3;
+  optional string usernameFragment = 4;
+}
+
+// "webrtc:channel_open": the DataChannel that opened.
+message WebrtcChannelOpen {
+  string channel = 1;
+}
+
+// "webrtc:state": the connection's new state.
+message WebrtcState {
+  string state = 1;
+}
+
+// ── Signaling (signaling channel) ────────────────────────────────────────
+
+// "user_joined", "user_rejoined": a peer in the room, and its role (`host`
+// or `user`).
+message SignalingPeer {
+  string user_id = 1;
+  string role = 2;
+}
+
+// "user_left": the peer that left.
+message SignalingPeerLeft {
+  string user_id = 1;
+}
+
+// "offer", "answer": an SDP relayed from another peer.
+message SignalingSdp {
+  string sdp = 1;
+  string from_user_id = 2;
+}
+
+// "ice": an ICE candidate relayed from another peer.
+message SignalingIce {
+  string candidate = 1;
+  string from_user_id = 2;
+}
+
+// "room_closed": the room that closed.
+message SignalingRoomClosed {
+  string room_id = 1;
+}
+
 message RpcCall {
   uint32 id = 1;
   string plugin = 2;

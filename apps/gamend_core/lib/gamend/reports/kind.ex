@@ -27,6 +27,19 @@ defmodule Gamend.Reports.Kind do
   `data` is the kind's extra fields, already trimmed and capped. An
   `{:error, reason}` is shown to the reporter as "check what you entered".
 
+  ## `take/1`, optional
+
+  Some reports are not for the queue: the host already has a place where
+  that kind of thing is worked (a word's translators, a support desk). A
+  kind that knows answers `:taken` from `c:take/1` and puts the report there
+  itself; core then stores no row, raises no admin alert, keeps no image and
+  answers `{:ok, :taken}` from `Gamend.Reports.create/2`, which the reporter
+  is told as a report received. `:file` files it as usual, `{:error, reason}`
+  refuses it. It gets the attrs as they would be inserted (string keys:
+  `kind`, `topic`, `subject_ref`, `subject`, `data`, `description`,
+  `user_id`, …), after `before_report_create/1`. A kind without it files
+  everything.
+
   ## The web side
 
   `c:ui/0` names the module that draws the kind on `/report` and in the admin
@@ -59,5 +72,8 @@ defmodule Gamend.Reports.Kind do
   @doc "The module that draws this kind (`GamendWeb.Reports.KindUI`), nil for API-only."
   @callback ui() :: module() | nil
 
-  @optional_callbacks description_required?: 1, ui: 0
+  @doc "Whether the host takes this report elsewhere instead of the queue. See the module doc."
+  @callback take(attrs :: map()) :: :file | :taken | {:error, term()}
+
+  @optional_callbacks description_required?: 1, ui: 0, take: 1
 end

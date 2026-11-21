@@ -15,7 +15,7 @@ defmodule GamendWeb.Schemas.ChatMessage do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       content: %Schema{type: :string},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       sender_id: %Schema{type: :string, format: :uuid},
       sender_name: %Schema{type: :string, description: "Sender's display name"},
       chat_type: %Schema{

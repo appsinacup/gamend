@@ -60,6 +60,7 @@ defmodule GamendWeb.AdminLive.Economy do
 
   def handle_params(_params, _uri, socket), do: {:noreply, socket}
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -71,9 +72,13 @@ defmodule GamendWeb.AdminLive.Economy do
      |> reload()}
   end
 
+  event("form_change")
+
   def handle_event("form_change", params, socket) do
     {:noreply, assign(socket, :form, Map.take(params, ~w(user_id currency amount reason)))}
   end
+
+  event("item_form_change")
 
   def handle_event("item_form_change", params, socket) do
     {:noreply, assign(socket, :item_form, Map.take(params, ~w(user_id item quantity)))}
@@ -100,15 +105,22 @@ defmodule GamendWeb.AdminLive.Economy do
     {:noreply, reload(socket)}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}
 
+  event("refresh")
   def handle_event("refresh", _params, socket), do: {:noreply, reload(socket)}
 
   def handle_event(op, _params, socket) when op in ~w(grant spend) do

@@ -233,6 +233,7 @@ defmodule GamendWeb.AdminLive.Push do
     """
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -242,10 +243,15 @@ defmodule GamendWeb.AdminLive.Push do
      |> reload_tokens()}
   end
 
+  event("toggle_send")
   @impl true
   def handle_event("toggle_send", _params, socket) do
     {:noreply, assign(socket, :show_send, !socket.assigns.show_send)}
   end
+
+  event("send_push",
+    push: [user_id: {:optional, :string}, title: {:optional, :string}, body: {:optional, :string}]
+  )
 
   @impl true
   def handle_event("send_push", %{"push" => params}, socket) do
@@ -279,6 +285,7 @@ defmodule GamendWeb.AdminLive.Push do
     end
   end
 
+  event("delete_token", id: :uuid)
   @impl true
   def handle_event("delete_token", %{"id" => id}, socket) do
     case Push.admin_delete_token(to_string(id)) do
@@ -294,14 +301,17 @@ defmodule GamendWeb.AdminLive.Push do
     end
   end
 
+  event("admin_push_prev")
   @impl true
   def handle_event("admin_push_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_tokens()}
 
+  event("admin_push_next")
   @impl true
   def handle_event("admin_push_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_tokens()}
 
+  event("admin_push_page_size", size: :string)
   @impl true
   def handle_event("admin_push_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_tokens()}

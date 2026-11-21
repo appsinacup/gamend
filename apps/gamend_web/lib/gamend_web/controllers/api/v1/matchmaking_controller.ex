@@ -45,7 +45,13 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
        %Schema{
          type: :object,
          properties: %{
-           match_params: %Schema{type: :object},
+           match_params: %Schema{
+             type: :object,
+             description: "Key/value pairs; only identical params match together",
+             additionalProperties: %Schema{
+               oneOf: [%Schema{type: :string}, %Schema{type: :number}, %Schema{type: :boolean}]
+             }
+           },
            min_players: %Schema{type: :integer},
            max_players: %Schema{type: :integer}
          }

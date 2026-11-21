@@ -173,6 +173,7 @@ defmodule GamendWeb.AdminLive.Sessions do
      |> assign(:selected_ids, MapSet.new())}
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     selected = socket.assigns[:selected_ids] || MapSet.new()
@@ -190,6 +191,7 @@ defmodule GamendWeb.AdminLive.Sessions do
      |> sync_selected_ids(session_ids(socket.assigns.recent_sessions))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     sessions = socket.assigns.recent_sessions || []
@@ -206,6 +208,7 @@ defmodule GamendWeb.AdminLive.Sessions do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] || MapSet.new()
@@ -256,11 +259,13 @@ defmodule GamendWeb.AdminLive.Sessions do
     {:noreply, reload_sessions(socket)}
   end
 
+  event("delete_session", id: :uuid)
   @impl true
   def handle_event("delete_session", %{"id" => id}, socket) do
     Shared.with_record(socket, Accounts.get_user_token(id), &delete_session(socket, &1))
   end
 
+  event("admin_sessions_prev")
   @impl true
   def handle_event("admin_sessions_prev", _params, socket) do
     {:noreply,
@@ -269,12 +274,16 @@ defmodule GamendWeb.AdminLive.Sessions do
      |> reload_sessions()}
   end
 
+  event("admin_sessions_next")
+
   def handle_event("admin_sessions_next", _params, socket) do
     {:noreply,
      socket
      |> assign(:sessions_page, (socket.assigns[:sessions_page] || 1) + 1)
      |> reload_sessions()}
   end
+
+  event("admin_sessions_page_size", size: :string)
 
   def handle_event("admin_sessions_page_size", %{"size" => size}, socket),
     do:

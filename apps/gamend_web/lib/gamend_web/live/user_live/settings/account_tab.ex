@@ -7,10 +7,12 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView
 
   alias Gamend.Accounts
   alias Gamend.Accounts.User
+  alias Gamend.OAuth.AuthProvider
   alias Gamend.OAuth.Providers
   alias Gamend.Storage
   alias GamendWeb.Features
@@ -320,6 +322,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     """
   end
 
+  event("validate_email", user: {:schema, Gamend.Accounts.User})
+
   def handle_event("validate_email", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
 
@@ -331,6 +335,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
     {:noreply, assign(socket, email_form: email_form)}
   end
+
+  event("update_email", user: {:schema, Gamend.Accounts.User})
 
   def handle_event("update_email", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
@@ -357,6 +363,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
+  event("validate_display_name", user: {:schema, Gamend.Accounts.User})
+
   def handle_event("validate_display_name", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
 
@@ -368,6 +376,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
     {:noreply, assign(socket, display_form: display_form)}
   end
+
+  event("update_display_name", user: {:schema, Gamend.Accounts.User})
 
   def handle_event("update_display_name", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
@@ -388,6 +398,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
+  event("validate_username", user: {:schema, Gamend.Accounts.User})
+
   def handle_event("validate_username", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
 
@@ -399,6 +411,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
     {:noreply, assign(socket, username_form: username_form)}
   end
+
+  event("update_username", user: {:schema, Gamend.Accounts.User})
 
   def handle_event("update_username", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
@@ -429,6 +443,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
+  event("validate_avatar")
   # What is picked, drawn and not kept: Save keeps it. A reconnect sends this
   # too, with no icon when none was lit.
   def handle_event("validate_avatar", params, socket) do
@@ -436,10 +451,17 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     {:noreply, assign(socket, :avatar_form, form)}
   end
 
+  event("cancel_avatar", ref: :string)
+
+  # Only an entry the upload holds: another ref (a stale tab, an event sent
+  # by hand) made `cancel_upload/3` raise.
   def handle_event("cancel_avatar", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :avatar, ref)}
+    if Enum.any?(socket.assigns.uploads.avatar.entries, &(&1.ref == ref)),
+      do: {:noreply, cancel_upload(socket, :avatar, ref)},
+      else: {:noreply, socket}
   end
 
+  event("save_avatar")
   # The file picked, which beats an icon; else the icon picked.
   def handle_event("save_avatar", params, socket) do
     user = Shared.current_user(socket)
@@ -450,6 +472,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
       {_done, _refused} -> {:noreply, put_flash(socket, :error, avatar_file_error())}
     end
   end
+
+  event("validate_password", user: {:schema, Gamend.Accounts.User})
 
   def handle_event("validate_password", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
@@ -463,6 +487,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     {:noreply, assign(socket, password_form: password_form)}
   end
 
+  event("update_password", user: {:schema, Gamend.Accounts.User})
+
   def handle_event("update_password", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
 
@@ -474,6 +500,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
         {:noreply, assign(socket, password_form: to_form(changeset, action: :insert))}
     end
   end
+
+  event("unlink_provider", provider: {:in, AuthProvider.all()})
 
   def handle_event("unlink_provider", %{"provider" => provider}, socket) do
     user = Shared.current_user(socket)
@@ -493,6 +521,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
         {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
   end
+
+  event("delete_user")
 
   def handle_event("delete_user", _params, socket) do
     user = Shared.current_user(socket)
@@ -523,6 +553,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
         {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
   end
+
+  event("delete_conflicting_account")
 
   def handle_event("delete_conflicting_account", _params, socket) do
     # The target is the conflict resolved at mount, never an id from the event.

@@ -77,6 +77,7 @@ defmodule GamendWeb.AdminLive.Plugins do
 
   def handle_info(_message, socket), do: {:noreply, socket}
 
+  event("reload_plugins")
   @impl true
   def handle_event("reload_plugins", _params, socket) do
     result = PluginManager.reload_and_after_startup()
@@ -86,6 +87,8 @@ defmodule GamendWeb.AdminLive.Plugins do
      |> assign(last_reload: DateTime.utc_now(), reload_result: result)
      |> reload_view()}
   end
+
+  event("build_plugin_bundle", plugin_build: [name: :string])
 
   def handle_event("build_plugin_bundle", %{"plugin_build" => %{"name" => name}}, socket)
       when is_binary(name) do
@@ -123,13 +126,27 @@ defmodule GamendWeb.AdminLive.Plugins do
     end
   end
 
+  event("select_plugin", plugin: :string)
+
   def handle_event("select_plugin", %{"plugin" => plugin}, socket) do
     {:noreply, socket |> assign(plugin: plugin, function: nil) |> assign_call()}
   end
 
+  event("select_function", function: :string)
+
   def handle_event("select_function", %{"function" => function}, socket) do
     {:noreply, socket |> assign(:function, function) |> assign_call()}
   end
+
+  event("call_change",
+    _target: {:optional, {:list, :string}},
+    call: [
+      plugin: {:optional, :string},
+      function: {:optional, :string},
+      args: {:optional, :string},
+      format: {:optional, :string}
+    ]
+  )
 
   def handle_event(
         "call_change",
@@ -150,6 +167,10 @@ defmodule GamendWeb.AdminLive.Plugins do
   def handle_event("call_change", %{"call" => params}, socket) do
     {:noreply, assign(socket, :call_form, to_form(params, as: :call))}
   end
+
+  event("call",
+    call: [plugin: :string, function: :string, args: :string, format: {:optional, :string}]
+  )
 
   def handle_event("call", %{"call" => params}, socket) do
     caller = Scope.user(socket.assigns.current_scope)

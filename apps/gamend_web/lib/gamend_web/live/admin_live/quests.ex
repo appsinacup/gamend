@@ -473,6 +473,7 @@ defmodule GamendWeb.AdminLive.Quests do
   # Event Handlers — definitions
   # ---------------------------------------------------------------------------
 
+  event("filter_category", category: :string)
   @impl true
   def handle_event("filter_category", %{"category" => category}, socket) do
     {:noreply,
@@ -482,14 +483,22 @@ defmodule GamendWeb.AdminLive.Quests do
      |> reload_quests()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_quests()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_quests()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_quests()}
+
+  event("new_quest")
 
   def handle_event("new_quest", _, socket) do
     changeset = Quests.change_quest(%Quest{})
@@ -502,6 +511,8 @@ defmodule GamendWeb.AdminLive.Quests do
      |> assign(:form, to_form(changeset, as: FormName.quest()))}
   end
 
+  event("edit_quest", id: :uuid)
+
   def handle_event("edit_quest", %{"id" => id}, socket) do
     Shared.with_record(socket, Quests.get_quest(id), fn quest ->
       {:noreply,
@@ -513,12 +524,20 @@ defmodule GamendWeb.AdminLive.Quests do
     end)
   end
 
+  event("cancel_edit")
+
   def handle_event("cancel_edit", _, socket) do
     {:noreply,
      socket
      |> assign(:selected_quest, nil)
      |> assign(:form, nil)}
   end
+
+  event("save_quest", quest: {:schema, Gamend.Quests.Quest})
+
+  # No form open (a stale tab, an event sent by hand): nothing to save.
+  def handle_event("save_quest", _params, %{assigns: %{form: nil}} = socket),
+    do: {:noreply, socket}
 
   def handle_event("save_quest", %{"quest" => params} = all_params, socket) do
     params =
@@ -555,6 +574,8 @@ defmodule GamendWeb.AdminLive.Quests do
     end
   end
 
+  event("delete_quest", id: :uuid)
+
   def handle_event("delete_quest", %{"id" => id}, socket) do
     case Quests.get_quest(id) do
       nil ->
@@ -575,9 +596,13 @@ defmodule GamendWeb.AdminLive.Quests do
     end
   end
 
+  event("open_codes", key: :string)
+
   def handle_event("open_codes", %{"key" => key}, socket) do
     {:noreply, push_navigate(socket, to: ~p"/admin/quests/#{key}/codes")}
   end
+
+  event("grant_form", id: :uuid)
 
   def handle_event("grant_form", %{"id" => id}, socket) do
     Shared.with_record(socket, Quests.get_quest(id), fn quest ->
@@ -588,12 +613,16 @@ defmodule GamendWeb.AdminLive.Quests do
     end)
   end
 
+  event("cancel_grant")
+
   def handle_event("cancel_grant", _, socket) do
     {:noreply,
      socket
      |> assign(:grant_form, nil)
      |> assign(:selected_quest, nil)}
   end
+
+  event("grant_quest", grant: [user_id: :string])
 
   def handle_event("grant_quest", %{"grant" => %{"user_id" => user_id_str}}, socket) do
     quest = socket.assigns.selected_quest
@@ -625,6 +654,8 @@ defmodule GamendWeb.AdminLive.Quests do
   # Event Handlers — progress
   # ---------------------------------------------------------------------------
 
+  event("filter_progress")
+
   def handle_event("filter_progress", params, socket) do
     filters = Map.take(params, ["user_id", "quest_key", "status"])
 
@@ -635,11 +666,17 @@ defmodule GamendWeb.AdminLive.Quests do
      |> reload_progress()}
   end
 
+  event("progress_prev_page")
+
   def handle_event("progress_prev_page", _, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:progress_page) |> reload_progress()}
 
+  event("progress_next_page")
+
   def handle_event("progress_next_page", _, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:progress_page) |> reload_progress()}
+
+  event("progress_page_size", size: :string)
 
   def handle_event("progress_page_size", %{"size" => size}, socket),
     do:
@@ -647,6 +684,8 @@ defmodule GamendWeb.AdminLive.Quests do
        socket
        |> LiveHelpers.put_page_size(size, size_key: :progress_page_size, page_key: :progress_page)
        |> reload_progress()}
+
+  event("force_complete", key: :string, user: :string)
 
   def handle_event("force_complete", %{"user" => user_id, "key" => key}, socket) do
     case Quests.admin_complete(user_id, key) do
@@ -658,6 +697,8 @@ defmodule GamendWeb.AdminLive.Quests do
     end
   end
 
+  event("force_claim", key: :string, user: :string)
+
   def handle_event("force_claim", %{"user" => user_id, "key" => key}, socket) do
     case Quests.admin_claim(user_id, key) do
       {:ok, _} ->
@@ -667,6 +708,8 @@ defmodule GamendWeb.AdminLive.Quests do
         {:noreply, put_flash(socket, :error, "Failed: #{inspect(reason)}")}
     end
   end
+
+  event("reset_progress", key: :string, user: :string)
 
   def handle_event("reset_progress", %{"user" => user_id, "key" => key}, socket) do
     case Quests.admin_reset(user_id, key) do

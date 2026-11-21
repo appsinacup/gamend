@@ -19,7 +19,7 @@ defmodule GamendWeb.Schemas.Notification do
         type: :string,
         description: "The notification group it belongs to (`social`, `chat`, …). Empty for none"
       },
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [

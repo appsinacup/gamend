@@ -666,21 +666,27 @@ defmodule GamendWeb.AdminLive.Payments do
     """
   end
 
+  @section_names Enum.map(@sections, &Atom.to_string/1)
+
+  event("section_prev_page", section: {:in, @section_names})
   @impl true
   def handle_event("section_prev_page", %{"section" => section}, socket) do
     {:noreply, move_section_page(socket, section, -1)}
   end
 
+  event("section_next_page", section: {:in, @section_names})
   @impl true
   def handle_event("section_next_page", %{"section" => section}, socket) do
     {:noreply, move_section_page(socket, section, 1)}
   end
 
+  event("new_product")
   @impl true
   def handle_event("new_product", _params, socket) do
     {:noreply, assign_product_form(socket, nil)}
   end
 
+  event("edit_product", id: :uuid)
   @impl true
   def handle_event("edit_product", %{"id" => id}, socket) do
     product_id = parse_id(id)
@@ -691,11 +697,13 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
+  event("close_product_modal")
   @impl true
   def handle_event("close_product_modal", _params, socket) do
     {:noreply, socket |> assign(:product_form, nil) |> assign(:selected_product, nil)}
   end
 
+  event("save_product", product: {:schema, Gamend.Payments.Product})
   @impl true
   def handle_event("save_product", %{"product" => params}, socket) do
     case product_attrs(params) do
@@ -734,11 +742,13 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
+  event("new_provider_product")
   @impl true
   def handle_event("new_provider_product", _params, socket) do
     {:noreply, assign_provider_product_form(socket, nil)}
   end
 
+  event("edit_provider_product", id: :uuid)
   @impl true
   def handle_event("edit_provider_product", %{"id" => id}, socket) do
     provider_product_id = Gamend.UUIDv7.cast_or_nil(id)
@@ -749,6 +759,7 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
+  event("close_provider_product_modal")
   @impl true
   def handle_event("close_provider_product_modal", _params, socket) do
     {:noreply,
@@ -757,6 +768,7 @@ defmodule GamendWeb.AdminLive.Payments do
      |> assign(:selected_provider_product, nil)}
   end
 
+  event("save_provider_product", provider_product: {:schema, Gamend.Payments.ProviderProduct})
   @impl true
   def handle_event("save_provider_product", %{"provider_product" => params}, socket) do
     case provider_product_attrs(params) do
@@ -795,6 +807,7 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
+  event("reconcile_stripe_purchase", id: :uuid)
   @impl true
   def handle_event("reconcile_stripe_purchase", %{"id" => id}, socket) do
     result =
@@ -820,6 +833,8 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
+  event("refund_stripe_purchase", id: :uuid)
+
   def handle_event("refund_stripe_purchase", %{"id" => id}, socket) do
     case Payments.admin_refund_stripe_purchase(parse_id(id)) do
       {:ok, %{refund: refund}} ->
@@ -835,6 +850,8 @@ defmodule GamendWeb.AdminLive.Payments do
          |> reload_all()}
     end
   end
+
+  event("extend_entitlement", days: :string, entitlement_id: :uuid)
 
   def handle_event(
         "extend_entitlement",

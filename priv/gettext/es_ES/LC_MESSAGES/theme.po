@@ -55,6 +55,9 @@ msgstr "Tienda"
 msgid "Server Stats"
 msgstr "Estadísticas del servidor"
 
+msgid "Consulting"
+msgstr ""
+
 msgid "Help"
 msgstr "Ayuda"
 
@@ -82,8 +85,53 @@ msgstr "Torneos"
 msgid "Groups"
 msgstr "Grupos"
 
-msgid "News"
-msgstr "Noticias"
+msgid "Email contact@gamend.org"
+msgstr ""
+
+msgid "Apps in a Cup consulting"
+msgstr ""
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting sessions**: short, focused help to get you unstuck. **€50 per hour.**"
+msgstr ""
+
+msgid "Deployment"
+msgstr ""
+
+msgid "Your own server, Docker, fly.io or a VPS: Postgres or SQLite, domains, TLS and backups."
+msgstr ""
+
+msgid "Deployment & hosting"
+msgstr ""
+
+msgid "Game logic on the server where players cannot reach it: hooks, plugins and GDScript hooks."
+msgstr ""
+
+msgid "Server scripting & hooks"
+msgstr ""
+
+msgid "Benchmarks"
+msgstr "Benchmarks"
+
+msgid "Clustering, load testing, and finding what slows a busy server down."
+msgstr ""
+
+msgid "Scaling & performance"
+msgstr ""
+
+msgid "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](https://balaurengine.org) SDKs into your game."
+msgstr ""
+
+msgid "Client integration"
+msgstr ""
+
+msgid "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need."
+msgstr ""
+
+msgid "How it works"
+msgstr ""
 
 msgid "Getting Started"
 msgstr "Primeros pasos"
@@ -94,20 +142,11 @@ msgstr "Vídeo de presentación"
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
 msgstr "Servidor de juego Elixir de **código abierto** para juegos multijugador en tiempo real: backend, sitio web para jugadores y panel de administración en uno."
 
-msgid "Gamend"
-msgstr "Gamend"
-
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
 msgstr "Un recorrido por el panel de administración de Gamend, las misiones, la tienda y los hooks del servidor"
 
-msgid "Benchmarks"
-msgstr "Benchmarks"
-
-msgid "Godot SDK"
-msgstr "SDK de Godot"
-
-msgid "C++ SDK"
-msgstr "SDK de C++"
+msgid "Architecture"
+msgstr "Arquitectura"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
 msgstr "El **backend para tu juego multijugador**: cuentas, salas, chat, clasificaciones y todo lo que los jugadores esperan en torno al propio juego. También incluye la interfaz web que lo acompaña: un sitio web para jugadores listo para usar (tienda, clasificaciones, torneos, misiones, grupos, chat) y un panel de administración completo. Los scripts del lado del servidor ejecutan tu propia lógica donde los jugadores no pueden alcanzarla. Lo ejecutas en tu propio servidor; no hay ningún servicio alojado."
@@ -178,6 +217,24 @@ msgstr "Escribe hooks de servidor en **Elixir, GDScript o Gleam** para puntuacio
 msgid "Server Scripting & Scheduling"
 msgstr "Scripts de servidor y programación"
 
+msgid "Godot SDK"
+msgstr "SDK de Godot"
+
+msgid "Unity SDK"
+msgstr "SDK de Unity"
+
+msgid "Unreal plugin"
+msgstr "Plugin de Unreal"
+
+msgid "C++ SDK"
+msgstr "SDK de C++"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "SDK para **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript y Balaur**, cada uno con todas las llamadas para jugadores, modelos tipados y los eventos en tiempo real, reconstruidos con cada versión del servidor. Cualquier otra cosa habla directamente con la API HTTP y los canales WebSocket."
+
+msgid "Client SDKs"
+msgstr "SDK de cliente"
+
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
 msgstr "API REST, canales WebSocket en tiempo real y DataChannels WebRTC de baja latencia, con un formato en tiempo real protobuf opcional. Portal de administración e interfaz web, traducidos a 30 idiomas."
 
@@ -231,18 +288,3 @@ msgstr "Analítica, registros y observabilidad"
 
 msgid "Game + Backend"
 msgstr "Juego + backend"
-
-msgid "Architecture"
-msgstr "Arquitectura"
-
-msgid "Unity SDK"
-msgstr "SDK de Unity"
-
-msgid "Unreal plugin"
-msgstr "Plugin de Unreal"
-
-msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
-msgstr "SDK para **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript y Balaur**, cada uno con todas las llamadas para jugadores, modelos tipados y los eventos en tiempo real, reconstruidos con cada versión del servidor. Cualquier otra cosa habla directamente con la API HTTP y los canales WebSocket."
-
-msgid "Client SDKs"
-msgstr "SDK de cliente"

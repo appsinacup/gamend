@@ -140,7 +140,7 @@ defmodule GamendWeb.Api.V1.GroupController do
             type: :integer,
             description: "Max members (default: 100; ignored when the host fixes it)"
           },
-          metadata: %Schema{type: :object, description: "Server metadata"},
+          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Server metadata"),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
@@ -200,7 +200,7 @@ defmodule GamendWeb.Api.V1.GroupController do
             type: :integer,
             description: "Ignored when the host fixes every group's"
           },
-          metadata: %Schema{type: :object},
+          metadata: GamendWeb.Schemas.FreeForm.metadata(),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"

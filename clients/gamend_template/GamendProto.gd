@@ -114,6 +114,13 @@ static func decode_event(topic: String, event: String, data: PackedByteArray) ->
 			})
 		"ready_check_started", "ready_check_updated", "ready_check_passed", "ready_check_failed":
 			return _ready_check(data)
+		"result_started", "result_ended":
+			return _decode(PB.PlayResult.new(), data, _play_result_to_dict)
+		"result_event":
+			return _decode(PB.PlayResultEventPushed.new(), data, func(m): return {
+				"result_id": m.get_result_id(),
+				"event": _play_result_event_to_dict(m.get_event()) if m.has_event() else {}
+			})
 
 	match kind:
 		"user":
@@ -148,6 +155,23 @@ static func decode_event(topic: String, event: String, data: PackedByteArray) ->
 					})
 				"ticket_cancelled":
 					return _decode(PB.MatchmakingTicketCancelled.new(), data, func(m): return {"ticket_id": m.get_ticket_id(), "reason": m.get_reason()})
+				"account_banned":
+					return _decode(PB.AccountBan.new(), data, _account_ban_to_dict)
+				"account_unbanned", "webrtc:channel_closed":
+					return {}
+				"outgoing_request", "incoming_request", "request_cancelled", "friend_accepted", "friend_rejected", "friend_removed", "friend_blocked", "friend_unblocked":
+					return _decode(PB.Friendship.new(), data, func(m): return {
+						"id": m.get_id(), "requester_id": m.get_requester_id(),
+						"target_id": m.get_target_id(), "status": m.get_status()
+					})
+				"webrtc:answer":
+					return _decode(PB.WebrtcAnswer.new(), data, func(m): return {"sdp": m.get_sdp(), "type": m.get_type()})
+				"webrtc:ice":
+					return _decode(PB.WebrtcIce.new(), data, _webrtc_ice_to_dict)
+				"webrtc:channel_open":
+					return _decode(PB.WebrtcChannelOpen.new(), data, func(m): return {"channel": m.get_channel()})
+				"webrtc:state":
+					return _decode(PB.WebrtcState.new(), data, func(m): return {"state": m.get_state()})
 		"lobby":
 			match event:
 				"updated":
@@ -190,8 +214,64 @@ static func decode_event(topic: String, event: String, data: PackedByteArray) ->
 					return _decode(PB.UserBrief.new(), data, _brief_to_dict)
 				"disbanded":
 					return _decode(PB.PartyRef.new(), data, func(m): return {"party_id": m.get_party_id()})
+		"signaling":
+			match event:
+				"user_joined", "user_rejoined":
+					return _decode(PB.SignalingPeer.new(), data, func(m): return {"user_id": m.get_user_id(), "role": m.get_role()})
+				"user_left":
+					return _decode(PB.SignalingPeerLeft.new(), data, func(m): return {"user_id": m.get_user_id()})
+				"offer", "answer":
+					return _decode(PB.SignalingSdp.new(), data, func(m): return {"sdp": m.get_sdp(), "from_user_id": m.get_from_user_id()})
+				"ice":
+					return _decode(PB.SignalingIce.new(), data, func(m): return {"candidate": m.get_candidate(), "from_user_id": m.get_from_user_id()})
+				"room_closed":
+					return _decode(PB.SignalingRoomClosed.new(), data, func(m): return {"room_id": m.get_room_id()})
 
 	return null
+
+
+## "account_banned": no `expires_at_ms` is a ban for good.
+static func _account_ban_to_dict(m) -> Dictionary:
+	var d := {"reason": m.get_reason()}
+	if m.has_expires_at_ms():
+		d["expires_at_ms"] = m.get_expires_at_ms()
+	return d
+
+
+## "webrtc:ice", in the browser's field names.
+static func _webrtc_ice_to_dict(m) -> Dictionary:
+	var d := {"candidate": m.get_candidate()}
+	if m.has_sdpMid():
+		d["sdpMid"] = m.get_sdpMid()
+	if m.has_sdpMLineIndex():
+		d["sdpMLineIndex"] = m.get_sdpMLineIndex()
+	if m.has_usernameFragment():
+		d["usernameFragment"] = m.get_usernameFragment()
+	return d
+
+
+## A play (`Gamend.Results`) as its JSON payload has it.
+static func _play_result_to_dict(m) -> Dictionary:
+	var d := {
+		"id": m.get_id(), "user_id": m.get_user_id(), "lobby_id": m.get_lobby_id(),
+		"kind": m.get_kind(), "visibility": m.get_visibility(), "status": m.get_status(),
+		"metadata": _json_bytes(m.get_metadata_json(), {})
+	}
+	if m.has_started_at_ms():
+		d["started_at_ms"] = m.get_started_at_ms()
+	if m.has_ended_at_ms():
+		d["ended_at_ms"] = m.get_ended_at_ms()
+	return d
+
+
+static func _play_result_event_to_dict(m) -> Dictionary:
+	var d := {
+		"id": m.get_id(), "result_id": m.get_result_id(), "elapsed_ms": m.get_elapsed_ms(),
+		"key": m.get_key(), "metadata": _json_bytes(m.get_metadata_json(), {})
+	}
+	if m.has_value():
+		d["value"] = m.get_value()
+	return d
 
 
 ## Encodes an RPC call for the protobuf "events" DataChannel protocol.

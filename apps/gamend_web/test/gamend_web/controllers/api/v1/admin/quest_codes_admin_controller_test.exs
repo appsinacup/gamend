@@ -114,8 +114,8 @@ defmodule GamendWeb.Api.V1.Admin.QuestCodesAdminControllerTest do
   test "generate refuses a bad count or too many", ctx do
     path = "/api/v1/admin/quests/#{ctx.quest_id}/codes/generate"
 
-    assert %{"error" => "invalid_count"} =
-             ctx.admin_conn |> post(path, %{}) |> json_response(400)
+    assert %{"error" => "validation_failed"} =
+             ctx.admin_conn |> post(path, %{}) |> json_response(422)
 
     assert %{"error" => "too_many_codes"} =
              ctx.admin_conn |> post(path, %{count: 10_001}) |> json_response(403)
@@ -157,17 +157,23 @@ defmodule GamendWeb.Api.V1.Admin.QuestCodesAdminControllerTest do
       |> post("/api/v1/admin/quests/#{ctx.quest_id}/codes", %{token: "STAY"})
       |> json_response(201)
 
-    assert %{"error" => "invalid_state"} =
+    assert %{"error" => "validation_failed"} =
              ctx.admin_conn
              |> patch("/api/v1/admin/quest_codes/#{created["data"]["id"]}", %{status: "nope"})
              |> json_response(422)
 
-    for id <- [Gamend.UUIDv7.generate(), "not-a-uuid"] do
-      assert %{"error" => "code_not_found"} =
-               ctx.admin_conn
-               |> patch("/api/v1/admin/quest_codes/#{id}", %{status: "revoked"})
-               |> json_response(404)
-    end
+    assert %{"error" => "code_not_found"} =
+             ctx.admin_conn
+             |> patch("/api/v1/admin/quest_codes/#{Gamend.UUIDv7.generate()}", %{
+               status: "revoked"
+             })
+             |> json_response(404)
+
+    # Not a UUID, as the path documents: a URL that names nothing.
+    assert %{"error" => "not_found"} =
+             ctx.admin_conn
+             |> patch("/api/v1/admin/quest_codes/not-a-uuid", %{status: "revoked"})
+             |> json_response(404)
   end
 
   test "404 for a quest that is not there", ctx do

@@ -98,7 +98,8 @@ defmodule GamendWeb.OAuthProviderToggleTest do
     test "an unknown provider is a 404, not a crash", %{conn: conn} do
       configure([])
 
-      assert_error_sent 404, fn -> get(conn, "/api/v1/auth/twitch") end
+      # Not one of the path's documented providers (`RequestContract`).
+      assert %{"error" => "not_found"} = conn |> get("/api/v1/auth/twitch") |> json_response(404)
     end
 
     test "an enabled provider still works", %{conn: conn} do

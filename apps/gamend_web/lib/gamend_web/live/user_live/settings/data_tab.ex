@@ -5,6 +5,7 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView, only: [stream: 4]
 
   alias Gamend.KV
@@ -112,10 +113,14 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
     """
   end
 
+  event("kv_prev")
+
   def handle_event("kv_prev", _params, socket) do
     page = max(1, (socket.assigns.kv_page || 1) - 1)
     {:noreply, socket |> assign(:kv_page, page) |> reload_kv_entries()}
   end
+
+  event("kv_next")
 
   def handle_event("kv_next", _params, socket) do
     page = (socket.assigns.kv_page || 1) + 1
@@ -131,6 +136,8 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
     {:noreply,
      socket |> assign(:kv_key_filter, key) |> assign(:kv_page, 1) |> reload_kv_entries()}
   end
+
+  event("kv_filters_clear")
 
   def handle_event("kv_filters_clear", _params, socket) do
     {:noreply,

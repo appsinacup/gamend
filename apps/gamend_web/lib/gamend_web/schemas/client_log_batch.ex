@@ -105,11 +105,10 @@ defmodule GamendWeb.Schemas.ClientLogSession do
         type: :number,
         description: "When the run began, client clock, seconds since the Unix epoch."
       },
-      meta: %Schema{
-        type: :object,
-        description: "Free-form device facts: model, GPU, screen size. Capped server-side.",
-        additionalProperties: true
-      }
+      meta:
+        GamendWeb.Schemas.FreeForm.object("device facts the client reports",
+          description: "Free-form device facts: model, GPU, screen size. Capped server-side."
+        )
     },
     required: [:client_session_id]
   })

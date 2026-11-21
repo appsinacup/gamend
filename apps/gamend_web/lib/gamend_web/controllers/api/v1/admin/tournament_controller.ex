@@ -41,10 +41,13 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
         type: :string,
         enum: ["forfeit_both", "advance_first_slot", "random"]
       },
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [:slug, :title, :round_window_sec]
   }
+
+  # An update names only the fields it changes.
+  @tournament_changes %{@tournament_body | required: []}
 
   operation(:create,
     operation_id: "admin_create_tournament",
@@ -71,7 +74,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
     summary: "Update tournament (admin)",
     security: [%{"authorization" => []}],
     parameters: [id: [in: :path, schema: %Schema{type: :string}, required: true]],
-    request_body: {"Fields to change", "application/json", @tournament_body},
+    request_body: {"Fields to change", "application/json", @tournament_changes},
     responses: [
       ok: {"Tournament", "application/json", AdminTournamentResponse},
       not_found: Schemas.error("Not found"),

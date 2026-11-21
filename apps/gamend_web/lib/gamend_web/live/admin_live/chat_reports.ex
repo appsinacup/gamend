@@ -54,6 +54,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
     {:ok, socket}
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -64,20 +65,31 @@ defmodule GamendWeb.AdminLive.ChatReports do
      |> reload()}
   end
 
+  event("filter_user", id: :uuid)
+
   def handle_event("filter_user", %{"id" => id}, socket) do
     {:noreply, socket |> assign(:user_filter, id) |> assign(:page, 1) |> reload()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}
 
+  event("refresh")
   def handle_event("refresh", _params, socket), do: {:noreply, reload(socket)}
+
+  event("review", id: :uuid)
 
   def handle_event("review", %{"id" => id}, socket) do
     socket =
@@ -89,6 +101,8 @@ defmodule GamendWeb.AdminLive.ChatReports do
     {:noreply, reload(socket)}
   end
 
+  event("open_action", action: :string, id: :uuid)
+
   def handle_event("open_action", %{"id" => id, "action" => action}, socket) do
     socket =
       case find_report(socket, id) do
@@ -99,11 +113,22 @@ defmodule GamendWeb.AdminLive.ChatReports do
     {:noreply, reload(socket)}
   end
 
+  event("close_action")
   def handle_event("close_action", _params, socket), do: {:noreply, close_form(socket)}
+
+  event("form_change")
+
+  # No report open (a stale tab, an event sent by hand): no form to change.
+  def handle_event(event, _params, %{assigns: %{action_report: nil}} = socket)
+      # literal-ok: event names, as in the handle_event/3 heads they guard
+      when event in ~w(form_change submit_action),
+      do: {:noreply, socket}
 
   def handle_event("form_change", params, socket) do
     {:noreply, assign(socket, :form, Map.take(params, @form_keys))}
   end
+
+  event("submit_action")
 
   def handle_event("submit_action", params, socket) do
     form = Map.take(params, @form_keys)

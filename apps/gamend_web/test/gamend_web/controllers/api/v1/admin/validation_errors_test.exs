@@ -68,7 +68,7 @@ defmodule GamendWeb.Api.V1.Admin.ValidationErrorsTest do
     end
 
     # `String.to_integer/1` raised on these, so each answered 500.
-    test "a non-numeric, partial or float score is a 400", %{admin_conn: conn, board: board} do
+    test "a non-numeric, partial or float score is a 422", %{admin_conn: conn, board: board} do
       user = Gamend.AccountsFixtures.user_fixture()
 
       for bad <- ["abc", "12abc", 1.5] do
@@ -78,9 +78,9 @@ defmodule GamendWeb.Api.V1.Admin.ValidationErrorsTest do
             "user_id" => user.id,
             "score" => bad
           })
-          |> json_response(400)
+          |> json_response(422)
 
-        assert body["error"] == "invalid_score", "#{inspect(bad)} was not rejected"
+        assert body["errors"]["score"], "#{inspect(bad)} was not rejected"
       end
     end
 

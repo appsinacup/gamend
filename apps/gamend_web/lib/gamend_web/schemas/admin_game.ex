@@ -18,7 +18,7 @@ defmodule GamendWeb.Schemas.AdminLeaderboardRecord do
       label: %Schema{type: :string, description: "Empty for a user's record"},
       score: %Schema{type: :integer},
       rank: %Schema{type: :integer, nullable: true, description: "Null until ranked"},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -70,7 +70,7 @@ defmodule GamendWeb.Schemas.AdminTournament do
         enum: Tournament.deadline_policies(),
         description: "What an unplayed match comes to at its deadline"
       },
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -129,7 +129,7 @@ defmodule GamendWeb.Schemas.AdminQuest do
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
       ends_at: %Schema{type: :string, format: :"date-time", nullable: true},
       active: %Schema{type: :boolean},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -186,7 +186,7 @@ defmodule GamendWeb.Schemas.AdminQuestProgress do
       },
       completed_at: %Schema{type: :string, format: :"date-time", nullable: true},
       claimed_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -273,7 +273,7 @@ defmodule GamendWeb.Schemas.AdminLedgerEntry do
       delta: %Schema{type: :integer},
       balance_after: %Schema{type: :integer},
       reason: %Schema{type: :string},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [
@@ -303,7 +303,7 @@ defmodule GamendWeb.Schemas.AdminInventoryItem do
       user_id: %Schema{type: :string, format: :uuid},
       item: %Schema{type: :string},
       quantity: %Schema{type: :integer},
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [:id, :user_id, :item, :quantity, :metadata]
   })
@@ -386,10 +386,10 @@ defmodule GamendWeb.Schemas.AdminQuestCode do
       },
       uses: %Schema{type: :integer, description: "How many players redeemed it"},
       status: %Schema{type: :string, enum: QuestCodeStatus.all()},
-      metadata: %Schema{
-        type: :object,
-        description: "Copied onto each player's progress row, where they can read it"
-      },
+      metadata:
+        GamendWeb.Schemas.FreeForm.metadata(
+          description: "Copied onto each player's progress row, where they can read it"
+        ),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },

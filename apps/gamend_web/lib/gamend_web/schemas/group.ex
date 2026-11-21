@@ -31,7 +31,7 @@ defmodule GamendWeb.Schemas.Group do
         description: "Who may join and who may see it"
       },
       max_members: %Schema{type: :integer},
-      metadata: %Schema{type: :object, description: "Server-managed metadata"},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Server-managed metadata"),
       creator_id: %Schema{
         type: :string,
         description: "Creator's user id; empty for a system group"

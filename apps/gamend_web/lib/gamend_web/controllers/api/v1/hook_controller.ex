@@ -119,11 +119,9 @@ defmodule GamendWeb.Api.V1.HookController do
     }
   end
 
-  @json_schema %OpenApiSpex.Schema{
-    description: "JSON object with arbitrary properties",
-    type: :object,
-    additionalProperties: true
-  }
+  # An argument is whatever the hook takes: a number, a string, a list or an
+  # object (`args: [1, 2]` is a plugin's own call). No `type`: any JSON value.
+  @json_schema GamendWeb.Schemas.FreeForm.value("a plugin function's own argument")
 
   operation(:invoke,
     operation_id: @call_hook,

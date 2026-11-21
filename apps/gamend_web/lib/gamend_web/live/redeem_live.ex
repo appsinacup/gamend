@@ -53,6 +53,7 @@ defmodule GamendWeb.RedeemLive do
      |> load_entries()}
   end
 
+  event("redeem", redeem: [token: :string])
   @impl true
   def handle_event("redeem", %{"redeem" => %{"token" => token}}, socket) do
     case String.trim(token) do
@@ -61,6 +62,7 @@ defmodule GamendWeb.RedeemLive do
     end
   end
 
+  event("claim", key: :string)
   # Only after a crash between a redemption's commit and its payout: the row
   # is completed and waits, as any quest's does.
   def handle_event("claim", %{"key" => key}, socket) do
@@ -82,15 +84,23 @@ defmodule GamendWeb.RedeemLive do
     end
   end
 
+  event("show_all")
+
   def handle_event("show_all", _params, socket) do
     {:noreply, socket |> assign(:quest, nil) |> assign(:page, 1) |> load_entries()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> load_entries()}
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> load_entries()}
+
+  event("page_size", size: :string)
 
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size, min: 24) |> load_entries()}

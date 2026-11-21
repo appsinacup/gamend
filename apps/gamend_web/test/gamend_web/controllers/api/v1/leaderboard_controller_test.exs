@@ -342,9 +342,9 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert resp["data"] == %{}
     end
 
-    test "returns 400 when slugs param is missing", %{conn: conn} do
+    test "returns 422 when slugs param is missing", %{conn: conn} do
       conn = post(conn, "/api/v1/leaderboards/resolve", %{})
-      assert json_response(conn, 400)["error"] == "missing_param"
+      assert json_response(conn, 422)["error"] == "validation_failed"
     end
 
     test "includes all leaderboard fields in response", %{conn: conn} do

@@ -312,6 +312,7 @@ defmodule GamendWeb.AdminLive.System do
      |> assign_all_stats()}
   end
 
+  event("send_test_email")
   @impl true
   def handle_event("send_test_email", _params, socket) do
     case test_email_address(socket.assigns) do

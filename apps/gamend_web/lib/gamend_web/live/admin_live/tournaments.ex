@@ -390,16 +390,23 @@ defmodule GamendWeb.AdminLive.Tournaments do
 
   # ── Events ────────────────────────────────────────────────────────────────
 
+  event("filter_state", state: :string)
   @impl true
   def handle_event("filter_state", %{"state" => state}, socket) do
     {:noreply, socket |> assign(:state_filter, state) |> assign(:page, 1) |> reload()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
+
+  event("new_tournament")
 
   def handle_event("new_tournament", _params, socket) do
     changeset =
@@ -411,6 +418,8 @@ defmodule GamendWeb.AdminLive.Tournaments do
 
     {:noreply, socket |> assign(:selected, nil) |> assign(:form, to_form(changeset))}
   end
+
+  event("edit_tournament", id: :uuid)
 
   def handle_event("edit_tournament", %{"id" => id}, socket) do
     case Tournaments.get_tournament(id) do
@@ -425,9 +434,13 @@ defmodule GamendWeb.AdminLive.Tournaments do
     end
   end
 
+  event("cancel_form")
+
   def handle_event("cancel_form", _params, socket) do
     {:noreply, socket |> assign(:form, nil) |> assign(:selected, nil)}
   end
+
+  event("save_tournament", tournament: {:schema, Gamend.Tournaments.Tournament})
 
   def handle_event("save_tournament", %{"tournament" => params}, socket) do
     result =
@@ -450,6 +463,8 @@ defmodule GamendWeb.AdminLive.Tournaments do
     end
   end
 
+  event("delete_tournament", id: :uuid)
+
   def handle_event("delete_tournament", %{"id" => id}, socket) do
     with %Tournament{} = tournament <- Tournaments.get_tournament(id),
          {:ok, _} <- Tournaments.delete_tournament(tournament) do
@@ -459,19 +474,27 @@ defmodule GamendWeb.AdminLive.Tournaments do
     end
   end
 
+  event("open_detail", id: :uuid)
+
   def handle_event("open_detail", %{"id" => id}, socket) do
     {:noreply, load_detail(socket, id)}
   end
 
+  event("close_detail")
+
   def handle_event("close_detail", _params, socket) do
     {:noreply, assign(socket, detail: nil, detail_id: nil, detail_page: 1, detail_bracket: nil)}
   end
+
+  event("force_registration")
 
   def handle_event("force_registration", _params, socket) do
     with_detail(socket, fn tournament ->
       Tournaments.update_tournament(tournament, %{state: TournamentState.registration()})
     end)
   end
+
+  event("force_draw")
 
   def handle_event("force_draw", _params, socket) do
     with_detail(socket, fn tournament ->
@@ -483,6 +506,8 @@ defmodule GamendWeb.AdminLive.Tournaments do
     end)
   end
 
+  event("force_finish")
+
   def handle_event("force_finish", _params, socket) do
     with_detail(socket, fn tournament ->
       with {:ok, tournament} <-
@@ -492,20 +517,34 @@ defmodule GamendWeb.AdminLive.Tournaments do
     end)
   end
 
+  event("force_cancel")
+
   def handle_event("force_cancel", _params, socket) do
     with_detail(socket, &Tournaments.cancel_tournament/1)
   end
+
+  event("detail_prev")
+
+  # No tournament open (a stale tab, an event sent by hand): nothing to page.
+  def handle_event(event, _params, %{assigns: %{detail: nil}} = socket)
+      # literal-ok: event names, as in the handle_event/3 heads they guard
+      when event in ~w(detail_prev detail_next select_bracket),
+      do: {:noreply, socket}
 
   def handle_event("detail_prev", _params, socket) do
     d = socket.assigns.detail
     {:noreply, load_detail(socket, d.tournament.id, max(d.entry_page - 1, 1))}
   end
 
+  event("detail_next")
+
   def handle_event("detail_next", _params, socket) do
     d = socket.assigns.detail
     # Floored at 1: a tournament with no entries has 0 pages.
     {:noreply, load_detail(socket, d.tournament.id, min(d.entry_page + 1, max(d.entry_pages, 1)))}
   end
+
+  event("select_bracket", index: :string)
 
   def handle_event("select_bracket", %{"index" => index}, socket) do
     d = socket.assigns.detail
@@ -520,9 +559,13 @@ defmodule GamendWeb.AdminLive.Tournaments do
     end
   end
 
+  event("force_reopen")
+
   def handle_event("force_reopen", _params, socket) do
     with_detail(socket, &Tournaments.reopen_tournament/1)
   end
+
+  event("force_resolve", match: :uuid, winner: :uuid)
 
   def handle_event("force_resolve", %{"match" => match_id, "winner" => winner}, socket) do
     verdict = if winner == "no_winner", do: :no_winner, else: winner

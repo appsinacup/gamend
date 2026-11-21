@@ -41,9 +41,11 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
     {:noreply, socket |> assign(:params, read_params(params)) |> load()}
   end
 
+  event("refresh")
   @impl true
   def handle_event("refresh", _params, socket), do: {:noreply, load(socket)}
 
+  event("filter")
   # The filter form: the target, a value per dimension, the breakdown, the
   # account. Any change starts again from page 1.
   def handle_event("filter", form, socket) do

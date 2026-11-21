@@ -448,6 +448,7 @@ defmodule GamendWeb.AdminLive.Groups do
   # Events
   # ---------------------------------------------------------------------------
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     # The sort select is inside the filter form, so extract it
@@ -461,6 +462,7 @@ defmodule GamendWeb.AdminLive.Groups do
      |> reload_groups()}
   end
 
+  event("sort", sort_by: :string)
   @impl true
   def handle_event("sort", %{"sort_by" => sort_by}, socket) do
     {:noreply,
@@ -470,6 +472,7 @@ defmodule GamendWeb.AdminLive.Groups do
      |> reload_groups()}
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -488,6 +491,7 @@ defmodule GamendWeb.AdminLive.Groups do
      |> sync_selected_ids(group_ids(socket.assigns.groups))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     groups = socket.assigns.groups || []
@@ -504,6 +508,7 @@ defmodule GamendWeb.AdminLive.Groups do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] |> MapSet.to_list()
@@ -546,6 +551,7 @@ defmodule GamendWeb.AdminLive.Groups do
     {:noreply, reload_groups(socket)}
   end
 
+  event("edit_group", id: :uuid)
   @impl true
   def handle_event("edit_group", %{"id" => id}, socket) do
     Shared.with_record(socket, Groups.get_group(to_string(id)), fn group ->
@@ -559,6 +565,7 @@ defmodule GamendWeb.AdminLive.Groups do
     end)
   end
 
+  event("cancel_edit")
   @impl true
   def handle_event("cancel_edit", _, socket) do
     {:noreply,
@@ -567,7 +574,12 @@ defmodule GamendWeb.AdminLive.Groups do
      |> assign(:form, nil)}
   end
 
+  event("save_group", group: {:schema, Gamend.Groups.Group})
   @impl true
+  # Nothing open to save: a stale tab, or an event sent by hand.
+  def handle_event("save_group", _params, %{assigns: %{selected_group: nil}} = socket),
+    do: {:noreply, socket}
+
   def handle_event("save_group", %{"group" => params}, socket) do
     group = socket.assigns.selected_group
 
@@ -579,6 +591,7 @@ defmodule GamendWeb.AdminLive.Groups do
     end
   end
 
+  event("delete_group", id: :uuid)
   @impl true
   def handle_event("delete_group", %{"id" => id}, socket) do
     group_id = to_string(id)
@@ -596,6 +609,7 @@ defmodule GamendWeb.AdminLive.Groups do
     end
   end
 
+  event("view_members", id: :uuid)
   @impl true
   def handle_event("view_members", %{"id" => id}, socket) do
     Shared.with_record(socket, Groups.get_group(to_string(id)), fn group ->
@@ -609,11 +623,17 @@ defmodule GamendWeb.AdminLive.Groups do
     end)
   end
 
+  event("members_prev")
+
   def handle_event("members_prev", _, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:members_page) |> load_members()}
 
+  event("members_next")
+
   def handle_event("members_next", _, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:members_page) |> load_members()}
+
+  event("members_page_size", size: :string)
 
   def handle_event("members_page_size", %{"size" => size}, socket) do
     socket =
@@ -626,6 +646,7 @@ defmodule GamendWeb.AdminLive.Groups do
     {:noreply, load_members(socket)}
   end
 
+  event("close_members")
   @impl true
   def handle_event("close_members", _, socket) do
     {:noreply,
@@ -635,6 +656,7 @@ defmodule GamendWeb.AdminLive.Groups do
      |> assign(:members, [])}
   end
 
+  event("promote_member", "group-id": :uuid, "user-id": :uuid)
   @impl true
   def handle_event("promote_member", %{"group-id" => gid, "user-id" => uid}, socket) do
     run_member_action(
@@ -647,6 +669,7 @@ defmodule GamendWeb.AdminLive.Groups do
     )
   end
 
+  event("demote_member", "group-id": :uuid, "user-id": :uuid)
   @impl true
   def handle_event("demote_member", %{"group-id" => gid, "user-id" => uid}, socket) do
     run_member_action(
@@ -659,23 +682,27 @@ defmodule GamendWeb.AdminLive.Groups do
     )
   end
 
+  event("kick_member", "group-id": :uuid, "user-id": :uuid)
   @impl true
   def handle_event("kick_member", %{"group-id" => gid, "user-id" => uid}, socket) do
     run_member_action(socket, gid, uid, &Groups.kick_member/3, "User kicked", "Kick failed")
   end
 
+  event("admin_groups_prev")
   @impl true
   def handle_event("admin_groups_prev", _params, socket) do
     page = max(1, (socket.assigns[:groups_page] || 1) - 1)
     {:noreply, socket |> assign(:groups_page, page) |> reload_groups()}
   end
 
+  event("admin_groups_next")
   @impl true
   def handle_event("admin_groups_next", _params, socket) do
     page = (socket.assigns[:groups_page] || 1) + 1
     {:noreply, socket |> assign(:groups_page, page) |> reload_groups()}
   end
 
+  event("admin_groups_page_size", size: :string)
   @impl true
   def handle_event("admin_groups_page_size", %{"size" => size}, socket) do
     socket =
@@ -717,6 +744,9 @@ defmodule GamendWeb.AdminLive.Groups do
       members_total_pages: LiveHelpers.total_pages(count, page_size)
     )
   end
+
+  # No group open (a stale tab, an event sent by hand): nothing to page.
+  defp load_members(socket), do: socket
 
   # From the URL: the list, and the members panel it names.
   defp reload_view(socket) do

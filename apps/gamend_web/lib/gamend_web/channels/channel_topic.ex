@@ -3,5 +3,5 @@ defmodule GamendWeb.ChannelTopic do
   The kinds of channel, as a topic's first word.
   """
 
-  use Gamend.Names, ~w(user lobby lobbies group groups party)
+  use Gamend.Names, ~w(user lobby lobbies group groups party signaling)
 end

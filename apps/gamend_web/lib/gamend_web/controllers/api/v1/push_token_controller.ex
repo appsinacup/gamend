@@ -38,7 +38,7 @@ defmodule GamendWeb.Api.V1.PushTokenController do
            },
            provider: %Schema{type: :string, enum: PushProvider.all()},
            device_id: %Schema{type: :string},
-           metadata: %Schema{type: :object}
+           metadata: GamendWeb.Schemas.FreeForm.metadata()
          }
        }},
     responses: [

@@ -98,9 +98,9 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardsAdminControllerTest do
       resp =
         admin_conn
         |> post("/api/v1/admin/leaderboards/#{lb_id}/records", %{user_id: player.id, score: "x"})
-        |> json_response(400)
+        |> json_response(422)
 
-      assert resp["error"] == "invalid_score"
+      assert resp["error"] == "validation_failed"
     end
 
     # Was 400: an ended board refuses scores, like a closed registration.

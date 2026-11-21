@@ -14,6 +14,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView, only: [put_flash: 3]
 
   alias Gamend.Accounts.TimeZone
@@ -184,6 +185,8 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
     """
   end
 
+  event("notify_toggle", channel: :string, group: :string)
+
   def handle_event("notify_toggle", %{"group" => group, "channel" => channel}, socket) do
     user = socket.assigns.user
     on? = not Preferences.enabled?(user, group, channel)
@@ -193,6 +196,8 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
       {:error, _reason} -> {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
   end
+
+  event("notify_switch", switch: :string)
 
   def handle_event("notify_switch", %{"switch" => switch}, socket)
       when switch in [
@@ -213,6 +218,8 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
       {:error, _reason} -> {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
   end
+
+  event("notify_time_zone", zone: :string)
 
   def handle_event("notify_time_zone", %{"zone" => zone}, socket) do
     case TimeZone.choose(socket.assigns.user, if(zone == "", do: nil, else: zone)) do

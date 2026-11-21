@@ -77,8 +77,9 @@ defmodule GamendWeb.LobbyLive.IndexTest do
     render_click(view, "start_join", %{"id" => locked.id})
     assert lobby_of(admin) == nil
 
+    # Not a UUID: refused before the handler (`LiveEvents`), nothing joined.
     render_click(view, "start_join", %{"id" => "not-an-id"})
-    assert flash(view, :error) =~ "Not found"
+    assert lobby_of(admin) == nil
     render_click(view, "start_join", %{"id" => Ecto.UUID.generate()})
     render_click(view, "join_lobby", %{"id" => Ecto.UUID.generate()})
     assert flash(view, :error) =~ "Not found"

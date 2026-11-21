@@ -364,6 +364,118 @@
           ]
         }
       ]
+    },
+    "consulting": {
+      "path": "/consulting",
+      "hero": {
+        "title": "Consulting",
+        "text": "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting** and **paid work**: focused help to get you unstuck, priority fixes and new features. **€50 per hour** for indies, **€100 per hour** for studios (10+ employees) or contract work.",
+        "image": {
+          "light": "/images/banner.webp",
+          "alt": "Gamend",
+          "widths": [
+            480,
+            960
+          ]
+        },
+        "image_position_desktop": "left",
+        "image_position_mobile": "top",
+        "media_width": "third",
+        "media_size": "section",
+        "text_align": "center",
+        "buttons": [
+          {
+            "label": "Email contact@gamend.org",
+            "href": "mailto:contact@gamend.org",
+            "icon": "hero-envelope-solid",
+            "style": "primary",
+            "external": true
+          },
+          {
+            "label": "Apps in a Cup consulting",
+            "href": "https://appsinacup.com/consulting/",
+            "icon": "hero-arrow-top-right-on-square-solid",
+            "external": true
+          }
+        ]
+      },
+      "sections_height": "half",
+      "sections": [
+        {
+          "title": "Deployment & hosting",
+          "text": "Your own server, Docker, fly.io or a VPS: Postgres or SQLite, domains, TLS and backups.",
+          "icon": "hero-server-stack-solid",
+          "height": "compact",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Deployment",
+              "href": "/docs/deployment",
+              "icon": "hero-rocket-launch-solid"
+            }
+          ]
+        },
+        {
+          "title": "Server scripting & hooks",
+          "text": "Game logic on the server where players cannot reach it: hooks, plugins and GDScript hooks.",
+          "icon": "hero-puzzle-piece-solid",
+          "height": "compact",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left"
+        },
+        {
+          "title": "Scaling & performance",
+          "text": "Clustering, load testing, and finding what slows a busy server down.",
+          "icon": "hero-chart-bar-solid",
+          "height": "compact",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Benchmarks",
+              "href": "/docs/performance",
+              "icon": "hero-chart-bar-solid"
+            }
+          ]
+        },
+        {
+          "title": "Client integration",
+          "text": "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](https://balaurengine.org) SDKs into your game.",
+          "icon": "hero-computer-desktop-solid",
+          "height": "compact",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left"
+        },
+        {
+          "title": "Priority fixes & feature work",
+          "text": "Besides advice, I can also do the work for you: a Gamend bug that blocks you, fixed ahead of the queue, or a feature you need, built in Gamend or in your own game. Billed at the same hourly rates.",
+          "icon": "hero-wrench-screwdriver-solid",
+          "height": "compact",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left"
+        },
+        {
+          "title": "How it works",
+          "text": "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need.",
+          "icon": "hero-chat-bubble-left-ellipsis-solid",
+          "height": "compact",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left"
+        }
+      ]
     }
   },
   "navigation": {
@@ -501,6 +613,10 @@
           {
             "label": "Server Stats",
             "href": "/stats"
+          },
+          {
+            "label": "Consulting",
+            "href": "/consulting"
           }
         ]
       },

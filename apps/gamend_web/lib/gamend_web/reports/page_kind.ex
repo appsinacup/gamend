@@ -75,6 +75,7 @@ defmodule GamendWeb.Reports.PageSubject do
     {:ok, socket}
   end
 
+  event("change", path: :string)
   @impl true
   def handle_event("change", %{"path" => path}, socket) do
     path = String.slice(path, 0, 500)
@@ -82,6 +83,7 @@ defmodule GamendWeb.Reports.PageSubject do
     {:noreply, assign(socket, :path, path)}
   end
 
+  event("submit")
   def handle_event("submit", _params, socket), do: {:noreply, socket}
 
   @impl true

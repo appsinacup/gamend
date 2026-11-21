@@ -1,0 +1,27 @@
+// Written by clients/sdkgen (balaur) from the OpenAPI document.
+// Do not edit; edit the generator or the spec and run
+// clients/generate_balaur.sh.
+
+// Storage: one function per operation, `storage::<name>` once a
+// script says `use addons::gamend::storage;`.
+//
+// A call takes the path's own parameters as text (`reply["id"].text()`
+// for an id a reply holds), then `params` for the request body and
+// `options` for the query where the operation has them; either may be
+// left out when the call has nothing to put in it. It is async, and
+// answers what `core::rest` answers: `await lobbies::get_lobby(id)`.
+// With a path parameter empty or a required field left out it sends
+// nothing and logs which, and answers an `error` naming it.
+
+use core;
+
+/// Upload a file's bytes to an upload ticket (local storage)
+/// `PUT /api/v1/storage/upload`
+pub async fn upload(params: any, options: any) -> any {
+    if !core::given(options, "token") {
+        return core::missing("gamend::storage::upload", "token");
+    }
+    let query = core::query(options, ["token", "key"]);
+    let reply = await core::rest("PUT", "/api/v1/storage/upload{query}", params);
+    reply
+}

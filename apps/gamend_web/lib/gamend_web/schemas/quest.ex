@@ -10,7 +10,11 @@ defmodule GamendWeb.Schemas.QuestObjective do
     properties: %{
       event: %Schema{type: :string, description: "Event name the objective counts"},
       target: %Schema{type: :integer, description: "Occurrences required"},
-      params: %Schema{type: :object, description: "Event meta constraints (all must match)"}
+      params:
+        GamendWeb.Schemas.FreeForm.object(
+          "the meta an objective's event must carry, the game's own",
+          description: "Event meta constraints (all must match)"
+        )
     },
     required: [:event, :target, :params]
   })
@@ -140,7 +144,7 @@ defmodule GamendWeb.Schemas.Quest do
       },
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
       ends_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       progress: %Schema{
         allOf: [QuestProgress],
         nullable: true,

@@ -20,6 +20,8 @@ defmodule GamendWeb.Api.V1.ReportController do
   alias GamendWeb.Schemas.ReportReceiptResponse
   alias GamendWeb.Schemas.ReportRequest
 
+  require Gamend.Reports.ReportStatus, as: ReportStatus
+
   @api_source "api"
 
   tags(["Reports"])
@@ -77,7 +79,7 @@ defmodule GamendWeb.Api.V1.ReportController do
              client: params["client"],
              attachments: images
            }) do
-      reply_data(conn, :created, %{id: report.id, kind: report.kind, status: report.status})
+      receipt(conn, report, params)
     else
       {:error, reason} when reason in [:rate_limited, :daily_limit, :user_daily_limit] ->
         reply_error(conn, :too_many_requests, "report_limit")
@@ -92,6 +94,14 @@ defmodule GamendWeb.Api.V1.ReportController do
         reply_error(conn, :bad_request, "invalid_report", reason_text(reason))
     end
   end
+
+  # Taken elsewhere by its kind (`Gamend.Reports.Kind.take/1`): received,
+  # with no row to name.
+  defp receipt(conn, :taken, params),
+    do: reply_data(conn, :created, %{id: nil, kind: params["kind"], status: ReportStatus.taken()})
+
+  defp receipt(conn, report, _params),
+    do: reply_data(conn, :created, %{id: report.id, kind: report.kind, status: report.status})
 
   defp rate_limit(conn) do
     case Reports.resolved_config(:ip_hourly_limit) do

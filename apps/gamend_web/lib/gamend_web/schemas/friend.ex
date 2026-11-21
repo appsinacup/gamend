@@ -17,7 +17,7 @@ defmodule GamendWeb.Schemas.Friend do
       username: %Schema{type: :string},
       display_name: %Schema{type: :string},
       profile_url: %Schema{type: :string},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
       last_seen_at: %Schema{type: :string, format: :"date-time"}

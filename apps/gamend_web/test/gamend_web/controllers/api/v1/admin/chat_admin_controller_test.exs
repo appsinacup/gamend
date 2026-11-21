@@ -75,9 +75,9 @@ defmodule GamendWeb.Api.V1.Admin.ChatAdminControllerTest do
       assert body == %{"data" => %{"deleted" => 1}}
 
       resp =
-        ctx.admin_conn |> delete("/api/v1/admin/chat/conversation") |> json_response(400)
+        ctx.admin_conn |> delete("/api/v1/admin/chat/conversation") |> json_response(422)
 
-      assert resp["error"] == "missing_param"
+      assert resp["error"] == "validation_failed"
     end
   end
 
@@ -99,9 +99,9 @@ defmodule GamendWeb.Api.V1.Admin.ChatAdminControllerTest do
       resp =
         ctx.admin_conn
         |> post("/api/v1/admin/chat/reports/#{report.id}/resolve", %{status: "bogus"})
-        |> json_response(400)
+        |> json_response(422)
 
-      assert resp["error"] == "invalid_status"
+      assert resp["error"] == "validation_failed"
 
       assert ctx.admin_conn
              |> delete("/api/v1/admin/chat/reports/#{report.id}")
@@ -207,8 +207,8 @@ defmodule GamendWeb.Api.V1.Admin.ChatAdminControllerTest do
       assert body == %{"data" => %{"deleted" => imported}}
       assert Moderation.count_filter_words(%{"lang" => "en"}) == 0
 
-      resp = ctx.admin_conn |> delete("/api/v1/admin/chat/filter_words") |> json_response(400)
-      assert resp["error"] == "missing_param"
+      resp = ctx.admin_conn |> delete("/api/v1/admin/chat/filter_words") |> json_response(422)
+      assert resp["error"] == "validation_failed"
     end
 
     test "the word cap answers 403 too_many_filter_words", ctx do

@@ -805,6 +805,7 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:selected_ids, MapSet.new())}
   end
 
+  event("edit_user", id: :uuid)
   @impl true
   def handle_event("edit_user", %{"id" => id}, socket) do
     Shared.with_record(socket, Accounts.get_user(id), fn user ->
@@ -822,9 +823,19 @@ defmodule GamendWeb.AdminLive.Users do
     end)
   end
 
+  event("ban_form_change")
+
   def handle_event("ban_form_change", params, socket) do
     {:noreply, assign(socket, :ban_form, Map.take(params, Map.keys(BanForm.empty())))}
   end
+
+  event("ban_user")
+
+  # No player open (a stale tab, an event sent by hand): nobody to act on.
+  def handle_event(event, _params, %{assigns: %{selected_user: nil}} = socket)
+      # literal-ok: event names, as in the handle_event/3 heads they guard
+      when event in ~w(ban_user lift_user_ban revoke_token),
+      do: {:noreply, socket}
 
   def handle_event("ban_user", params, socket) do
     user = socket.assigns.selected_user
@@ -842,6 +853,8 @@ defmodule GamendWeb.AdminLive.Users do
     end
   end
 
+  event("lift_user_ban")
+
   def handle_event("lift_user_ban", _params, socket) do
     user = socket.assigns.selected_user
     {:ok, _lifted} = Bans.lift(:account, user.id, by: Scope.user_id(socket.assigns.current_scope))
@@ -851,6 +864,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:selected_ban, nil)
      |> put_flash(:info, "The ban on #{user_display(user)} is lifted")}
   end
+
+  event("cancel_user_deletion", id: :uuid)
 
   def handle_event("cancel_user_deletion", %{"id" => id}, socket) do
     Shared.with_record(socket, Accounts.get_user(id), fn user ->
@@ -867,6 +882,8 @@ defmodule GamendWeb.AdminLive.Users do
     end)
   end
 
+  event("unlock_login", id: :uuid)
+
   def handle_event("unlock_login", %{"id" => id}, socket) do
     Shared.with_record(socket, Accounts.get_user(id), fn user ->
       :ok = LoginLockouts.clear(user.email)
@@ -878,6 +895,7 @@ defmodule GamendWeb.AdminLive.Users do
     end)
   end
 
+  event("search_users", q: :string)
   # Search / filter handlers
   def handle_event("search_users", %{"q" => q}, socket) do
     page = 1
@@ -903,6 +921,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> sync_selected_ids(user_ids(users))}
   end
 
+  event("clear_search")
+
   def handle_event("clear_search", _params, socket) do
     page = 1
     page_size = socket.assigns[:users_page_size] || 25
@@ -920,6 +940,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:users_total_pages, total_pages)
      |> sync_selected_ids(user_ids(users))}
   end
+
+  event("toggle_provider", provider: :string)
 
   def handle_event("toggle_provider", %{"provider" => provider}, socket) do
     filters = socket.assigns[:filters] || []
@@ -947,6 +969,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:users_total_pages, total_pages)
      |> sync_selected_ids(user_ids(users))}
   end
+
+  event("sort_users", field: :string)
 
   def handle_event("sort_users", %{"field" => field}, socket) do
     current_field = socket.assigns[:sort_field] || SortKey.inserted_at()
@@ -980,6 +1004,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> sync_selected_ids(user_ids(users))}
   end
 
+  event("cancel_edit")
+
   def handle_event("cancel_edit", _, socket) do
     {:noreply,
      socket
@@ -990,6 +1016,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:selected_ban, nil)
      |> assign(:ban_error, nil)}
   end
+
+  event("revoke_token", id: :uuid)
 
   def handle_event("revoke_token", %{"id" => id}, socket) do
     # Already gone (signed out, expired) is what revoking asks for.
@@ -1005,6 +1033,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> put_flash(:info, "Token #{id} revoked")}
   end
 
+  event("revoke_all_sessions", "user-id": :uuid)
+
   def handle_event("revoke_all_sessions", %{"user-id" => uid}, socket) do
     user_id = uid
     {count, _} = Accounts.revoke_all_user_sessions(user_id)
@@ -1019,6 +1049,12 @@ defmodule GamendWeb.AdminLive.Users do
      )}
   end
 
+  event("save_user", user: {:schema, Gamend.Accounts.User})
+
+  # Nothing open to save: a stale tab, or an event sent by hand.
+  def handle_event("save_user", _params, %{assigns: %{selected_user: nil}} = socket),
+    do: {:noreply, socket}
+
   def handle_event("save_user", %{"user" => user_params}, socket) do
     # Text that is not a JSON object is refused rather than saved as %{}, which
     # would wipe the player's metadata behind a success flash.
@@ -1028,10 +1064,13 @@ defmodule GamendWeb.AdminLive.Users do
     end
   end
 
+  event("delete_user", id: :uuid)
+
   def handle_event("delete_user", %{"id" => id}, socket) do
     Shared.with_record(socket, Accounts.get_user(id), &delete_user(socket, &1))
   end
 
+  event("admin_users_prev")
   @impl true
   def handle_event("admin_users_prev", _params, socket) do
     page = max(1, (socket.assigns[:users_page] || 1) - 1)
@@ -1056,6 +1095,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> sync_selected_ids(user_ids(users))}
   end
 
+  event("admin_users_next")
+
   def handle_event("admin_users_next", _params, socket) do
     page = (socket.assigns[:users_page] || 1) + 1
     page_size = socket.assigns[:users_page_size] || 25
@@ -1078,6 +1119,8 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:users_total_pages, total_pages)
      |> sync_selected_ids(user_ids(users))}
   end
+
+  event("admin_users_page_size", size: :string)
 
   def handle_event("admin_users_page_size", %{"size" => size}, socket) do
     page_size = Gamend.Limits.clamp_page_size(size, socket.assigns[:users_page_size] || 25)
@@ -1102,6 +1145,7 @@ defmodule GamendWeb.AdminLive.Users do
      |> sync_selected_ids(user_ids(users))}
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -1119,6 +1163,7 @@ defmodule GamendWeb.AdminLive.Users do
      |> sync_selected_ids(user_ids(socket.assigns.recent_users))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     users = socket.assigns.recent_users || []
@@ -1136,6 +1181,7 @@ defmodule GamendWeb.AdminLive.Users do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] || MapSet.new()

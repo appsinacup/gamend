@@ -24,7 +24,9 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
   operation(:stripe,
     operation_id: "payments_stripe_webhook",
     summary: "Receive Stripe webhook events",
-    request_body: {"Stripe event", "application/json", %OpenApiSpex.Schema{type: :object}},
+    request_body:
+      {"Stripe event", "application/json",
+       GamendWeb.Schemas.FreeForm.object("Stripe's own event, checked by its signature")},
     responses: @responses
   )
 
@@ -44,7 +46,9 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
   operation(:google,
     operation_id: "payments_google_webhook",
     summary: "Receive Google Play RTDN Pub/Sub push events",
-    request_body: {"Google RTDN event", "application/json", %OpenApiSpex.Schema{type: :object}},
+    request_body:
+      {"Google RTDN event", "application/json",
+       GamendWeb.Schemas.FreeForm.object("Google's own notification, checked by its token")},
     responses: @responses
   )
 
@@ -81,7 +85,9 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
   operation(:apple,
     operation_id: "payments_apple_webhook",
     summary: "Receive App Store Server Notification v2 events",
-    request_body: {"Apple notification", "application/json", %OpenApiSpex.Schema{type: :object}},
+    request_body:
+      {"Apple notification", "application/json",
+       GamendWeb.Schemas.FreeForm.object("Apple's own signed notification")},
     responses: @responses
   )
 

@@ -8,12 +8,18 @@ defmodule GamendWeb.ApiSpec do
   alias OpenApiSpex.{Components, Info, OpenApi, Paths, SecurityScheme, Server, Tag}
   @behaviour OpenApi
 
+  # The running endpoint's URL; none when it is not running (a lint that
+  # reads the document without serving it, `mix gamend.contract.lint`).
+  defp servers do
+    [Server.from_endpoint(Endpoint)]
+  rescue
+    RuntimeError -> []
+  end
+
   @impl OpenApi
   def spec do
     %OpenApi{
-      servers: [
-        Server.from_endpoint(Endpoint)
-      ],
+      servers: servers(),
       info: %Info{
         title: "Gamend API",
         version: api_version(),

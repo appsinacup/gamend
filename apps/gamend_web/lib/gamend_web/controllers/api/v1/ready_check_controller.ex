@@ -138,7 +138,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
             type: :integer,
             description: "Answering window; omit for the configured default"
           },
-          metadata: %Schema{type: :object, description: "Echoed to clients"}
+          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Echoed to clients")
         }
       }
     },
@@ -181,7 +181,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
             type: :integer,
             description: "Answering window; omit for the configured default"
           },
-          metadata: %Schema{type: :object, description: "Echoed to clients"}
+          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Echoed to clients")
         }
       }
     },

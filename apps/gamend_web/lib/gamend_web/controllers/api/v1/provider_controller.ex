@@ -28,13 +28,11 @@ defmodule GamendWeb.Api.V1.ProviderController do
 
   require Gamend.OAuth.AuthProvider, as: AuthProvider
 
-  @session_id "session_id"
-
   tags(["Authentication"])
 
   @provider_param [
     in: :path,
-    name: "provider",
+    name: :provider,
     schema: %Schema{
       type: :string,
       enum: ["discord", "apple", "google", "facebook", "github", "steam"]
@@ -193,7 +191,7 @@ defmodule GamendWeb.Api.V1.ProviderController do
         "`linked_providers`.",
     security: [%{"authorization" => []}],
     parameters: [
-      session_id: [in: :path, name: @session_id, schema: %Schema{type: :string}, required: true]
+      session_id: [in: :path, name: :session_id, schema: %Schema{type: :string}, required: true]
     ],
     responses: [
       ok: {"Link status", "application/json", ProviderLinkStatusResponse},

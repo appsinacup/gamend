@@ -83,6 +83,61 @@ export function plainLink(target) {
   return link
 }
 
+// Whether a link is one a press may fetch ahead (`startPressPrefetch`): a
+// plain link to a page of this site that loads it (not this page with
+// another hash, not a language switch, which writes the session's locale,
+// nor a link with a method, which is not a GET).
+export function prefetchable(link, target, win = window) {
+  if (!link || !target) return false
+  if (link.hasAttribute("data-method") || link.hasAttribute("data-no-prefetch")) return false
+  if (target.origin !== win.location.origin) return false
+  if (target.pathname === win.location.pathname && target.search === win.location.search) return false
+  return !target.searchParams.has("setlang")
+}
+
+// A link that loads its page is fetched as the reader PRESSES it
+// (`pointerdown`: a mouse button, a finger), through the browser's
+// speculation rules, so the click 100-300 ms later finds the page on its
+// way or in (2026-11-21: a Dictionary page from another was 500-1000 ms,
+// a round trip and the page before anything changed). On a press, not a
+// hover: a press is followed by its click, so nothing is fetched that is
+// not opened and a page's views are not counted twice. A link this page
+// follows over its socket (`isLive`) is not fetched: its HTML would go
+// unread. Browsers without speculation rules (Safari, Firefox) do nothing.
+export function startPressPrefetch(isLive = () => false, doc = document, win = window) {
+  if (!win.HTMLScriptElement?.supports?.("speculationrules")) return
+  const asked = new Set()
+
+  doc.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const link = plainLink(event.target)
+      if (!link) return
+
+      let target
+      try {
+        target = new URL(link.href, win.location.href)
+      } catch (_) {
+        return
+      }
+      if (!prefetchable(link, target, win) || isLive(target)) return
+
+      target.hash = ""
+      if (asked.has(target.href)) return
+      asked.add(target.href)
+
+      const rules = doc.createElement("script")
+      rules.type = "speculationrules"
+      rules.textContent = JSON.stringify({prefetch: [{source: "list", urls: [target.href]}]})
+      doc.head.appendChild(rules)
+    },
+    {capture: true, passive: true},
+  )
+}
+
+// Answers whether a URL is one this page follows over its socket (for
+// `startPressPrefetch`), or nothing on a page with no LiveView.
 export function startLiveNav(liveSocket, doc = document, win = window) {
   const meta = doc.querySelector('meta[name="gamend-live-nav"]')
   if (!meta || !liveSocket) return
@@ -128,4 +183,9 @@ export function startLiveNav(liveSocket, doc = document, win = window) {
     },
     true,
   )
+
+  return (target) =>
+    Boolean(table) &&
+    liveSocket.isConnected() &&
+    liveTarget(table, session, win.location.pathname, target, win.location.origin, signedIn)
 }

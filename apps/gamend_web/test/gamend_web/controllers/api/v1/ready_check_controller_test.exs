@@ -188,7 +188,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
 
     test "rejects a non-boolean answer", ctx do
       conn = post(authed(ctx.member), "/api/v1/me/ready_check", %{"ready" => "yes"})
-      assert json_response(conn, 400)["error"] == "invalid_ready"
+      assert json_response(conn, 422)["error"] == "validation_failed"
     end
 
     test "rejects an unknown scope", ctx do
@@ -198,7 +198,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
           "scope" => "guild"
         })
 
-      assert json_response(conn, 400)["error"] == "invalid_scope"
+      assert json_response(conn, 422)["error"] == "validation_failed"
     end
 
     test "scope party answers the party board, not the lobby check", ctx do

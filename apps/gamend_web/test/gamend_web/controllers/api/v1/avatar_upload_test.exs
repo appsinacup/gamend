@@ -89,7 +89,8 @@ defmodule GamendWeb.Api.V1.AvatarUploadTest do
         |> put_req_header("content-type", "image/png")
         |> put("/api/v1/storage/upload?key=avatars/#{user.id}/x.png", @png)
 
-      assert json_response(up, 400)["error"] == "missing_param"
+      # No `token`, which the upload's operation requires: refused before the action.
+      assert json_response(up, 422)["error"] == "validation_failed"
     end
 
     test "rejects a token that does not match the requested key", %{conn: conn} do

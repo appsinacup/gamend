@@ -72,6 +72,10 @@ defmodule GamendWeb do
   def channel do
     quote do
       use Phoenix.Channel
+
+      # A payload that does not match its command in
+      # `GamendWeb.RealtimeCommands` is answered before `handle_in/3` runs.
+      @before_compile GamendWeb.ChannelContract
     end
   end
 
@@ -93,6 +97,12 @@ defmodule GamendWeb do
       # The other four response shapes (api-conventions.md, R15).
       import GamendWeb.Reply
 
+      # An API request that does not match its documented operation is
+      # refused here, after the router's gates (auth, admin, features) and
+      # before the action (`GamendWeb.Plugs.RequestContract`). A controller
+      # outside the `:api` pipeline has no spec and is let through.
+      plug GamendWeb.Plugs.RequestContract
+
       unquote(verified_routes())
     end
   end
@@ -101,6 +111,10 @@ defmodule GamendWeb do
     quote do
       use Phoenix.LiveView
 
+      # `event "name", key: :type` beside a handler: params that do not
+      # match are refused before `handle_event/3` (`GamendWeb.LiveEvents`).
+      use GamendWeb.LiveEvents
+
       unquote(html_helpers())
     end
   end
@@ -108,6 +122,10 @@ defmodule GamendWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+
+      # `event "name", key: :type` beside a handler: params that do not
+      # match are refused before `handle_event/3` (`GamendWeb.LiveEvents`).
+      use GamendWeb.LiveEvents
 
       unquote(html_helpers())
     end

@@ -29,6 +29,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
     {:ok, socket}
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -37,14 +38,22 @@ defmodule GamendWeb.AdminLive.Blacklist do
      |> reload()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}
+
+  event("unblock", id: :uuid)
 
   def handle_event("unblock", %{"id" => id}, socket) do
     socket =
@@ -55,6 +64,8 @@ defmodule GamendWeb.AdminLive.Blacklist do
 
     {:noreply, reload(socket)}
   end
+
+  event("refresh")
 
   def handle_event("refresh", _params, socket) do
     {:noreply, reload(socket)}

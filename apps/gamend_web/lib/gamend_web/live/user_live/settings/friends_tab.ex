@@ -5,6 +5,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView
 
   alias Gamend.Accounts
@@ -285,6 +286,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
     """
   end
 
+  event("search_users")
+
   def handle_event("search_users", params, socket) do
     q = params["q"] || ""
     page = socket.assigns.search_page || 1
@@ -304,23 +307,19 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
      )}
   end
 
+  event("send_friend", target_id: {:optional, :uuid}, target: {:optional, :uuid})
+
   def handle_event("send_friend", params, socket) do
     user = Shared.current_user(socket)
-    target = params["target_id"] || params["target"]
-    target_id = to_string(target)
 
-    case Friends.create_request(user.id, target_id) do
-      {:ok, _} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("Success."))
-         |> refresh_friend_lists(user)}
-
-      {:error, reason} ->
-        {:noreply,
-         put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
+    # Nobody named (a stale tab, an event sent by hand): nothing to send.
+    case params["target_id"] || params["target"] do
+      nil -> {:noreply, socket}
+      target_id -> send_friend(socket, user, target_id)
     end
   end
+
+  event("block_friend", id: :uuid)
 
   def handle_event("block_friend", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
@@ -336,6 +335,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
     end
   end
 
+  event("accept_friend", id: :uuid)
+
   def handle_event("accept_friend", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
     id = to_string(id)
@@ -349,6 +350,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
          put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
     end
   end
+
+  event("reject_friend", id: :uuid)
 
   def handle_event("reject_friend", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
@@ -364,6 +367,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
     end
   end
 
+  event("cancel_friend", id: :uuid)
+
   def handle_event("cancel_friend", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
     id = to_string(id)
@@ -377,6 +382,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
          put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
     end
   end
+
+  event("remove_friend", friend_id: :uuid)
 
   def handle_event("remove_friend", %{"friend_id" => fid}, socket) do
     user = Shared.current_user(socket)
@@ -392,6 +399,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
     end
   end
 
+  event("unblock_friend", id: :uuid)
+
   def handle_event("unblock_friend", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
     id = to_string(id)
@@ -406,10 +415,14 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
     end
   end
 
+  event("search_prev")
+
   def handle_event("search_prev", _params, socket) do
     page = max(1, (socket.assigns.search_page || 1) - 1)
     {:noreply, search_page(socket, page)}
   end
+
+  event("search_next")
 
   def handle_event("search_next", _params, socket) do
     page = (socket.assigns.search_page || 1) + 1
@@ -493,5 +506,19 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
       blocked_total_pages: LiveHelpers.total_pages(blocked_total, blocked_page_size),
       friend_unread_counts: %{}
     )
+  end
+
+  defp send_friend(socket, user, target_id) do
+    case Friends.create_request(user.id, target_id) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Success."))
+         |> refresh_friend_lists(user)}
+
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
+    end
   end
 end

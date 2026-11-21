@@ -66,18 +66,30 @@ defmodule GamendWeb.AdminLive.Settings do
   defp plugin_groups([]), do: []
   defp plugin_groups(_vars), do: [{Introspection.plugin_env_group(), "Plugin variables"}]
 
+  event("filter", value: :string)
   @impl true
   def handle_event("filter", %{"value" => value}, socket) do
     {:noreply, socket |> assign(:filter, value) |> assign_rows()}
   end
 
+  event("group", group: :string)
+
   def handle_event("group", %{"group" => ""}, socket) do
     {:noreply, socket |> assign(:group_filter, nil) |> assign_rows()}
   end
 
+  # One of the page's groups, matched by name: a name it does not list (a
+  # stale tab, an event sent by hand) shows every group.
   def handle_event("group", %{"group" => group}, socket) do
-    {:noreply, socket |> assign(:group_filter, String.to_existing_atom(group)) |> assign_rows()}
+    known =
+      Enum.find_value(socket.assigns.groups, fn {key, _label} ->
+        to_string(key) == group && key
+      end)
+
+    {:noreply, socket |> assign(:group_filter, known || nil) |> assign_rows()}
   end
+
+  event("toggle_changed")
 
   def handle_event("toggle_changed", _params, socket) do
     {:noreply, socket |> update(:changed_only, &(not &1)) |> assign_rows()}

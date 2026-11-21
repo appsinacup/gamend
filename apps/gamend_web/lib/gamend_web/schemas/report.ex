@@ -64,17 +64,14 @@ defmodule GamendWeb.Schemas.ReportRequest do
     properties: %{
       kind: %Schema{type: :string, description: "A key from GET /reports/kinds", example: @page},
       topic: %Schema{type: :string, description: "One of the kind's topics, if it has any"},
-      subject: %Schema{
-        type: :object,
-        additionalProperties: true,
-        description: "What is reported, in the kind's own shape",
-        example: %{"path" => "/games"}
-      },
-      data: %Schema{
-        type: :object,
-        additionalProperties: true,
-        description: "The kind's extra fields (a suggested correction)"
-      },
+      subject:
+        GamendWeb.Schemas.FreeForm.object("what is reported, in the report kind's own shape",
+          description: "What is reported, in the kind's own shape"
+        ),
+      data:
+        GamendWeb.Schemas.FreeForm.object("a report kind's own extra fields",
+          description: "The kind's extra fields (a suggested correction)"
+        ),
       description: %Schema{type: :string, maxLength: 2000, description: "What happened"},
       email: %Schema{type: :string, description: "Where to send a reply, if anywhere"},
       locale: %Schema{type: :string, example: LocaleCode.en()},
@@ -105,9 +102,17 @@ defmodule GamendWeb.Schemas.ReportReceipt do
     description: "A filed report",
     type: :object,
     properties: %{
-      id: %Schema{type: :string, description: "Report id"},
+      id: %Schema{
+        type: :string,
+        nullable: true,
+        description: "Report id; null when the kind took the report elsewhere"
+      },
       kind: %Schema{type: :string},
-      status: %Schema{type: :string, example: ReportStatus.open()}
+      status: %Schema{
+        type: :string,
+        example: ReportStatus.open(),
+        description: "`open`, or `taken`: the host handles it outside the queue, nothing stored"
+      }
     },
     required: [:id, :kind, :status]
   })

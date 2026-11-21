@@ -66,8 +66,9 @@ defmodule GamendWeb.EventCodecCoverageTest do
       rows = RealtimeEvents.all()
 
       assert length(rows) > 50, "only #{length(rows)} registry entries"
-      assert Enum.any?(rows, & &1.pb), "no event is marked pb: true"
-      assert Enum.any?(rows, &(not &1.pb)), "no event is marked pb: false"
+      # Every event has its message: none is sent as JSON only
+      # (`mix gamend.contract.lint`, `:event_protobuf`).
+      assert Enum.all?(rows, & &1.pb), "an event is marked pb: false"
     end
   end
 
@@ -75,7 +76,7 @@ defmodule GamendWeb.EventCodecCoverageTest do
     test "every topic kind in the registry reaches the codec" do
       # A topic EventCodec has no clauses for at all encodes nothing, which
       # would show up as a uniform pb: false across that topic rather than as
-      # an obvious hole. Signaling is that case today and is expected.
+      # an obvious hole.
       by_topic =
         RealtimeEvents.all()
         |> Enum.group_by(& &1.topic)
@@ -83,15 +84,8 @@ defmodule GamendWeb.EventCodecCoverageTest do
         |> Enum.map(&elem(&1, 0))
         |> Enum.sort()
 
-      assert by_topic == ["signaling:*"],
-             """
-             These topics have no protobuf-mapped events at all: #{inspect(by_topic)}
-
-             Signaling is deliberate — its payloads are SDP blobs and ICE
-             candidates, opaque strings protobuf would wrap without shrinking,
-             and the peer path negotiates its own format in WebRtcPeer. Any
-             other topic here is a gap.
-             """
+      assert by_topic == [],
+             "These topics have no protobuf-mapped events at all: #{inspect(by_topic)}"
     end
 
     test "state_changed carries the payload, with atoms rendered as strings" do

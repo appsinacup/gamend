@@ -173,13 +173,13 @@ defmodule GamendWeb.Api.V1.ChatModerationControllerTest do
       assert json_response(conn, 404)["error"] == "not_found"
     end
 
-    test "returns 400 for a malformed message id", %{conn: conn, reporter: reporter} do
+    test "returns 404 for a malformed message id", %{conn: conn, reporter: reporter} do
       conn =
         conn
         |> auth_conn(reporter)
         |> post("/api/v1/chat/messages/not-a-uuid/report", %{})
 
-      assert json_response(conn, 400)["error"] == "invalid_id"
+      assert json_response(conn, 404)["error"] == "not_found"
     end
   end
 

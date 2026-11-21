@@ -176,7 +176,10 @@ defmodule GamendHost.MixProject do
           "dialyzer",
           # Shelled out: `hex.outdated` lives in the Hex archive, which
           # `Mix.Task.run/1` cannot resolve from inside an alias.
-          "cmd env #{force_ansi()}#{child_mix()} hex.outdated"
+          "cmd env #{force_ansi()}#{child_mix()} hex.outdated",
+          # Every SDK generated, built and unit-tested, for whichever toolchains
+          # this machine has (CI's matrix): minutes, so here and not precommit.
+          "cmd bash clients/check_sdks.sh"
         ] ++
           local_web_commands([
             core_cmd("dialyzer"),
@@ -216,6 +219,9 @@ defmodule GamendHost.MixProject do
           "cmd python3 clients/unity_package.py clients/unity_template --check",
           "credo --strict",
           "gamend.api.lint",
+          # Every API route, socket message and LiveView event has a schema,
+          # and no value is untyped JSON without saying why.
+          "gamend.contract.lint",
           "gamend.race.lint",
           "gamend.literal.lint",
           "gamend.time.lint"

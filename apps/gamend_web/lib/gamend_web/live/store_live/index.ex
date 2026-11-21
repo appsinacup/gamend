@@ -32,6 +32,7 @@ defmodule GamendWeb.StoreLive.Index do
     {:noreply, assign_success_purchase(socket, params)}
   end
 
+  event("buy", id: :uuid)
   @impl true
   def handle_event("buy", %{"id" => id}, socket) do
     success_url = url(~p"/store/success") <> "?session_id={CHECKOUT_SESSION_ID}"

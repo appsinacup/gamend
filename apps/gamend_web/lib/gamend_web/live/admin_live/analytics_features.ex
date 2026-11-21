@@ -27,6 +27,7 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
     {:noreply, socket |> assign(:segment, Segment.parse(params["segment"])) |> load()}
   end
 
+  event("refresh")
   @impl true
   def handle_event("refresh", _params, socket), do: {:noreply, load(socket, true)}
 

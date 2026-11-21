@@ -84,11 +84,11 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
             description: "Notification body text (optional)",
             nullable: true
           },
-          metadata: %Schema{
-            type: :object,
-            description: "Arbitrary metadata (optional)",
-            nullable: true
-          }
+          metadata:
+            GamendWeb.Schemas.FreeForm.metadata(
+              description: "Arbitrary metadata (optional)",
+              nullable: true
+            )
         },
         required: [:sender_id, :recipient_id, :title]
       }

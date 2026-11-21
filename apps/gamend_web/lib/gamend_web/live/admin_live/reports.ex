@@ -46,6 +46,7 @@ defmodule GamendWeb.AdminLive.Reports do
      |> reload()}
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     filters =
@@ -62,6 +63,8 @@ defmodule GamendWeb.AdminLive.Reports do
     {:noreply, socket |> assign(:filters, filters) |> assign(:page, 1) |> reload()}
   end
 
+  event("group", kind: :string, ref: :string, topic: :string)
+
   def handle_event("group", %{"kind" => kind, "topic" => topic, "ref" => ref}, socket) do
     filters = %{
       "status" => ReportStatus.open(),
@@ -74,16 +77,25 @@ defmodule GamendWeb.AdminLive.Reports do
     {:noreply, socket |> assign(:filters, filters) |> assign(:page, 1) |> reload()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}
 
+  event("refresh")
   def handle_event("refresh", _params, socket), do: {:noreply, reload(socket)}
+
+  event("open_close", id: :uuid, status: {:in, @closing})
 
   def handle_event("open_close", %{"id" => id, "status" => status}, socket)
       when status in @closing do
@@ -106,11 +118,22 @@ defmodule GamendWeb.AdminLive.Reports do
     end
   end
 
+  event("close_form")
   def handle_event("close_form", _params, socket), do: {:noreply, close_form(socket)}
+
+  event("form_change")
+
+  # No report open (a stale tab, an event sent by hand): no form to change.
+  def handle_event(event, _params, %{assigns: %{action_report: nil}} = socket)
+      # literal-ok: event names, as in the handle_event/3 heads they guard
+      when event in ~w(form_change submit_close),
+      do: {:noreply, socket}
 
   def handle_event("form_change", params, socket) do
     {:noreply, update(socket, :form, &Map.merge(&1, Map.take(params, ~w(note notify message))))}
   end
+
+  event("submit_close")
 
   def handle_event("submit_close", params, socket) do
     report = socket.assigns.action_report
@@ -138,6 +161,8 @@ defmodule GamendWeb.AdminLive.Reports do
     {:noreply, reload(socket)}
   end
 
+  event("reopen", id: :uuid)
+
   def handle_event("reopen", %{"id" => id}, socket) do
     socket =
       with %Report{} = report <- find(socket, id),
@@ -149,6 +174,8 @@ defmodule GamendWeb.AdminLive.Reports do
 
     {:noreply, reload(socket)}
   end
+
+  event("delete", id: :uuid)
 
   def handle_event("delete", %{"id" => id}, socket) do
     socket =

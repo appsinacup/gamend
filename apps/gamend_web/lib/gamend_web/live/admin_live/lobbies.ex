@@ -556,6 +556,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     """
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || SortKey.updated_at())
@@ -568,6 +569,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
      |> reload_lobbies()}
   end
 
+  event("sort", sort_by: :string)
   @impl true
   def handle_event("sort", %{"sort_by" => sort_by}, socket) do
     {:noreply,
@@ -577,6 +579,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
      |> reload_lobbies()}
   end
 
+  event("show_create")
   @impl true
   def handle_event("show_create", _params, socket) do
     {:noreply,
@@ -588,11 +591,13 @@ defmodule GamendWeb.AdminLive.Lobbies do
      )}
   end
 
+  event("cancel_create")
   @impl true
   def handle_event("cancel_create", _params, socket) do
     {:noreply, assign(socket, :show_create, false)}
   end
 
+  event("create_lobby", lobby: {:schema, Gamend.Lobbies.Lobby})
   @impl true
   def handle_event("create_lobby", %{"lobby" => params}, socket) do
     attrs = %{
@@ -620,6 +625,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     end
   end
 
+  event("view_members", id: :uuid)
   @impl true
   def handle_event("view_members", %{"id" => id}, socket) do
     Shared.with_record(socket, Lobbies.get_lobby(to_string(id)), fn lobby ->
@@ -635,6 +641,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     end)
   end
 
+  event("cancel_ready_check", id: :uuid)
   @impl true
   def handle_event("cancel_ready_check", %{"id" => id}, socket) do
     socket =
@@ -649,6 +656,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     {:noreply, assign(socket, :ready_check, lobby && ReadyChecks.pending_for_lobby(lobby.id))}
   end
 
+  event("close_members")
   @impl true
   def handle_event("close_members", _, socket) do
     {:noreply,
@@ -660,11 +668,13 @@ defmodule GamendWeb.AdminLive.Lobbies do
      |> assign(:show_members, false)}
   end
 
+  event("update_add_member_id", value: :string)
   @impl true
   def handle_event("update_add_member_id", %{"value" => val}, socket) do
     {:noreply, assign(socket, :add_member_id, val)}
   end
 
+  event("add_member")
   @impl true
   def handle_event("add_member", _params, socket) do
     lobby = socket.assigns.selected_lobby
@@ -697,6 +707,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     end
   end
 
+  event("kick_member", "lobby-id": :uuid, "user-id": :uuid)
   @impl true
   def handle_event("kick_member", %{"lobby-id" => lid, "user-id" => uid}, socket) do
     _lobby_id = to_string(lid)
@@ -724,6 +735,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     end
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -742,6 +754,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
      |> sync_selected_ids(lobby_ids(socket.assigns.lobbies))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     lobbies = socket.assigns.lobbies || []
@@ -758,6 +771,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] || MapSet.new()
@@ -809,6 +823,8 @@ defmodule GamendWeb.AdminLive.Lobbies do
     {:noreply, socket |> reload_lobbies()}
   end
 
+  event("edit_lobby", id: :uuid)
+
   def handle_event("edit_lobby", %{"id" => id}, socket) do
     Shared.with_record(socket, Lobbies.get_lobby(to_string(id)), fn lobby ->
       form = lobby |> Lobbies.change_lobby() |> to_form(as: FormName.lobby())
@@ -822,19 +838,27 @@ defmodule GamendWeb.AdminLive.Lobbies do
     end)
   end
 
+  event("cancel_edit")
+
   def handle_event("cancel_edit", _, socket) do
     {:noreply, socket |> assign(:selected_lobby, nil) |> assign(:form, nil)}
   end
+
+  event("admin_lobbies_prev")
 
   def handle_event("admin_lobbies_prev", _params, socket) do
     page = max(1, (socket.assigns[:lobbies_page] || 1) - 1)
     {:noreply, socket |> assign(:lobbies_page, page) |> reload_lobbies()}
   end
 
+  event("admin_lobbies_next")
+
   def handle_event("admin_lobbies_next", _params, socket) do
     page = (socket.assigns[:lobbies_page] || 1) + 1
     {:noreply, socket |> assign(:lobbies_page, page) |> reload_lobbies()}
   end
+
+  event("admin_lobbies_page_size", size: :string)
 
   def handle_event("admin_lobbies_page_size", %{"size" => size}, socket),
     do:
@@ -842,6 +866,12 @@ defmodule GamendWeb.AdminLive.Lobbies do
        socket
        |> LiveHelpers.put_page_size(size, size_key: :lobbies_page_size, page_key: :lobbies_page)
        |> reload_lobbies()}
+
+  event("save_lobby", lobby: {:schema, Gamend.Lobbies.Lobby})
+
+  # Nothing open to save: a stale tab, or an event sent by hand.
+  def handle_event("save_lobby", _params, %{assigns: %{selected_lobby: nil}} = socket),
+    do: {:noreply, socket}
 
   def handle_event("save_lobby", %{"lobby" => params}, socket) do
     lobby = socket.assigns.selected_lobby
@@ -863,6 +893,8 @@ defmodule GamendWeb.AdminLive.Lobbies do
       :error -> {:noreply, put_flash(socket, :error, "Metadata must be a JSON object")}
     end
   end
+
+  event("delete_lobby", id: :uuid)
 
   def handle_event("delete_lobby", %{"id" => id}, socket) do
     Shared.with_record(socket, Lobbies.get_lobby(to_string(id)), fn lobby ->

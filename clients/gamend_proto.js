@@ -155,8 +155,32 @@ const decoders = {
     chat_muted: (bin) =>
       PB.ChatMute.toObject(PB.ChatMute.decode(bin), { defaults: true, longs: Number }),
     chat_unmuted: (bin) => PB.ChatUnmute.toObject(PB.ChatUnmute.decode(bin), { defaults: true }),
+    result_started: (bin) => decodePlayResult(bin),
+    result_event: (bin) => decodePlayResultEvent(bin),
+    result_ended: (bin) => decodePlayResult(bin),
+    account_banned: (bin) =>
+      PB.AccountBan.toObject(PB.AccountBan.decode(bin), { defaults: true, longs: Number }),
+    account_unbanned: () => ({}),
+    outgoing_request: (bin) => decodeFriendship(bin),
+    incoming_request: (bin) => decodeFriendship(bin),
+    request_cancelled: (bin) => decodeFriendship(bin),
+    friend_accepted: (bin) => decodeFriendship(bin),
+    friend_rejected: (bin) => decodeFriendship(bin),
+    friend_removed: (bin) => decodeFriendship(bin),
+    friend_blocked: (bin) => decodeFriendship(bin),
+    friend_unblocked: (bin) => decodeFriendship(bin),
+    'webrtc:answer': (bin) =>
+      PB.WebrtcAnswer.toObject(PB.WebrtcAnswer.decode(bin), { defaults: true }),
+    'webrtc:ice': (bin) => PB.WebrtcIce.toObject(PB.WebrtcIce.decode(bin), { defaults: false }),
+    'webrtc:channel_open': (bin) =>
+      PB.WebrtcChannelOpen.toObject(PB.WebrtcChannelOpen.decode(bin), { defaults: true }),
+    'webrtc:channel_closed': () => ({}),
+    'webrtc:state': (bin) => PB.WebrtcState.toObject(PB.WebrtcState.decode(bin), { defaults: true }),
   },
   lobby: {
+    result_started: (bin) => decodePlayResult(bin),
+    result_event: (bin) => decodePlayResultEvent(bin),
+    result_ended: (bin) => decodePlayResult(bin),
     updated: (bin) => decodeLobby(bin),
     user_joined: (bin) => decodeMember(bin),
     user_left: (bin) => decodeMember(bin),
@@ -211,6 +235,39 @@ const decoders = {
     member_updated: (bin) => decodeBrief(bin),
     disbanded: (bin) => PB.PartyRef.toObject(PB.PartyRef.decode(bin)),
   },
+  signaling: {
+    user_joined: (bin) => PB.SignalingPeer.toObject(PB.SignalingPeer.decode(bin), { defaults: true }),
+    user_rejoined: (bin) =>
+      PB.SignalingPeer.toObject(PB.SignalingPeer.decode(bin), { defaults: true }),
+    user_left: (bin) =>
+      PB.SignalingPeerLeft.toObject(PB.SignalingPeerLeft.decode(bin), { defaults: true }),
+    offer: (bin) => PB.SignalingSdp.toObject(PB.SignalingSdp.decode(bin), { defaults: true }),
+    answer: (bin) => PB.SignalingSdp.toObject(PB.SignalingSdp.decode(bin), { defaults: true }),
+    ice: (bin) => PB.SignalingIce.toObject(PB.SignalingIce.decode(bin), { defaults: true }),
+    room_closed: (bin) =>
+      PB.SignalingRoomClosed.toObject(PB.SignalingRoomClosed.decode(bin), { defaults: true }),
+  },
+}
+
+// A play (`Gamend.Results`), with its metadata parsed back from JSON.
+function decodePlayResult(bin) {
+  return withParsedJson(
+    PB.PlayResult.toObject(PB.PlayResult.decode(bin), { defaults: true, longs: Number }),
+    [['metadata_json', 'metadata']]
+  )
+}
+
+function decodePlayResultEvent(bin) {
+  const out = PB.PlayResultEventPushed.toObject(PB.PlayResultEventPushed.decode(bin), {
+    defaults: true,
+    longs: Number,
+  })
+  if (out.event) withParsedJson(out.event, [['metadata_json', 'metadata']])
+  return out
+}
+
+function decodeFriendship(bin) {
+  return PB.Friendship.toObject(PB.Friendship.decode(bin), { defaults: true })
 }
 
 function decodeLobby(bin) {

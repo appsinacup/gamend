@@ -184,10 +184,10 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert %{"error" => _} = json_response(conn, 401)
     end
 
-    test "returns 400 when refresh_token is missing", %{conn: conn} do
+    test "returns 422 when refresh_token is missing", %{conn: conn} do
       conn = post(conn, "/api/v1/refresh", %{})
 
-      assert %{"error" => "missing_param"} = json_response(conn, 400)
+      assert %{"error" => "validation_failed"} = json_response(conn, 422)
     end
 
     # A token that verifies but names no session any more is answered as one
@@ -429,10 +429,10 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert Gamend.Accounts.get_user(user_id) == nil
     end
 
-    test "answers 400 without an email", %{conn: conn} do
+    test "answers 422 without an email", %{conn: conn} do
       missing = post(conn, "/api/v1/register", %{password: @valid_password})
 
-      assert json_response(missing, 400)["error"] == "missing_param"
+      assert json_response(missing, 422)["error"] == "validation_failed"
     end
 
     test "keeps an account awaiting activation but signs nobody in" do
@@ -519,10 +519,10 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert [_seconds] = get_resp_header(locked, "retry-after")
     end
 
-    test "answers 400 without an email, a code or a password" do
+    test "answers 422 without an email, a code or a password" do
       missing = post(build_conn(), "/api/v1/register/confirm", %{email: "x@example.com"})
 
-      assert json_response(missing, 400)["error"] == "missing_param"
+      assert json_response(missing, 422)["error"] == "validation_failed"
     end
   end
 
@@ -554,10 +554,10 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       refute_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
     end
 
-    test "answers 400 without an email" do
+    test "answers 422 without an email" do
       missing = post(build_conn(), "/api/v1/register/resend", %{})
 
-      assert json_response(missing, 400)["error"] == "missing_param"
+      assert json_response(missing, 422)["error"] == "validation_failed"
     end
   end
 

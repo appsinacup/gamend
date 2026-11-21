@@ -8,7 +8,7 @@ defmodule GamendWeb.LobbiesChannel do
   are created/updated/deleted or when membership changes occur across lobbies.
   """
 
-  use Phoenix.Channel
+  use GamendWeb, :channel
 
   import GamendWeb.ChannelPush
 

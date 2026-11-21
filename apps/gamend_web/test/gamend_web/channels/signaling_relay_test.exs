@@ -117,7 +117,7 @@ defmodule GamendWeb.SignalingRelayTest do
       assert_reply ref, :error, %{error: "payload_too_large"}
 
       ref = push(host_socket, "answer", %{"target" => peer.id, "sdp" => %{"not" => "text"}})
-      assert_reply ref, :error, %{error: "invalid_payload"}
+      assert_reply ref, :error, %{error: "validation_failed", errors: %{"sdp" => _}}
     end
 
     test "an event the channel does not know is answered, not crashed on", %{

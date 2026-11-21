@@ -35,13 +35,17 @@ defmodule GamendWeb.Api.V1.PreferenceControllerTest do
     test "refuses a key or a value not allowed, and saves nothing", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
 
-      for params <- [%{key: "theme", value: "purple"}, %{key: "timezone", value: "UTC"}, %{}] do
+      for params <- [%{key: "theme", value: "purple"}, %{key: "timezone", value: "UTC"}] do
         assert %{"error" => "invalid_preference"} =
                  conn
                  |> auth_conn(user)
                  |> put("/api/v1/me/preferences", params)
                  |> json_response(422)
       end
+
+      # No key at all: refused by the request check before the action.
+      assert %{"error" => "validation_failed"} =
+               conn |> auth_conn(user) |> put("/api/v1/me/preferences", %{}) |> json_response(422)
 
       assert Preferences.get(Accounts.get_user(user.id)) == %{}
     end

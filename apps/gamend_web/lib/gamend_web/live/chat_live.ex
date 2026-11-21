@@ -356,6 +356,7 @@ defmodule GamendWeb.ChatLive do
   # Events
   # ---------------------------------------------------------------------------
 
+  event("open_friend", id: :uuid)
   @impl true
   # Selection happens in handle_params, so the click only updates the URL —
   # that keeps the chosen conversation in the address bar and restores it on
@@ -364,10 +365,13 @@ defmodule GamendWeb.ChatLive do
     {:noreply, push_patch(socket, to: ~p"/chat?#{[type: "friend", id: id]}")}
   end
 
+  event("open_group", id: :uuid)
+
   def handle_event("open_group", %{"id" => id}, socket) do
     {:noreply, push_patch(socket, to: ~p"/chat?#{[type: "group", id: id]}")}
   end
 
+  event("send_message", content: :string)
   @impl true
   def handle_event("send_message", %{"content" => content}, socket) do
     content = String.trim(content)
@@ -400,11 +404,13 @@ defmodule GamendWeb.ChatLive do
     end
   end
 
+  event("draft_change", content: :string)
   @impl true
   def handle_event("draft_change", %{"content" => content}, socket) do
     {:noreply, assign(socket, :draft, content)}
   end
 
+  event("close_chat")
   @impl true
   def handle_event("close_chat", _params, socket) do
     socket =
@@ -423,6 +429,7 @@ defmodule GamendWeb.ChatLive do
     {:noreply, socket}
   end
 
+  event("load_more")
   @impl true
   # Through the URL, like the conversation: `handle_params/3` loads the page.
   def handle_event("load_more", _params, socket) do
@@ -432,16 +439,19 @@ defmodule GamendWeb.ChatLive do
     {:noreply, push_patch(socket, to: chat_path(socket, edit_id, page), replace: true)}
   end
 
+  event("chat_edit_start", id: :uuid)
   @impl true
   def handle_event("chat_edit_start", %{"id" => id}, socket) do
     {:noreply, patch_editing(socket, parse_id(id))}
   end
 
+  event("chat_edit_cancel")
   @impl true
   def handle_event("chat_edit_cancel", _params, socket) do
     {:noreply, patch_editing(socket, nil)}
   end
 
+  event("chat_edit_change", content: :string, message_id: :uuid)
   @impl true
   def handle_event("chat_edit_change", %{"message_id" => id, "content" => content}, socket) do
     if parse_id(id) == socket.assigns.editing_message_id do
@@ -451,6 +461,7 @@ defmodule GamendWeb.ChatLive do
     end
   end
 
+  event("chat_edit_save", content: :string, message_id: :uuid)
   @impl true
   def handle_event("chat_edit_save", %{"message_id" => id, "content" => content}, socket) do
     content = String.trim(content)
@@ -475,6 +486,7 @@ defmodule GamendWeb.ChatLive do
     end
   end
 
+  event("chat_delete", id: :uuid)
   @impl true
   def handle_event("chat_delete", %{"id" => id}, socket) do
     case Chat.delete_own_message(socket.assigns.current_scope.user_id, parse_id(id)) do

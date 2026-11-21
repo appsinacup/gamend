@@ -55,7 +55,9 @@ defmodule Gamend.Payments.Params do
   def required_binary(map, key) do
     case map[key] do
       value when is_binary(value) and value != "" -> {:ok, value}
-      _ -> {:error, String.to_atom("missing_#{key}")}
+      # snake_case whatever the provider calls the field (`signedPayload`):
+      # an error code is one (`GamendWeb.ResponseContract`).
+      _ -> {:error, String.to_atom("missing_#{Macro.underscore(key)}")}
     end
   end
 
@@ -72,7 +74,9 @@ defmodule Gamend.Payments.Params do
     case Map.get(map, key) do
       value when is_binary(value) and value != "" -> {:ok, value}
       value when is_integer(value) -> {:ok, to_string(value)}
-      _ -> {:error, String.to_atom("missing_#{key}")}
+      # snake_case whatever the provider calls the field (`signedPayload`):
+      # an error code is one (`GamendWeb.ResponseContract`).
+      _ -> {:error, String.to_atom("missing_#{Macro.underscore(key)}")}
     end
   end
 

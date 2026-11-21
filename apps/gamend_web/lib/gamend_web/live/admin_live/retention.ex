@@ -113,6 +113,7 @@ defmodule GamendWeb.AdminLive.Retention do
      |> assign_retention()}
   end
 
+  event("prune_now")
   @impl true
   def handle_event("prune_now", _params, socket) do
     # Off the LiveView process: a sweep with a backlog can take minutes, and

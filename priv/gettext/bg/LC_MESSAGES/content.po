@@ -89,5 +89,4 @@ msgstr "Седмична купа"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-
 msgstr "Запиши се по всяко време; схемата се тегли всеки понеделник."

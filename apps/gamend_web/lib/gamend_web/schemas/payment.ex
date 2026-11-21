@@ -13,7 +13,7 @@ defmodule GamendWeb.Schemas.PaymentProduct do
       title: %Schema{type: :string},
       description: %Schema{type: :string},
       kind: %Schema{type: :string, description: "What buying it grants, e.g. `entitlement`"},
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [:id, :sku, :title, :description, :kind, :metadata]
   })
@@ -39,7 +39,7 @@ defmodule GamendWeb.Schemas.PaymentCatalogEntry do
         nullable: true,
         description: "Price in the currency's minor unit; null when the provider prices it"
       },
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       product: PaymentProduct
     },
     required: [:id, :provider, :external_id, :currency, :unit_amount, :metadata, :product]
@@ -126,7 +126,7 @@ defmodule GamendWeb.Schemas.Entitlement do
         description: "Null for a permanent entitlement"
       },
       revoked_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [
       :id,

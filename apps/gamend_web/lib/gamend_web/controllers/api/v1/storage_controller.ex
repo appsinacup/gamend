@@ -18,13 +18,58 @@ defmodule GamendWeb.Api.V1.StorageController do
   """
 
   use GamendWeb, :controller
+  use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Storage
+  alias GamendWeb.Schemas
+  alias GamendWeb.Schemas.OkResponse
+  alias OpenApiSpex.Schema
   alias GamendWeb.Uploads
 
   # Content types this route will name in a response. Everything else is served
   # as an opaque download.
   @servable_types ~w(image/png image/jpeg image/webp image/gif)
+
+  tags(["Storage"])
+
+  operation(:upload,
+    operation_id: "storage_upload",
+    summary: "Upload a file's bytes to an upload ticket (local storage)",
+    description:
+      "The URL an upload ticket names when storage is local: the client PUTs the raw " <>
+        "bytes here. An S3 backend's ticket names the bucket instead.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      token: [
+        in: :query,
+        schema: %Schema{type: :string},
+        required: true,
+        description: "The ticket's signed token; it names the key"
+      ],
+      key: [
+        in: :query,
+        schema: %Schema{type: :string},
+        description: "The ticket's key, a cross-check of the token's"
+      ]
+    ],
+    request_body:
+      {"Raw file bytes", "application/octet-stream", %Schema{type: :string, format: :binary}},
+    responses: [
+      ok: {"Stored", "application/json", OkResponse},
+      bad_request: Schemas.error("No token (missing_param)"),
+      forbidden: Schemas.error("The token does not name this key (forbidden)"),
+      request_entity_too_large: Schemas.error("Too large (too_large)"),
+      unsupported_media_type:
+        Schemas.error(
+          "The bytes are not the type sent (content_mismatch, unsupported_content_type)"
+        ),
+      insufficient_storage: Schemas.error("The owner's quota is full (quota_exceeded)"),
+      service_unavailable: Schemas.error("The storage backend failed (storage_unavailable)")
+    ]
+  )
+
+  # A browser route, the object's own URL: not part of the API document.
+  operation(:show, false)
 
   @doc """
   PUT /storage/upload?key=...&token=... — authenticated raw-body upload (local

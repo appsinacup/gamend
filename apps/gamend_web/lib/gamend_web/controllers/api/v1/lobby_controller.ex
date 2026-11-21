@@ -107,7 +107,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
             type: :string,
             description: "Optional password to protect the lobby"
           },
-          metadata: %Schema{type: :object, description: "Arbitrary metadata"},
+          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Arbitrary metadata"),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
@@ -216,7 +216,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
           is_hidden: %Schema{type: :boolean, description: "Hide from public listings"},
           is_locked: %Schema{type: :boolean, description: "Lock the lobby"},
           password: %Schema{type: :string, description: "New password (empty string to clear)"},
-          metadata: %Schema{type: :object, description: "New metadata"},
+          metadata: GamendWeb.Schemas.FreeForm.metadata(description: "New metadata"),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
@@ -355,8 +355,9 @@ defmodule GamendWeb.Api.V1.LobbyController do
             description: "Optional maximum users to match/create"
           },
           metadata: %Schema{
-            type: :object,
-            description: "Optional metadata to match (substring match)"
+            description:
+              "Optional metadata to match (substring match): an object, or the object as JSON text",
+            oneOf: [GamendWeb.Schemas.FreeForm.metadata(), %Schema{type: :string}]
           }
         }
       }

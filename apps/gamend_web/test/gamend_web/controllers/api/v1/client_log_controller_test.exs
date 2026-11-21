@@ -103,7 +103,7 @@ defmodule GamendWeb.Api.V1.ClientLogControllerTest do
     test "rejects a malformed batch", %{conn: conn} do
       assert conn
              |> post_batch(%{"session" => %{"client_session_id" => "no"}, "entries" => []})
-             |> json_response(400)
+             |> json_response(422)
     end
 
     test "records the lobby so the run is reachable from the lobby side", %{conn: conn} do

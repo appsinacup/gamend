@@ -120,18 +120,19 @@ defmodule GamendWeb.Api.V1.Admin.StorageControllerTest do
     end
   end
 
-  test "each action without a key answers 400 missing_param", %{conn: conn} do
-    assert %{"error" => "missing_param"} =
-             json_response(delete(conn, "/api/v1/admin/storage"), 400)
+  # `key` is a required query parameter: refused before the action.
+  test "each action without a key answers 422 validation_failed", %{conn: conn} do
+    assert %{"errors" => %{"key" => [_]}} =
+             json_response(delete(conn, "/api/v1/admin/storage"), 422)
 
-    assert %{"error" => "missing_param"} =
-             json_response(get(conn, "/api/v1/admin/storage/object"), 400)
+    assert %{"errors" => %{"key" => [_]}} =
+             json_response(get(conn, "/api/v1/admin/storage/object"), 422)
 
     up =
       conn
       |> put_req_header("content-type", "text/plain")
       |> put("/api/v1/admin/storage/object", "BYTES")
 
-    assert %{"error" => "missing_param"} = json_response(up, 400)
+    assert %{"errors" => %{"key" => [_]}} = json_response(up, 422)
   end
 end

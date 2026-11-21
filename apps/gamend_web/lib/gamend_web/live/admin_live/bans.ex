@@ -65,10 +65,13 @@ defmodule GamendWeb.AdminLive.Bans do
 
   def handle_params(_params, _uri, socket), do: {:noreply, socket}
 
+  event("form_change")
   @impl true
   def handle_event("form_change", params, socket) do
     {:noreply, assign(socket, :form, Map.take(params, Map.keys(new_form())))}
   end
+
+  event("ban")
 
   def handle_event("ban", params, socket) do
     form = Map.take(params, Map.keys(new_form()))
@@ -93,6 +96,8 @@ defmodule GamendWeb.AdminLive.Bans do
     {:noreply, reload(socket)}
   end
 
+  event("lift", id: :uuid)
+
   def handle_event("lift", %{"id" => id}, socket) do
     socket =
       case Enum.find(socket.assigns.bans, &(&1.id == id)) do
@@ -111,6 +116,8 @@ defmodule GamendWeb.AdminLive.Bans do
     {:noreply, reload(socket)}
   end
 
+  event("filter")
+
   def handle_event("filter", params, socket) do
     {:noreply,
      socket
@@ -121,11 +128,17 @@ defmodule GamendWeb.AdminLive.Bans do
      |> reload()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload()}
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload()}
+
+  event("page_size", size: :string)
 
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}

@@ -89,5 +89,4 @@ msgstr "Εβδομαδιαίο Κύπελλο"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-
 msgstr "Δήλωσε συμμετοχή όποτε θέλεις· η κλήρωση γίνεται κάθε Δευτέρα."

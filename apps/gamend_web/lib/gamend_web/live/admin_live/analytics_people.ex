@@ -48,6 +48,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
      |> load()}
   end
 
+  event("search", q: :string)
   @impl true
   def handle_event("search", %{"q" => q}, socket) do
     {:noreply, push_patch(socket, to: here(%{"q" => String.trim(q)}))}

@@ -26,7 +26,7 @@ defmodule GamendWeb.Schemas.TournamentEntry do
         type: :string,
         enum: EntryState.all()
       },
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [:id, :leader_id, :seed, :bracket_index, :wins, :state, :metadata]
   })
@@ -73,7 +73,7 @@ defmodule GamendWeb.Schemas.Tournament do
       bracket_size: %Schema{type: :integer},
       round_window_sec: %Schema{type: :integer},
       entry_count: %Schema{type: :integer},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       my_entry: %Schema{
         allOf: [TournamentEntry],
         nullable: true,
@@ -128,7 +128,7 @@ defmodule GamendWeb.Schemas.TournamentMatch do
       winner_entry_id: %Schema{type: :string, description: "Empty until decided"},
       deadline_at: %Schema{type: :string, format: :"date-time", nullable: true},
       resolved_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [
       :id,

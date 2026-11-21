@@ -55,6 +55,9 @@ msgstr "商店"
 msgid "Server Stats"
 msgstr "伺服器統計"
 
+msgid "Consulting"
+msgstr ""
+
 msgid "Help"
 msgstr "說明"
 
@@ -82,8 +85,53 @@ msgstr "錦標賽"
 msgid "Groups"
 msgstr "群組"
 
-msgid "News"
-msgstr "最新消息"
+msgid "Email contact@gamend.org"
+msgstr ""
+
+msgid "Apps in a Cup consulting"
+msgstr ""
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting sessions**: short, focused help to get you unstuck. **€50 per hour.**"
+msgstr ""
+
+msgid "Deployment"
+msgstr ""
+
+msgid "Your own server, Docker, fly.io or a VPS: Postgres or SQLite, domains, TLS and backups."
+msgstr ""
+
+msgid "Deployment & hosting"
+msgstr ""
+
+msgid "Game logic on the server where players cannot reach it: hooks, plugins and GDScript hooks."
+msgstr ""
+
+msgid "Server scripting & hooks"
+msgstr ""
+
+msgid "Benchmarks"
+msgstr "基準測試"
+
+msgid "Clustering, load testing, and finding what slows a busy server down."
+msgstr ""
+
+msgid "Scaling & performance"
+msgstr ""
+
+msgid "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](https://balaurengine.org) SDKs into your game."
+msgstr ""
+
+msgid "Client integration"
+msgstr ""
+
+msgid "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need."
+msgstr ""
+
+msgid "How it works"
+msgstr ""
 
 msgid "Getting Started"
 msgstr "開始使用"
@@ -94,20 +142,11 @@ msgstr "介紹影片"
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
 msgstr "面向即時多人遊戲的**開源** Elixir 遊戲伺服器：後端、玩家網站與管理後台三合一。"
 
-msgid "Gamend"
-msgstr "Gamend"
-
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
 msgstr "Gamend 管理後台、任務、商店與伺服器掛鉤導覽"
 
-msgid "Benchmarks"
-msgstr "基準測試"
-
-msgid "Godot SDK"
-msgstr "Godot SDK"
-
-msgid "C++ SDK"
-msgstr "C++ SDK"
+msgid "Architecture"
+msgstr "架構"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
 msgstr "**為你的多人遊戲打造的後端**：帳號、房間、聊天、排行榜，以及玩家期待的遊戲周邊的一切。它也附帶相應的網頁介面：現成的玩家網站（商店、排行榜、錦標賽、任務、群組、聊天）與完整的管理後台。伺服器端指令碼在玩家無法觸及的地方執行你自己的邏輯。你在自己的伺服器上執行它；沒有託管服務。"
@@ -178,6 +217,24 @@ msgstr "使用 **Elixir、GDScript 或 Gleam** 撰寫伺服器掛鉤，處理計
 msgid "Server Scripting & Scheduling"
 msgstr "伺服器指令碼與排程"
 
+msgid "Godot SDK"
+msgstr "Godot SDK"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Unreal 外掛"
+
+msgid "C++ SDK"
+msgstr "C++ SDK"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "支援 **Godot、Unity、Unreal、C++、C#、Rust、JavaScript/TypeScript 與 Balaur** 的 SDK，每個都包含所有面向玩家的呼叫、具型別的模型與即時事件，並隨每次伺服器發布重新建置。其他任何環境都能直接使用 HTTP API 與 WebSocket 頻道。"
+
+msgid "Client SDKs"
+msgstr "用戶端 SDK"
+
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
 msgstr "REST API、即時 WebSocket 頻道與低延遲 WebRTC DataChannels，並可選用 protobuf 即時格式。管理後台與網頁介面，已翻譯為 30 種語言。"
 
@@ -231,18 +288,3 @@ msgstr "分析、記錄與可觀測性"
 
 msgid "Game + Backend"
 msgstr "遊戲 + 後端"
-
-msgid "Architecture"
-msgstr "架構"
-
-msgid "Unity SDK"
-msgstr "Unity SDK"
-
-msgid "Unreal plugin"
-msgstr "Unreal 外掛"
-
-msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
-msgstr "支援 **Godot、Unity、Unreal、C++、C#、Rust、JavaScript/TypeScript 與 Balaur** 的 SDK，每個都包含所有面向玩家的呼叫、具型別的模型與即時事件，並隨每次伺服器發布重新建置。其他任何環境都能直接使用 HTTP API 與 WebSocket 頻道。"
-
-msgid "Client SDKs"
-msgstr "用戶端 SDK"

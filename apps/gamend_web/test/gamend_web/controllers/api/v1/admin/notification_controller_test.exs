@@ -199,10 +199,9 @@ defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
       conn
       |> bearer_conn(admin)
       |> post("/api/v1/admin/notifications", %{title: "No recipient"})
-      |> json_response(400)
+      |> json_response(422)
 
-    assert resp["error"] == "missing_param"
-    assert resp["message"] =~ "sender_id"
+    assert %{"error" => "validation_failed", "errors" => %{"sender_id" => [_]}} = resp
   end
 
   test "POST /api/v1/admin/notifications upserts duplicate title for same sender and recipient",
@@ -279,7 +278,7 @@ defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
     assert resp["error"] == "not_found"
   end
 
-  test "DELETE /api/v1/admin/notifications/:id answers 400 for an id that is not one", %{
+  test "DELETE /api/v1/admin/notifications/:id answers 404 for an id that is not one", %{
     conn: conn,
     admin: admin
   } do
@@ -287,9 +286,9 @@ defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
       conn
       |> bearer_conn(admin)
       |> delete("/api/v1/admin/notifications/not-an-id")
-      |> json_response(400)
+      |> json_response(404)
 
-    assert resp["error"] == "invalid_id"
+    assert resp["error"] == "not_found"
   end
 
   # ── Announce ───────────────────────────────────────────────────────────────

@@ -37,11 +37,11 @@ defmodule GamendWeb.Api.V1.ProviderControllerTest do
       assert json_response(resp, 400)["error"] =~ "last"
     end
 
-    test "invalid provider returns 400", %{conn: conn} do
+    test "invalid provider returns 404", %{conn: conn} do
       resp = delete(conn, ~p"/api/v1/me/providers/invalid-provider")
 
-      assert resp.status == 400
-      assert json_response(resp, 400)["error"] == "unknown_provider"
+      # Not one of the path's documented providers: a URL that names nothing.
+      assert %{"error" => "not_found"} = json_response(resp, 404)
     end
   end
 
@@ -78,8 +78,8 @@ defmodule GamendWeb.Api.V1.ProviderControllerTest do
     test "returns error when device_id missing", %{conn: conn} do
       resp = post(conn, ~p"/api/v1/me/device", %{})
 
-      assert resp.status == 400
-      assert json_response(resp, 400)["error"] == "missing_param"
+      assert %{"error" => "validation_failed", "errors" => %{"device_id" => [_]}} =
+               json_response(resp, 422)
     end
   end
 

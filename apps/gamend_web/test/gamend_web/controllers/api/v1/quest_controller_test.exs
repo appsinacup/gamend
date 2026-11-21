@@ -220,8 +220,8 @@ defmodule GamendWeb.Api.V1.QuestControllerTest do
 
       assert body["meta"]["total_count"] == 1
 
-      resp = conn |> get("/api/v1/quests/user/not-a-uuid") |> json_response(400)
-      assert resp["error"] == "invalid_id"
+      resp = conn |> get("/api/v1/quests/user/not-a-uuid") |> json_response(404)
+      assert resp["error"] == "not_found"
     end
 
     test "a claim answers not_found, then already_claimed", %{conn: conn, user: user} do

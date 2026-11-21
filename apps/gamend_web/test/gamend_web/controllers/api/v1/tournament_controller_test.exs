@@ -182,13 +182,15 @@ defmodule GamendWeb.Api.V1.TournamentControllerTest do
     end
   end
 
-  test "a bracket index with more after the number is 400 invalid_index", %{
+  test "a bracket index with more after the number is 422 validation_failed", %{
     conn: conn,
     tournament: tournament
   } do
     assert conn
            |> get("/api/v1/tournaments/#{tournament.id}/bracket?index=2x")
-           |> json_response(400) == %{"error" => "invalid_index"}
+           |> json_response(422)
+           |> Map.fetch!("errors")
+           |> Map.has_key?("index")
   end
 
   test "join requires authentication", %{conn: conn, tournament: tournament} do
@@ -288,9 +290,9 @@ defmodule GamendWeb.Api.V1.TournamentControllerTest do
     resp =
       conn
       |> get("/api/v1/tournaments/#{tournament.id}/bracket?index=one")
-      |> json_response(400)
+      |> json_response(422)
 
-    assert resp["error"] == "invalid_index"
+    assert resp["error"] == "validation_failed"
 
     # an unset index, as the Godot SDK sends it, is no filter
     resp =

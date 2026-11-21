@@ -337,6 +337,7 @@ defmodule GamendWeb.AdminLive.Geo do
      |> load_snapshot()}
   end
 
+  event("set_window", window: :string)
   @impl true
   def handle_event("set_window", %{"window" => window_str}, socket) do
     window =
@@ -345,6 +346,7 @@ defmodule GamendWeb.AdminLive.Geo do
     {:noreply, socket |> assign(window: window) |> load_snapshot()}
   end
 
+  event("set_traffic", traffic: :string)
   @impl true
   def handle_event("set_traffic", %{"traffic" => traffic_str}, socket) do
     traffic =
@@ -353,17 +355,20 @@ defmodule GamendWeb.AdminLive.Geo do
     {:noreply, socket |> assign(traffic: traffic) |> compute_derived()}
   end
 
+  event("update_filter", search: :string)
   @impl true
   def handle_event("update_filter", %{"search" => search}, socket) do
     {:noreply, socket |> assign(search: String.upcase(String.trim(search))) |> compute_derived()}
   end
 
+  event("toggle_sort")
   @impl true
   def handle_event("toggle_sort", _params, socket) do
     new_sort = if socket.assigns.sort == :count, do: :alpha, else: :count
     {:noreply, socket |> assign(sort: new_sort) |> compute_derived()}
   end
 
+  event("reset_stats")
   @impl true
   def handle_event("reset_stats", _params, socket) do
     GeoCountry.reset_stats()

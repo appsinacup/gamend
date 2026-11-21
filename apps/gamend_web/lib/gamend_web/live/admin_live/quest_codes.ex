@@ -40,6 +40,7 @@ defmodule GamendWeb.AdminLive.QuestCodes do
     end
   end
 
+  event("generate", generate: [count: {:optional, :string}, max_uses: {:optional, :string}])
   @impl true
   def handle_event("generate", %{"generate" => params}, socket) do
     with {:ok, count} <- parse_count(params["count"]),
@@ -57,6 +58,8 @@ defmodule GamendWeb.AdminLive.QuestCodes do
       :error -> {:noreply, put_flash(socket, :error, "Check the count, uses and metadata.")}
     end
   end
+
+  event("add", code: {:schema, Gamend.Quests.QuestCode})
 
   def handle_event("add", %{"code" => params}, socket) do
     with {:ok, max_uses} <- parse_max_uses(params["max_uses"]),
@@ -79,21 +82,33 @@ defmodule GamendWeb.AdminLive.QuestCodes do
     end
   end
 
+  event("search", search: :string)
+
   def handle_event("search", %{"search" => search}, socket) do
     {:noreply, socket |> assign(:search, search) |> assign(:page, 1) |> reload_codes()}
   end
 
+  event("revoke", id: :uuid)
+
   def handle_event("revoke", %{"id" => id}, socket),
     do: {:noreply, set_status(socket, id, QuestCodeStatus.revoked())}
+
+  event("restore", id: :uuid)
 
   def handle_event("restore", %{"id" => id}, socket),
     do: {:noreply, set_status(socket, id, QuestCodeStatus.active())}
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_codes()}
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_codes()}
+
+  event("page_size", size: :string)
 
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_codes()}

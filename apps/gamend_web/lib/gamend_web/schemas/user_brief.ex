@@ -20,7 +20,7 @@ defmodule GamendWeb.Schemas.UserBrief do
         description:
           "The avatar: an image we host, or one of the server's icons (`/icons/<name>.svg?color=<color>`), one the user's id gives them when they set none"
       },
-      metadata: %Schema{type: :object, description: "Public user metadata"},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Public user metadata"),
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
       last_seen_at: %Schema{type: :string, format: :"date-time"}

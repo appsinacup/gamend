@@ -309,18 +309,22 @@ defmodule GamendWeb.AdminLive.KV do
 
   def handle_params(_params, _uri, socket), do: {:noreply, socket}
 
+  event("kv_prev")
   @impl true
   def handle_event("kv_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_entries()}
 
+  event("kv_next")
   @impl true
   def handle_event("kv_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_entries()}
 
+  event("kv_page_size", size: :string)
   @impl true
   def handle_event("kv_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_entries()}
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = parse_id(id)
@@ -339,6 +343,7 @@ defmodule GamendWeb.AdminLive.KV do
      |> sync_selected_ids(entry_ids(socket.assigns.entries))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     entries = socket.assigns.entries || []
@@ -356,6 +361,7 @@ defmodule GamendWeb.AdminLive.KV do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] || MapSet.new()
@@ -401,6 +407,15 @@ defmodule GamendWeb.AdminLive.KV do
     {:noreply, socket |> reload_entries()}
   end
 
+  event("filters_change",
+    filters: [
+      key: {:optional, :string},
+      user_id: {:optional, :string},
+      lobby_id: {:optional, :string},
+      global_only: {:optional, :boolean}
+    ]
+  )
+
   @impl true
   def handle_event("filters_change", %{"filters" => params}, socket) when is_map(params) do
     socket = assign(socket, :filter_form, to_form(params, as: :filters))
@@ -427,6 +442,7 @@ defmodule GamendWeb.AdminLive.KV do
     end
   end
 
+  event("filters_clear")
   @impl true
   def handle_event("filters_clear", _params, socket) do
     {:noreply,
@@ -445,6 +461,7 @@ defmodule GamendWeb.AdminLive.KV do
      |> reload_entries()}
   end
 
+  event("new_entry")
   @impl true
   def handle_event("new_entry", _params, socket) do
     {:noreply,
@@ -453,6 +470,7 @@ defmodule GamendWeb.AdminLive.KV do
      |> assign(:show_form_modal, true)}
   end
 
+  event("edit_entry", id: :uuid)
   @impl true
   def handle_event("edit_entry", %{"id" => id}, socket) do
     id = parse_id(id)
@@ -469,6 +487,7 @@ defmodule GamendWeb.AdminLive.KV do
     end
   end
 
+  event("close_entry_modal")
   @impl true
   def handle_event("close_entry_modal", _params, socket) do
     {:noreply,
@@ -477,6 +496,7 @@ defmodule GamendWeb.AdminLive.KV do
      |> assign_form_new()}
   end
 
+  event("delete_entry", id: :uuid)
   @impl true
   def handle_event("delete_entry", %{"id" => id}, socket) do
     id = parse_id(id)
@@ -487,6 +507,16 @@ defmodule GamendWeb.AdminLive.KV do
 
     {:noreply, socket |> put_flash(:info, "Entry deleted") |> reload_entries()}
   end
+
+  event("save_entry",
+    kv: [
+      key: {:optional, :string},
+      user_id: {:optional, :string},
+      lobby_id: {:optional, :string},
+      value_json: {:optional, :string},
+      metadata_json: {:optional, :string}
+    ]
+  )
 
   @impl true
   def handle_event("save_entry", %{"kv" => params}, socket) do

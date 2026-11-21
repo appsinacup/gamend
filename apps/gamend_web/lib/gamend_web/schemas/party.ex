@@ -17,7 +17,7 @@ defmodule GamendWeb.Schemas.Party do
       leader_id: %Schema{type: :string, format: :uuid},
       leader_name: %Schema{type: :string, description: "Leader's display name"},
       max_size: %Schema{type: :integer, description: "Maximum members"},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       members: %Schema{type: :array, items: UserBrief},
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}

@@ -89,5 +89,4 @@ msgstr "Haftalık Kupa"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-
 msgstr "İstediğin zaman kaydol; eşleşme tablosu her pazartesi çekilir."

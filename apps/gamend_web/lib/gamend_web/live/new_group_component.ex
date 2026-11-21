@@ -50,6 +50,7 @@ defmodule GamendWeb.NewGroupComponent do
       else: {:ok, socket}
   end
 
+  event("open")
   # A random name, its slug and a random icon to start from
   # (`Gamend.Groups.change_new_group/0`).
   @impl true
@@ -63,18 +64,24 @@ defmodule GamendWeb.NewGroupComponent do
      |> assign_form(changeset)}
   end
 
+  event("close")
+
   def handle_event("close", _params, socket),
     do: {:noreply, socket |> GroupIconUpload.cancel_all() |> assign(:open?, false)}
+
+  event("cancel_icon", ref: :string)
 
   def handle_event("cancel_icon", %{"ref" => ref}, socket),
     do: {:noreply, GroupIconUpload.cancel(socket, ref)}
 
+  event("random_name")
   # A new random name, what else was typed so far staying.
   def handle_event("random_name", _params, socket) do
     params = Map.put(socket.assigns.form.params, "title", Groups.random_title())
     handle_event("validate", %{"group" => params}, socket)
   end
 
+  event("validate", group: {:schema, Gamend.Groups.Group})
   # The slug follows the name until it is typed into.
   def handle_event("validate", %{"group" => params}, socket) do
     auto = Gamend.Slug.slugify(params["title"], "")
@@ -92,6 +99,7 @@ defmodule GamendWeb.NewGroupComponent do
     {:noreply, socket |> assign(:slug_auto, auto) |> assign_form(changeset)}
   end
 
+  event("create", group: {:schema, Gamend.Groups.Group})
   # A slug left as the name made it is the context's to pick, `-2` when the
   # maker has one of that name already.
   def handle_event("create", %{"group" => params}, socket) do

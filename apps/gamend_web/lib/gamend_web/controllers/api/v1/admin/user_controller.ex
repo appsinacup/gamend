@@ -27,7 +27,7 @@ defmodule GamendWeb.Api.V1.Admin.UserController do
           is_admin: %Schema{type: :boolean},
           is_activated: %Schema{type: :boolean},
           display_name: %Schema{type: :string},
-          metadata: %Schema{type: :object}
+          metadata: GamendWeb.Schemas.FreeForm.metadata()
         }
       }
     },

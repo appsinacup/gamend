@@ -195,7 +195,7 @@ defmodule GamendWeb.Api.V1.PaymentController do
     ],
     request_body:
       {"Provider receipt payload", "application/json",
-       %Schema{type: :object, additionalProperties: true}},
+       GamendWeb.Schemas.FreeForm.object("the payment provider's own receipt")},
     responses:
       [ok: {"Validated purchase", "application/json", PurchaseValidationResponse}] ++
         @checkout_errors

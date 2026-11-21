@@ -303,13 +303,19 @@ defmodule GamendWeb.Api.V1.HookControllerTest do
     end
 
     test "a malformed request is logged too", %{conn: conn} do
+      # A refusal is logged at info (`RequestContract`), under this suite's
+      # warning level: raised for this test (the module is not async).
+      level = Logger.level()
+      Logger.configure(level: :info)
+      on_exit(fn -> Logger.configure(level: level) end)
+
       log =
-        ExUnit.CaptureLog.capture_log(fn ->
+        ExUnit.CaptureLog.capture_log([level: :info], fn ->
           conn = post(conn, "/api/v1/hooks/call", %{"fn" => "missing_plugin_key"})
-          assert %{"error" => "missing_param"} = json_response(conn, 400)
+          assert %{"error" => "validation_failed"} = json_response(conn, 422)
         end)
 
-      assert log =~ "invalid_request"
+      assert log =~ "RequestContract: refused POST /api/v1/hooks/call"
     end
 
     test "argument values never reach the log", %{conn: conn} do

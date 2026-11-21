@@ -22,6 +22,12 @@ defmodule Gamend.Reports do
   cannot file the same open report twice. Nothing about a sender is stored
   beyond what they typed and, when signed in, their user id.
 
+  ## Taken elsewhere
+
+  A kind may take a report to a place of the host's own instead of the
+  queue (`c:Gamend.Reports.Kind.take/1`): `create/2` then stores nothing and
+  answers `{:ok, :taken}`.
+
   ## Hooks
 
     * `before_report_create/1` — pipeline: `{:ok, attrs}` to file it (changed
@@ -169,9 +175,10 @@ defmodule Gamend.Reports do
   `:description_required`, `:too_many_attachments`, `:attachment_too_large`,
   `:attachment_type`, `:daily_limit`, `:user_daily_limit`,
   `:already_reported`, a kind's own `cast/2` reason, a hook's refusal, or a
-  changeset.
+  changeset. `{:ok, :taken}` when the kind took the report elsewhere
+  (`c:Gamend.Reports.Kind.take/1`): nothing was stored.
   """
-  @spec create(map(), map()) :: {:ok, Report.t()} | {:error, term()}
+  @spec create(map(), map()) :: {:ok, Report.t() | :taken} | {:error, term()}
   def create(params, context \\ %{}) when is_map(params) and is_map(context) do
     params = Gamend.Parse.string_keys(params)
     user_id = context[:user_id]
@@ -186,11 +193,29 @@ defmodule Gamend.Reports do
          :ok <- check_duplicate(user_id, kind.key(), topic, cast.subject_ref),
          attrs = build_attrs(kind, topic, cast, params, context),
          {:ok, attrs} <- before_hook(attrs),
+         :file <- take(kind, attrs),
          {:ok, report} <- insert(attrs) do
       report = store_attachments(report, images)
       dispatch(:after_report_created, [report])
       alert_admins()
       {:ok, report}
+    else
+      :taken -> {:ok, :taken}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  # The kind may take the report elsewhere (`c:Gamend.Reports.Kind.take/1`):
+  # no row, no alert, no images.
+  defp take(kind, attrs) do
+    if function_exported?(kind, :take, 1) do
+      case kind.take(attrs) do
+        :taken -> :taken
+        {:error, reason} -> {:error, reason}
+        _file -> :file
+      end
+    else
+      :file
     end
   end
 

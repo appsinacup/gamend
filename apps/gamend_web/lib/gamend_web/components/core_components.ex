@@ -1582,18 +1582,19 @@ defmodule GamendWeb.CoreComponents do
     ~H"{@empty}"
   end
 
+  # Each `<time>` holds its text with nothing around it: the script writes
+  # the reader's text with none, and a newline and indentation drawn as
+  # spaces made the stamp 4px narrower as it did (host, 2026-11-21).
   # A bare date (blog posts, release dates) has no instant to localize, and
   # shifting it into the reader's zone would move it across midnight boundaries
   # it never crossed. It used to skip the localizer for that reason, which left
   # it in English for every reader. `calendar-date` translates it with the zone
   # pinned to UTC, so it changes language without changing day.
   def timestamp(%{at: %Date{} = at} = assigns) do
-    assigns = assign(assigns, :iso, Date.to_iso8601(at))
+    assigns = assign(assigns, iso: Date.to_iso8601(at), text: utc_text(at, TimeFormat.date()))
 
     ~H"""
-    <time datetime={@iso} data-local-time="calendar-date" class={@class}>
-      {utc_text(@at, TimeFormat.date())}
-    </time>
+    <time datetime={@iso} data-local-time="calendar-date" class={@class}>{@text}</time>
     """
   end
 
@@ -1612,17 +1613,15 @@ defmodule GamendWeb.CoreComponents do
       data-local-time-past={@past?}
       title={utc_text(@at, TimeFormat.full())}
       class={@class}
-    >
-      {GamendWeb.TimeText.relative(@at, @now, past: @past?)}
-    </time>
+    >{GamendWeb.TimeText.relative(@at, @now, past: @past?)}</time>
     """
   end
 
   def timestamp(assigns) do
+    assigns = assign(assigns, :text, utc_text(assigns.at, assigns.format))
+
     ~H"""
-    <time datetime={DateTime.to_iso8601(@at)} data-local-time={@format} class={@class}>
-      {utc_text(@at, @format)}
-    </time>
+    <time datetime={DateTime.to_iso8601(@at)} data-local-time={@format} class={@class}>{@text}</time>
     """
   end
 
@@ -1664,9 +1663,7 @@ defmodule GamendWeb.CoreComponents do
           data-local-duration-from={@running_from}
           data-local-duration-units={@units}
           class={@class}
-        >
-          {GamendWeb.TimeText.duration(@seconds, units: @units)}
-        </time>
+        >{GamendWeb.TimeText.duration(@seconds, units: @units)}</time>
         """
     end
   end

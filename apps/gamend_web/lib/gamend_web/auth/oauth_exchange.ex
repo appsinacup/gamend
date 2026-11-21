@@ -434,8 +434,9 @@ defmodule GamendWeb.Auth.OAuthExchange do
 
   defp exchange_provider_code(_provider, _code, _client_type), do: {:error, :unsupported_provider}
 
+  # Set to nil (a test that put its stub back that way) is the default too.
   defp exchanger do
-    Application.get_env(:gamend_web, :oauth_exchanger, Gamend.OAuth.Exchanger)
+    Application.get_env(:gamend_web, :oauth_exchanger) || Gamend.OAuth.Exchanger
   end
 
   defp setting(key), do: Gamend.Settings.get(Gamend.OAuth.Providers, key)

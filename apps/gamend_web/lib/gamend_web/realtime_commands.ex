@@ -18,31 +18,45 @@ defmodule GamendWeb.RealtimeCommands do
           name: String.t(),
           required: [String.t()],
           optional: [String.t()],
+          types: %{String.t() => type()},
           description: String.t()
         }
+
+  @typedoc "What a payload key holds (`GamendWeb.PayloadContract`)."
+  @type type :: GamendWeb.PayloadContract.type()
 
   @user "user:*"
   @lobby "lobby:*"
   @signaling "signaling:*"
 
-  # {topic, event, required payload keys, optional payload keys, description}
+  # {topic, event, required payload keys, optional payload keys, description}.
+  # A key is `name: type`, the type its value must be (`GamendWeb.ChannelContract`).
   @commands [
-    {@user, "call_hook", ~w(plugin fn), ~w(args), "Call a function of a server plugin"},
-    {@user, "kv:subscribe", ~w(key), ~w(user_id lobby_id),
+    {@user, "call_hook", [plugin: :string, fn: :string],
+     [args: {:free, "the plugin function's own arguments"}],
+     "Call a function of a server plugin"},
+    {@user, "kv:subscribe", [key: :string], [user_id: :string, lobby_id: :string],
      "Hear `kv_updated` and `kv_deleted` for a row"},
-    {@user, "kv:unsubscribe", ~w(key), ~w(user_id lobby_id), "Stop hearing a row"},
-    {@user, "results:list", [], ~w(kind status page page_size), "A page of the caller's results"},
-    {@user, "results:get", ~w(id), [], "One result and its stats"},
-    {@user, "results:events", ~w(id), ~w(after limit), "A result's events, oldest first"},
-    {@user, "webrtc:offer", ~w(sdp), ~w(type), "Open a WebRTC session with the server"},
-    {@user, "webrtc:ice", ~w(candidate), ~w(sdpMid sdpMLineIndex),
+    {@user, "kv:unsubscribe", [key: :string], [user_id: :string, lobby_id: :string],
+     "Stop hearing a row"},
+    {@user, "results:list", [],
+     [kind: :string, status: :string, page: :integer, page_size: :integer],
+     "A page of the caller's results"},
+    {@user, "results:get", [id: :string], [], "One result and its stats"},
+    {@user, "results:events", [id: :string], [after: :string, limit: :integer],
+     "A result's events, oldest first"},
+    {@user, "webrtc:offer", [sdp: :string], [type: :string],
+     "Open a WebRTC session with the server"},
+    {@user, "webrtc:ice", [candidate: :string], [sdpMid: :string, sdpMLineIndex: :integer],
      "An ICE candidate for that session"},
     {@user, "webrtc:close", [], [], "Close that session"},
     {@lobby, "get_server_time", [], [], "The server's clock, in unix milliseconds"},
-    {@signaling, "offer", ~w(target sdp), [], "Send one peer an SDP offer"},
-    {@signaling, "answer", ~w(target sdp), [], "Send one peer an SDP answer"},
-    {@signaling, "ice", ~w(target candidate), [], "Send one peer an ICE candidate"},
-    {@signaling, "broadcast_offer", ~w(sdp), [], "Send every peer in the room an SDP offer"},
+    {@signaling, "offer", [target: :string, sdp: :string], [], "Send one peer an SDP offer"},
+    {@signaling, "answer", [target: :string, sdp: :string], [], "Send one peer an SDP answer"},
+    {@signaling, "ice", [target: :string, candidate: :string], [],
+     "Send one peer an ICE candidate"},
+    {@signaling, "broadcast_offer", [sdp: :string], [],
+     "Send every peer in the room an SDP offer"},
     {@signaling, "list_users", [], [], "Who is in the room"}
   ]
 
@@ -54,12 +68,24 @@ defmodule GamendWeb.RealtimeCommands do
         topic: topic,
         event: event,
         name: name(topic, event),
-        required: required,
-        optional: optional,
+        required: names(required),
+        optional: names(optional),
+        types: Map.new(required ++ optional, fn {key, type} -> {to_string(key), type} end),
         description: description
       }
     end)
   end
+
+  @doc "The command `event` on `topic` (a joined topic, `user:<id>`, or its pattern), or nil."
+  @spec find(String.t(), String.t()) :: entry() | nil
+  def find(topic, event) when is_binary(topic) and is_binary(event) do
+    pattern = (topic |> String.split(":", parts: 2) |> hd()) <> ":*"
+    Enum.find(all(), &(&1.topic == pattern and &1.event == event))
+  end
+
+  def find(_topic, _event), do: nil
+
+  defp names(keys), do: Enum.map(keys, fn {key, _type} -> to_string(key) end)
 
   # What the SDK calls it: `kv:subscribe` is `kv_subscribe`, and off the user
   # channel the channel leads, as `lobby_get_server_time`.

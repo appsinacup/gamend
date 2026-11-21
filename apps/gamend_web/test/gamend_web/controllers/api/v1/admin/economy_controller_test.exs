@@ -98,7 +98,7 @@ defmodule GamendWeb.Api.V1.Admin.EconomyControllerTest do
       assert json_response(item, 400)["error"] == "invalid_item"
     end
 
-    test "an unknown user is 404, a bad amount 400", %{conn: conn, target: target} do
+    test "an unknown user is 404, a bad amount 400 or 422", %{conn: conn, target: target} do
       missing =
         post(conn, "/api/v1/admin/economy/grant", %{
           user_id: Ecto.UUID.generate(),
@@ -115,7 +115,9 @@ defmodule GamendWeb.Api.V1.Admin.EconomyControllerTest do
           amount: 0
         })
 
-      assert json_response(zero, 400)["error"] == "invalid_amount"
+      # Under the documented minimum: refused before the action.
+      assert %{"error" => "validation_failed", "errors" => %{"amount" => [_]}} =
+               json_response(zero, 422)
 
       none =
         post(conn, "/api/v1/admin/economy/consume_item", %{

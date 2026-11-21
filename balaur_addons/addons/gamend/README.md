@@ -18,7 +18,7 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-280 operations in 44 modules, and 100 realtime events, 15 socket commands.
+281 operations in 45 modules, and 100 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -582,6 +582,14 @@ Stats.
 | Function | Call | What it does |
 | --- | --- | --- |
 | `get_stats()` | `GET /api/v1/stats` | All public server counters in one call |
+
+## storage
+
+Storage.
+
+| Function | Call | What it does |
+| --- | --- | --- |
+| `upload(params, options)` | `PUT /api/v1/storage/upload` | Upload a file's bytes to an upload ticket (local storage) |
 
 ## time
 

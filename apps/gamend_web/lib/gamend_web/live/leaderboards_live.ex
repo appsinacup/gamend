@@ -477,15 +477,28 @@ defmodule GamendWeb.LeaderboardsLive do
   # Event Handlers
   # ---------------------------------------------------------------------------
 
+  event("prev_page")
   @impl true
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_groups()}
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_groups()}
 
+  event("leaderboards_page_size", size: :string)
+
   def handle_event("leaderboards_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_groups()}
+
+  event("prev_season")
+
+  # No board open (the index, a stale tab, an event sent by hand): no season to move to.
+  def handle_event(event, _params, %{assigns: %{slug_leaderboards: []}} = socket)
+      # literal-ok: event names, as in the handle_event/3 heads they guard
+      when event in ~w(prev_season next_season),
+      do: {:noreply, socket}
 
   def handle_event("prev_season", _, socket) do
     # Go to older season (higher index)
@@ -496,6 +509,8 @@ defmodule GamendWeb.LeaderboardsLive do
     {:noreply, push_patch(socket, to: leaderboard_path(leaderboard, view_params(socket)))}
   end
 
+  event("next_season")
+
   def handle_event("next_season", _, socket) do
     # Go to newer season (lower index)
     slug_lbs = socket.assigns.slug_leaderboards
@@ -505,9 +520,14 @@ defmodule GamendWeb.LeaderboardsLive do
     {:noreply, push_patch(socket, to: leaderboard_path(leaderboard, view_params(socket)))}
   end
 
+  event("view_filter", _target: {:optional, {:list, :string}})
   # A filter picked: the view's URL, its tab kept and the filters after the
   # changed one let go (their values depend on it).
-  def handle_event("view_filter", %{"_target" => [field]} = params, socket) do
+  def handle_event(
+        "view_filter",
+        %{"_target" => [field]} = params,
+        %{assigns: %{picked: _}} = socket
+      ) do
     %{tab: tab, picked: picked} = socket.assigns
     before = Enum.take_while(picked, fn {f, _} -> f != field end)
     value = params[field]
@@ -529,12 +549,17 @@ defmodule GamendWeb.LeaderboardsLive do
 
   def handle_event("view_filter", _params, socket), do: {:noreply, socket}
 
+  event("records_prev")
   # The URL changes, and `handle_params/3` reads the records.
   def handle_event("records_prev", _, socket),
     do: {:noreply, LiveHelpers.prev_page(socket, :records_page)}
 
+  event("records_next")
+
   def handle_event("records_next", _, socket),
     do: {:noreply, LiveHelpers.next_page(socket, :records_page)}
+
+  event("search", search: :string)
 
   def handle_event("search", %{"search" => term}, socket) do
     {:noreply, assign(socket, records_search: term, records_page: 1)}

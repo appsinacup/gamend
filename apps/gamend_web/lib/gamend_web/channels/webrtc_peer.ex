@@ -365,36 +365,22 @@ defmodule GamendWeb.WebRTCPeer do
 
   defp maybe_handle_rpc(@events_channel, WsFormat.json(), data, state) do
     case Jason.decode(data) do
-      {:ok, %{"type" => @call_hook, "plugin" => plugin, "fn" => func} = payload} ->
-        args = Map.get(payload, "args", [])
-        args = if is_list(args), do: args, else: [args]
+      {:ok, %{"type" => @call_hook} = payload} ->
+        case GamendWeb.ChannelContract.check("user:*", @call_hook, payload) do
+          :ok ->
+            handle_call_hook(payload, state)
 
-        resp =
-          case call_hook(plugin, func, {:list, args}, :map, state) do
-            {:ok, res} ->
-              case Jason.encode(%{type: "hook_reply", plugin: plugin, fn: func, data: res}) do
-                {:ok, json} ->
-                  json
+          # Answered as any hook error is, so the client is told, not left waiting.
+          {:error, _errors} ->
+            refusal = %{
+              type: HookErrorCode.hook_error(),
+              plugin: payload["plugin"],
+              fn: payload["fn"],
+              error: GamendWeb.ChannelContract.validation_failed()
+            }
 
-                {:error, _} ->
-                  Jason.encode!(%{
-                    type: HookErrorCode.hook_error(),
-                    plugin: plugin,
-                    fn: func,
-                    error: "result_not_json_encodable"
-                  })
-              end
-
-            {:error, reason} ->
-              Jason.encode!(%{
-                type: HookErrorCode.hook_error(),
-                plugin: plugin,
-                fn: func,
-                error: format_error(reason)
-              })
-          end
-
-        _ = send_on_channel(state, @events_channel, resp)
+            _ = send_on_channel(state, @events_channel, Jason.encode!(refusal))
+        end
 
       _ ->
         :ok
@@ -444,6 +430,40 @@ defmodule GamendWeb.WebRTCPeer do
   end
 
   defp maybe_handle_rpc(_label, _format, _data, _state), do: :ok
+
+  # The payload matched its `call_hook` row in `GamendWeb.RealtimeCommands`
+  # (`GamendWeb.ChannelContract`): `plugin` and `fn` are strings.
+  defp handle_call_hook(%{"plugin" => plugin, "fn" => func} = payload, state) do
+    args = Map.get(payload, "args", [])
+    args = if is_list(args), do: args, else: [args]
+
+    resp =
+      case call_hook(plugin, func, {:list, args}, :map, state) do
+        {:ok, res} ->
+          case Jason.encode(%{type: "hook_reply", plugin: plugin, fn: func, data: res}) do
+            {:ok, json} ->
+              json
+
+            {:error, _} ->
+              Jason.encode!(%{
+                type: HookErrorCode.hook_error(),
+                plugin: plugin,
+                fn: func,
+                error: "result_not_json_encodable"
+              })
+          end
+
+        {:error, reason} ->
+          Jason.encode!(%{
+            type: HookErrorCode.hook_error(),
+            plugin: plugin,
+            fn: func,
+            error: format_error(reason)
+          })
+      end
+
+    _ = send_on_channel(state, @events_channel, resp)
+  end
 
   # The frame is the client's bytes: whatever the decoder raises on a malformed
   # one drops that frame. The rescue covers the decode alone, so a bug in

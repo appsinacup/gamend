@@ -94,7 +94,10 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
            user_id: %Schema{type: :string, format: :uuid},
            title: %Schema{type: :string},
            body: %Schema{type: :string},
-           data: %Schema{type: :object},
+           data:
+             GamendWeb.Schemas.FreeForm.object(
+               "data the game sends with the notification to its app"
+             ),
            image: %Schema{type: :string},
            sound: %Schema{type: :string},
            badge: %Schema{type: :integer},

@@ -14,7 +14,7 @@ defmodule GamendWeb.Schemas.AdminUser do
       display_name: %Schema{type: :string},
       is_admin: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       lobby_id: %Schema{type: :string, description: "Empty when not in a lobby"},
       party_id: %Schema{type: :string, description: "Empty when not in a party"},
       is_online: %Schema{type: :boolean},

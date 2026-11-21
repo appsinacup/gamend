@@ -55,6 +55,9 @@ msgstr "Cửa hàng"
 msgid "Server Stats"
 msgstr "Thống kê máy chủ"
 
+msgid "Consulting"
+msgstr ""
+
 msgid "Help"
 msgstr "Trợ giúp"
 
@@ -82,8 +85,53 @@ msgstr "Giải đấu"
 msgid "Groups"
 msgstr "Các nhóm"
 
-msgid "News"
-msgstr "Tin tức"
+msgid "Email contact@gamend.org"
+msgstr ""
+
+msgid "Apps in a Cup consulting"
+msgstr ""
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting sessions**: short, focused help to get you unstuck. **€50 per hour.**"
+msgstr ""
+
+msgid "Deployment"
+msgstr ""
+
+msgid "Your own server, Docker, fly.io or a VPS: Postgres or SQLite, domains, TLS and backups."
+msgstr ""
+
+msgid "Deployment & hosting"
+msgstr ""
+
+msgid "Game logic on the server where players cannot reach it: hooks, plugins and GDScript hooks."
+msgstr ""
+
+msgid "Server scripting & hooks"
+msgstr ""
+
+msgid "Benchmarks"
+msgstr "Đo hiệu năng"
+
+msgid "Clustering, load testing, and finding what slows a busy server down."
+msgstr ""
+
+msgid "Scaling & performance"
+msgstr ""
+
+msgid "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](https://balaurengine.org) SDKs into your game."
+msgstr ""
+
+msgid "Client integration"
+msgstr ""
+
+msgid "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need."
+msgstr ""
+
+msgid "How it works"
+msgstr ""
 
 msgid "Getting Started"
 msgstr "Bắt đầu"
@@ -94,20 +142,11 @@ msgstr "Video giới thiệu"
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
 msgstr "Máy chủ game Elixir **mã nguồn mở** cho các trò chơi nhiều người thời gian thực: backend, trang web cho người chơi và bảng quản trị trong một."
 
-msgid "Gamend"
-msgstr "Gamend"
-
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
 msgstr "Tham quan bảng quản trị, nhiệm vụ, cửa hàng và hook máy chủ của Gamend"
 
-msgid "Benchmarks"
-msgstr "Đo hiệu năng"
-
-msgid "Godot SDK"
-msgstr "Godot SDK"
-
-msgid "C++ SDK"
-msgstr "C++ SDK"
+msgid "Architecture"
+msgstr "Kiến trúc"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
 msgstr "**Backend cho game nhiều người chơi của bạn**: tài khoản, sảnh chờ, trò chuyện, bảng xếp hạng và mọi thứ người chơi mong đợi xung quanh trò chơi. Nó còn đi kèm giao diện web bao quanh: một trang web dựng sẵn cho người chơi (cửa hàng, bảng xếp hạng, giải đấu, nhiệm vụ, nhóm, trò chuyện) và một bảng quản trị đầy đủ. Script phía máy chủ chạy logic riêng của bạn ở nơi người chơi không thể chạm tới. Bạn tự chạy nó trên máy chủ của mình; không có dịch vụ lưu trữ sẵn."
@@ -178,6 +217,24 @@ msgstr "Viết hook máy chủ bằng **Elixir, GDScript hoặc Gleam** cho tín
 msgid "Server Scripting & Scheduling"
 msgstr "Script máy chủ và lập lịch"
 
+msgid "Godot SDK"
+msgstr "Godot SDK"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Plugin Unreal"
+
+msgid "C++ SDK"
+msgstr "C++ SDK"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "SDK cho **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript và Balaur**, mỗi SDK có mọi lệnh gọi dành cho người chơi, model có kiểu và các sự kiện thời gian thực, được build lại với mỗi bản phát hành máy chủ. Mọi thứ khác giao tiếp trực tiếp với HTTP API và các kênh WebSocket."
+
+msgid "Client SDKs"
+msgstr "SDK phía client"
+
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
 msgstr "REST API, kênh WebSocket thời gian thực và WebRTC DataChannels độ trễ thấp, cùng định dạng thời gian thực protobuf tùy chọn. Cổng quản trị và giao diện web, được dịch sang 30 ngôn ngữ."
 
@@ -231,18 +288,3 @@ msgstr "Phân tích, nhật ký và khả năng quan sát"
 
 msgid "Game + Backend"
 msgstr "Game + backend"
-
-msgid "Architecture"
-msgstr "Kiến trúc"
-
-msgid "Unity SDK"
-msgstr "Unity SDK"
-
-msgid "Unreal plugin"
-msgstr "Plugin Unreal"
-
-msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
-msgstr "SDK cho **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript và Balaur**, mỗi SDK có mọi lệnh gọi dành cho người chơi, model có kiểu và các sự kiện thời gian thực, được build lại với mỗi bản phát hành máy chủ. Mọi thứ khác giao tiếp trực tiếp với HTTP API và các kênh WebSocket."
-
-msgid "Client SDKs"
-msgstr "SDK phía client"

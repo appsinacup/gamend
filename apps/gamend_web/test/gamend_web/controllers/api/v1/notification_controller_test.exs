@@ -313,9 +313,8 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
       conn
       |> auth_conn(user)
       |> delete("/api/v1/notifications", %{})
-      |> json_response(400)
+      |> json_response(422)
 
-    assert resp["error"] == "missing_param"
-    assert resp["message"] =~ "ids"
+    assert %{"error" => "validation_failed", "errors" => %{"ids" => [_]}} = resp
   end
 end

@@ -456,6 +456,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
   # Event Handlers
   # ---------------------------------------------------------------------------
 
+  event("set_filter", filter: :string)
   @impl true
   def handle_event("set_filter", %{"filter" => filter}, socket) do
     {:noreply,
@@ -465,6 +466,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> reload_leaderboards()}
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -483,6 +485,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> sync_selected_ids(leaderboard_ids(socket.assigns.leaderboards))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     leaderboards = socket.assigns.leaderboards || []
@@ -499,6 +502,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] || MapSet.new()
@@ -549,14 +553,22 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     {:noreply, socket |> reload_leaderboards()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_leaderboards()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_leaderboards()}
 
+  event("leaderboards_page_size", size: :string)
+
   def handle_event("leaderboards_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_leaderboards()}
+
+  event("new_leaderboard")
 
   def handle_event("new_leaderboard", _, socket) do
     changeset = Leaderboards.change_leaderboard(%Leaderboard{})
@@ -567,6 +579,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> assign(:selected_leaderboard, nil)
      |> assign(:form, form)}
   end
+
+  event("new_season_from", id: :uuid)
 
   def handle_event("new_season_from", %{"id" => id}, socket) do
     # The existing leaderboard's settings, copied into a new one
@@ -590,6 +604,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     end)
   end
 
+  event("edit_leaderboard", id: :uuid)
+
   def handle_event("edit_leaderboard", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_leaderboard(id), fn leaderboard ->
       form =
@@ -602,6 +618,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     end)
   end
 
+  event("cancel_edit")
+
   def handle_event("cancel_edit", _, socket) do
     {:noreply,
      socket
@@ -609,12 +627,16 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> assign(:form, nil)}
   end
 
+  event("save_leaderboard", leaderboard: {:schema, Gamend.Leaderboards.Leaderboard})
+
   def handle_event("save_leaderboard", %{"leaderboard" => params}, socket) do
     case decode_metadata(params) do
       {:ok, params} -> save_leaderboard(socket, params)
       :error -> {:noreply, put_flash(socket, :error, "Metadata must be a JSON object")}
     end
   end
+
+  event("end_leaderboard", id: :uuid)
 
   def handle_event("end_leaderboard", %{"id" => id}, socket) do
     case Leaderboards.end_leaderboard(id) do
@@ -628,6 +650,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
         {:noreply, put_flash(socket, :error, "Failed to end leaderboard")}
     end
   end
+
+  event("delete_leaderboard", id: :uuid)
 
   def handle_event("delete_leaderboard", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_leaderboard(id), fn lb ->
@@ -644,6 +668,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     end)
   end
 
+  event("view_records", id: :uuid)
   # Records
   def handle_event("view_records", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_leaderboard(id), fn leaderboard ->
@@ -657,6 +682,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     end)
   end
 
+  event("close_records")
+
   def handle_event("close_records", _, socket) do
     {:noreply,
      socket
@@ -666,11 +693,17 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> assign(:records, [])}
   end
 
+  event("records_prev_page")
+
   def handle_event("records_prev_page", _, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:records_page) |> reload_records()}
 
+  event("records_next_page")
+
   def handle_event("records_next_page", _, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:records_page) |> reload_records()}
+
+  event("add_record")
 
   def handle_event("add_record", _, socket) do
     changeset = Leaderboards.change_record(%Record{})
@@ -681,6 +714,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> assign(:editing_record, nil)
      |> assign(:record_form, form)}
   end
+
+  event("edit_record", id: :uuid)
 
   def handle_event("edit_record", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_record(id), fn record ->
@@ -693,6 +728,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     end)
   end
 
+  event("cancel_record_edit")
+
   def handle_event("cancel_record_edit", _, socket) do
     {:noreply,
      socket
@@ -700,12 +737,16 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      |> assign(:record_form, nil)}
   end
 
+  event("save_record", record: {:schema, Gamend.Leaderboards.Record})
+
   def handle_event("save_record", %{"record" => params}, socket) do
     case decode_metadata(params) do
       {:ok, params} -> save_record(socket, params)
       :error -> {:noreply, put_flash(socket, :error, "Metadata must be a JSON object")}
     end
   end
+
+  event("delete_record", id: :uuid)
 
   def handle_event("delete_record", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_record(id), fn record ->
@@ -859,7 +900,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
   defp maybe_add_filter(opts, "ended"), do: Keyword.put(opts, :active, false)
   defp maybe_add_filter(opts, _), do: opts
 
-  defp reload_records(socket) do
+  # No board open (a stale tab, an event sent by hand): nothing to page.
+  defp reload_records(%{assigns: %{selected_leaderboard: %{id: _}}} = socket) do
     lb = socket.assigns.selected_leaderboard
     page = socket.assigns[:records_page] || 1
     page_size = 25
@@ -876,4 +918,6 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     |> assign(:records_count, count)
     |> assign(:records_total_pages, max(total_pages, 1))
   end
+
+  defp reload_records(socket), do: socket
 end

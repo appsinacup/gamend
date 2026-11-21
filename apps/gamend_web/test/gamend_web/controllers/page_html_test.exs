@@ -97,7 +97,7 @@ defmodule GamendWeb.PresentationPageTest do
                ~s|class="grid w-full gap-6 md:gap-x-8 md:gap-y-4 items-center min-h-[calc(50svh-2.5rem)] py-8 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]"|
 
       assert html =~
-               ~s|class="flex flex-col gap-4 md:justify-center md:gap-5 md:pt-6 md:min-h-48 order-2 md:order-2 text-center items-center"|
+               ~s|class="flex flex-col gap-4 md:justify-center md:gap-5 md:pt-6 md:min-h-48 row-start-2 md:row-start-1 md:col-start-2 text-center items-center"|
     end
 
     test "renders animated scroll cue when sections follow hero" do

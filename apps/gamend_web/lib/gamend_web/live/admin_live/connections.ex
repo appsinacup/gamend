@@ -366,6 +366,7 @@ defmodule GamendWeb.AdminLive.Connections do
   @impl true
   def handle_info(_msg, socket), do: {:noreply, socket}
 
+  event("filter-connections", filter: :string)
   @impl true
   def handle_event("filter-connections", %{"filter" => filter}, socket) do
     {:noreply,
@@ -374,10 +375,12 @@ defmodule GamendWeb.AdminLive.Connections do
      |> assign_all()}
   end
 
+  event("conn_prev_page")
   @impl true
   def handle_event("conn_prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:conn_page) |> assign_all()}
 
+  event("conn_next_page")
   @impl true
   # assign_all/1 clamps to the last page as well.
   def handle_event("conn_next_page", _params, socket),

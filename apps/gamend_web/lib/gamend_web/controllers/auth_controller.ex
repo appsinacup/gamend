@@ -450,7 +450,7 @@ defmodule GamendWeb.AuthController do
     parameters: [
       provider: [
         in: :path,
-        name: "provider",
+        name: :provider,
         schema: %OpenApiSpex.Schema{
           type: :string,
           enum: AuthProvider.all()
@@ -549,7 +549,7 @@ defmodule GamendWeb.AuthController do
     parameters: [
       state: [
         in: :query,
-        name: "state",
+        name: :state,
         schema: %OpenApiSpex.Schema{type: :string},
         required: false
       ]
@@ -573,19 +573,19 @@ defmodule GamendWeb.AuthController do
     parameters: [
       provider: [
         in: :path,
-        name: "provider",
+        name: :provider,
         schema: %OpenApiSpex.Schema{type: :string},
         required: true
       ],
       code: [
         in: :query,
-        name: "code",
+        name: :code,
         schema: %OpenApiSpex.Schema{type: :string},
         required: false
       ],
       state: [
         in: :query,
-        name: "state",
+        name: :state,
         schema: %OpenApiSpex.Schema{type: :string},
         required: false
       ]
@@ -749,7 +749,7 @@ defmodule GamendWeb.AuthController do
 
   @provider_path_param [
     in: :path,
-    name: "provider",
+    name: :provider,
     schema: %OpenApiSpex.Schema{
       type: :string,
       enum: ["discord", "apple", "google", "facebook", "github", "steam"]
@@ -937,7 +937,7 @@ defmodule GamendWeb.AuthController do
     parameters: [
       session_id: [
         in: :path,
-        name: "session_id",
+        name: :session_id,
         schema: %OpenApiSpex.Schema{type: :string},
         description: "Session ID from OAuth request",
         required: true

@@ -229,6 +229,61 @@ JSON response with a named `GamendWeb.Schemas` module, never an inline
 [named-api-schemas.md](named-api-schemas.md) for how the documented schemas
 are named.
 
+## Requests
+
+Every value of a request is the client's, so a wrong type is the client's
+mistake: a 4xx, never a crash. One check holds each way in to its
+declaration, before the handler runs:
+
+| Way in | Declared in | Checked by | A mismatch |
+|---|---|---|---|
+| HTTP API | the operation's OpenAPI path, query and body schemas | `GamendWeb.Plugs.RequestContract`, plugged into every controller (after the router's gates, so 401 and 403 come first) | 422 `validation_failed`, per field |
+| Channel command | its row in `GamendWeb.RealtimeCommands` (`name: type`) | `GamendWeb.ChannelContract`, around every `handle_in/3` (`use GamendWeb, :channel`) and the WebRTC data channel's `call_hook` | `{:error, %{error: "validation_failed", errors: ...}}`, channel kept |
+| LiveView event | `event("name", key: type)` beside its handler | `GamendWeb.LiveEvents`, around every `handle_event/3` (`use GamendWeb, :live_view`, `:live_component`) | refused, logged at info, socket unchanged |
+
+The channel and LiveView types are `GamendWeb.PayloadContract`'s: `:string`,
+`:uuid`, `:integer`, `:boolean`, `{:in, values}`, `{:or_blank, type}`, a
+nested keyword list, `{:schema, EctoModule}` (a form over a changeset),
+`{:list, type}`, `{:map_of, type}`, each `{:optional, type}` when it may be
+left out. There is no bare `:map`, `:list` or `:any`: a value no schema can
+say is `{:free, "why"}`, and in the OpenAPI document
+`GamendWeb.Schemas.FreeForm.object/2` (or `metadata/1`, `kv_value/1`,
+`value/2`), which writes the reason as `x-free-form`. The few that need it: a
+game's metadata, a key-value row's value, a plugin's arguments and result, a
+provider's webhook body, a report kind's own fields. A value of the right type
+that names nothing (an id since deleted) is still the handler's to answer.
+
+Every server-to-client event has its protobuf message
+(`proto/gamend_realtime.proto`, `GamendWeb.EventCodec`): none is sent as JSON
+only.
+
+**Enforcement.** `mix gamend.contract.lint` (`GamendWeb.ContractLint`, in
+`precommit`; `--free` lists the marked free-form values) fails on an
+`/api/v1` route with no operation, an OpenAPI schema that says nothing of its
+value without its `x-free-form`, an event with no protobuf message, a command
+key that is not a declared type, and a LiveView event handled and not declared
+or declared and not handled. Three tests send every way in the wrong types and
+odd values and fail on a crash, from `GamendWeb.Testing.WrongTypes`:
+`api_tests/1` (every `/api` route of the router), `channel_tests/1` (every
+registered command) and `live_tests/1` (every live route, as an admin, each
+declared event).
+
+**In a host.** The checks come with `use GamendWeb, :controller`, `:channel`,
+`:live_view` and `:live_component`. To adopt them: draft the LiveView
+declarations with `mix gamend.live_events.draft --apply` and review each; give
+every `/api/v1` route its operation; add `gamend.contract.lint` to `precommit`;
+and add one test module per kind:
+
+```elixir
+defmodule MyAppWeb.WrongTypesTest do
+  use MyAppWeb.ConnCase, async: false
+  require GamendWeb.Testing.WrongTypes, as: WrongTypes
+
+  WrongTypes.api_tests()
+  WrongTypes.live_tests()
+end
+```
+
 ## Authentication in the document
 
 An operation's `security` says what its route's pipeline enforces, because a

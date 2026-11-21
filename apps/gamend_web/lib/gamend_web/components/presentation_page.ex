@@ -245,24 +245,20 @@ defmodule GamendWeb.PresentationPage do
               mobile_fit?(@hero) &&
                 "max-md:flex max-md:flex-1 max-md:basis-0 max-md:flex-col max-md:items-stretch"
             ]}>
-              <%!-- A hero may draw a host component where its picture goes
-                    (`"component"`, the way a section does): a language
-                    picker beside the claim, say. --%>
-              <div class={[
-                media_order_class(@hero),
-                mobile_fit?(@hero) &&
-                  "max-md:flex max-md:min-h-64 max-md:flex-1 max-md:basis-0 max-md:flex-col"
-              ]}>
-                <.host_component
-                  :if={has_component?(@hero)}
-                  section={@hero}
-                  current_scope={@current_scope}
-                />
-                <.media :if={!has_component?(@hero)} item={@hero} variant="hero" />
-              </div>
+              <%!-- The two columns in the order a phone shows them, each
+                    placed in its column from `md` (`media_place_class/1`):
+                    a page is painted as its HTML streams in, and the media
+                    written first and moved by `order` was drawn alone in
+                    the first column, then pushed across by the claim
+                    (a language panel jumping 436px, 2026-11-20). --%>
+              <.hero_media
+                :if={!media_after_text?(@hero)}
+                hero={@hero}
+                current_scope={@current_scope}
+              />
               <div class={[
                 "flex flex-col gap-5",
-                text_order_class(@hero),
+                text_place_class(@hero),
                 text_align_class(@hero)
               ]}>
                 <%!-- `hero.logo`: the site's mark over the claim, larger
@@ -289,6 +285,11 @@ defmodule GamendWeb.PresentationPage do
                 </div>
                 <.buttons buttons={Map.get(@hero, "buttons", [])} />
               </div>
+              <.hero_media
+                :if={media_after_text?(@hero)}
+                hero={@hero}
+                current_scope={@current_scope}
+              />
             </div>
           </div>
           <a
@@ -1109,13 +1110,13 @@ defmodule GamendWeb.PresentationPage do
       section_height_class(@section),
       grid_class(@section, "section")
     ]}>
-      <div class={["flex items-center", media_order_class(@section)]}>
+      <div class={["flex items-center", media_place_class(@section)]}>
         <.media item={@section} variant="section" columns={@columns} />
       </div>
       <div class={[
         "flex flex-col gap-4 md:justify-center md:gap-5 md:pt-6",
         section_text_frame_class(@section),
-        text_order_class(@section),
+        text_place_class(@section),
         text_align_class(@section)
       ]}>
         <h2 class="text-2xl font-bold tracking-normal sm:text-3xl">
@@ -1278,24 +1279,48 @@ defmodule GamendWeb.PresentationPage do
     end
   end
 
-  defp media_order_class(item) do
+  # Each column placed in the grid, never moved by `order`: a page is painted
+  # as its HTML streams in, and a column moved by `order` was drawn where it
+  # was written until the other one arrived, then jumped (2026-11-20). Below
+  # `md` in its row (a hero that fits the screen is a flex column there,
+  # which placement does not reach: it writes its columns in this order,
+  # `media_after_text?/1`); from `md` in its column of the first row.
+  defp media_place_class(item) do
     [
-      if(Map.get(item, "image_position_mobile", "top") == "bottom",
-        do: "order-2",
-        else: "order-1"
-      ),
-      if(desktop_image_position(item) == @right, do: "md:order-2", else: "md:order-1")
+      if(media_after_text?(item), do: "row-start-2", else: "row-start-1"),
+      "md:row-start-1",
+      if(desktop_image_position(item) == @right, do: "md:col-start-2", else: "md:col-start-1")
     ]
   end
 
-  defp text_order_class(item) do
+  defp text_place_class(item) do
     [
-      if(Map.get(item, "image_position_mobile", "top") == "bottom",
-        do: "order-1",
-        else: "order-2"
-      ),
-      if(desktop_image_position(item) == @right, do: "md:order-1", else: "md:order-2")
+      if(media_after_text?(item), do: "row-start-1", else: "row-start-2"),
+      "md:row-start-1",
+      if(desktop_image_position(item) == @right, do: "md:col-start-1", else: "md:col-start-2")
     ]
+  end
+
+  # On a phone the media under the text (`"image_position_mobile": "bottom"`).
+  defp media_after_text?(item), do: Map.get(item, "image_position_mobile", "top") == "bottom"
+
+  attr :hero, :map, required: true
+  attr :current_scope, :any, default: nil
+
+  # A hero's media column: its picture, or a host component where the picture
+  # goes (`"component"`, the way a section does): a language picker beside
+  # the claim, say.
+  defp hero_media(assigns) do
+    ~H"""
+    <div class={[
+      media_place_class(@hero),
+      mobile_fit?(@hero) &&
+        "max-md:flex max-md:min-h-64 max-md:flex-1 max-md:basis-0 max-md:flex-col"
+    ]}>
+      <.host_component :if={has_component?(@hero)} section={@hero} current_scope={@current_scope} />
+      <.media :if={!has_component?(@hero)} item={@hero} variant="hero" />
+    </div>
+    """
   end
 
   defp text_align_class(item) do

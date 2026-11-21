@@ -318,7 +318,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
     end
   end
 
-  test "GET /api/v1/lobbies/:id rejects a malformed id as a bad request", %{conn: conn} do
+  test "GET /api/v1/lobbies/:id answers a malformed id as not found", %{conn: conn} do
     user = AccountsFixtures.user_fixture()
     {:ok, token, _} = Guardian.encode_and_sign(user)
 
@@ -327,7 +327,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
       |> put_req_header("authorization", "Bearer " <> token)
       |> get("/api/v1/lobbies/not-a-uuid")
 
-    assert json_response(conn, 400)["error"] == "invalid_id"
+    assert json_response(conn, 404)["error"] == "not_found"
   end
 
   test "GET /api/v1/lobbies/:id omits member emails", %{conn: conn} do
@@ -768,7 +768,11 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
     } do
       elsewhere = AccountsFixtures.user_fixture()
 
-      for target <- [Ecto.UUID.generate(), "not-a-uuid", elsewhere.id] do
+      # Not a UUID, as the body documents: refused before the action.
+      bad = post(conn, "/api/v1/lobbies/kick", %{target_user_id: "not-a-uuid"})
+      assert json_response(bad, 422)["error"] == "validation_failed"
+
+      for target <- [Ecto.UUID.generate(), elsewhere.id] do
         conn = post(conn, "/api/v1/lobbies/kick", %{target_user_id: target})
         assert json_response(conn, 404)["error"] == "not_found"
       end

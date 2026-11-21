@@ -328,25 +328,38 @@ defmodule GamendWeb.NotificationsLive do
     {:ok, socket}
   end
 
+  event("toggle_section", section: :string)
   @impl true
   def handle_event("toggle_section", %{"section" => key}, socket),
     do: {:noreply, update(socket, :collapsed_sections, &toggle(&1, key))}
 
+  event("toggle_stack", stack: :string)
+
   def handle_event("toggle_stack", %{"stack" => key}, socket),
     do: {:noreply, update(socket, :open_stacks, &toggle(&1, key))}
+
+  event("load_more")
 
   def handle_event("load_more", _params, socket) do
     {:noreply, socket |> update(:notif_limit, &(&1 + @load_step)) |> reload_notifications()}
   end
 
+  event("delete", id: :uuid)
+
   def handle_event("delete", %{"id" => id}, socket),
     do: {:noreply, delete_rows(socket, [id])}
+
+  event("delete_stack", stack: :string)
 
   def handle_event("delete_stack", %{"stack" => key}, socket),
     do: {:noreply, delete_rows(socket, Sections.stack_ids(socket.assigns.sections, key))}
 
+  event("delete_section", section: :string)
+
   def handle_event("delete_section", %{"section" => key}, socket),
     do: {:noreply, delete_rows(socket, Sections.section_ids(socket.assigns.sections, key))}
+
+  event("delete_all")
 
   def handle_event("delete_all", _params, socket) do
     user = Scope.user(socket.assigns.current_scope)

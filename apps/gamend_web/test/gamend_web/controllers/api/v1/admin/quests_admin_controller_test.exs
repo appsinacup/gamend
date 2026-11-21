@@ -125,7 +125,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestsAdminControllerTest do
     resp = ctx.admin_conn |> post("/api/v1/admin/quests/reset", body_params) |> json_response(404)
     assert resp["error"] == "no_progress"
 
-    resp = ctx.admin_conn |> post("/api/v1/admin/quests/claim", %{}) |> json_response(400)
-    assert resp["error"] == "missing_param"
+    resp = ctx.admin_conn |> post("/api/v1/admin/quests/claim", %{}) |> json_response(422)
+    assert resp["error"] == "validation_failed"
   end
 end

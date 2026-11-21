@@ -108,6 +108,7 @@ defmodule GamendWeb.Api.V1.PushTokenControllerTest do
 
     assert Push.count_tokens(user.id) == 0
 
+    # Not a UUID, as the path documents: a URL that names nothing.
     assert %{"error" => "not_found"} =
              json_response(delete(conn, "/api/v1/me/push_tokens/not-a-uuid"), 404)
   end

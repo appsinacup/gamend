@@ -58,7 +58,7 @@ defmodule GamendWeb.Schemas.ReadyCheckState do
         type: :string,
         description: "Why it failed: `declined`, `timeout` or `cancelled`; empty otherwise"
       },
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       total: %Schema{type: :integer},
       ready_count: %Schema{type: :integer},
       your_state: %Schema{

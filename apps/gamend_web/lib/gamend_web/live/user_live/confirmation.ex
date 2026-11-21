@@ -133,6 +133,7 @@ defmodule GamendWeb.UserLive.Confirmation do
   defp confirm_action(:confirm_email), do: ~p"/users/confirm"
   defp confirm_action(_magic_link), do: ~p"/users/log_in?_action=confirmed"
 
+  event("submit", user: {:schema, Gamend.Accounts.User})
   @impl true
   def handle_event("submit", %{"user" => params}, socket) do
     {:noreply, assign(socket, form: to_form(params, as: FormName.user()), trigger_submit: true)}

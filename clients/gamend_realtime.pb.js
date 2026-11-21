@@ -3,7 +3,7 @@ import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
 const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
-const $Object = $util.global.Object, $undefined = $util.global.undefined, $Error = $util.global.Error, $RangeError = $util.global.RangeError, $TypeError = $util.global.TypeError, $Boolean = $util.global.Boolean, $String = $util.global.String, $parseInt = $util.global.parseInt, $Array = $util.global.Array, $BigInt = $util.global.BigInt, $Number = $util.global.Number;
+const $Object = $util.global.Object, $undefined = $util.global.undefined, $Error = $util.global.Error, $RangeError = $util.global.RangeError, $TypeError = $util.global.TypeError, $Boolean = $util.global.Boolean, $String = $util.global.String, $parseInt = $util.global.parseInt, $Array = $util.global.Array, $BigInt = $util.global.BigInt, $Number = $util.global.Number, $isFinite = $util.global.isFinite;
 
 // Exported root namespace
 const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
@@ -10811,6 +10811,3856 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 return KvEntry;
+            })();
+
+            v1.PlayResult = (function() {
+
+                /**
+                 * Properties of a PlayResult.
+                 * @typedef {Object} gamend.realtime.v1.PlayResult.$Properties
+                 * @property {string|null} [id] PlayResult id
+                 * @property {string|null} [user_id] PlayResult user_id
+                 * @property {string|null} [lobby_id] PlayResult lobby_id
+                 * @property {string|null} [kind] PlayResult kind
+                 * @property {string|null} [visibility] PlayResult visibility
+                 * @property {string|null} [status] PlayResult status
+                 * @property {Uint8Array|null} [metadata_json] PlayResult metadata_json
+                 * @property {number|Long|null} [started_at_ms] PlayResult started_at_ms
+                 * @property {number|Long|null} [ended_at_ms] PlayResult ended_at_ms
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a PlayResult.
+                 * @memberof gamend.realtime.v1
+                 * @interface IPlayResult
+                 * @augments gamend.realtime.v1.PlayResult.$Properties
+                 * @deprecated Use gamend.realtime.v1.PlayResult.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a PlayResult.
+                 * @typedef {gamend.realtime.v1.PlayResult.$Properties} gamend.realtime.v1.PlayResult.$Shape
+                 */
+
+                /**
+                 * Constructs a new PlayResult.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a PlayResult.
+                 * @constructor
+                 * @param {gamend.realtime.v1.PlayResult.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const PlayResult = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * PlayResult id.
+                 * @member {string} id
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.id = "";
+
+                /**
+                 * PlayResult user_id.
+                 * @member {string} user_id
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.user_id = "";
+
+                /**
+                 * PlayResult lobby_id.
+                 * @member {string} lobby_id
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.lobby_id = "";
+
+                /**
+                 * PlayResult kind.
+                 * @member {string} kind
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.kind = "";
+
+                /**
+                 * PlayResult visibility.
+                 * @member {string} visibility
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.visibility = "";
+
+                /**
+                 * PlayResult status.
+                 * @member {string} status
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.status = "";
+
+                /**
+                 * PlayResult metadata_json.
+                 * @member {Uint8Array} metadata_json
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.metadata_json = $util.newBuffer([]);
+
+                /**
+                 * PlayResult started_at_ms.
+                 * @member {number|Long|null|undefined} started_at_ms
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.started_at_ms = null;
+
+                /**
+                 * PlayResult ended_at_ms.
+                 * @member {number|Long|null|undefined} ended_at_ms
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 */
+                PlayResult.prototype.ended_at_ms = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(PlayResult.prototype, "_started_at_ms", {
+                    get: $util.oneOfGetter($oneOfFields = ["started_at_ms"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(PlayResult.prototype, "_ended_at_ms", {
+                    get: $util.oneOfGetter($oneOfFields = ["ended_at_ms"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified PlayResult message. Does not implicitly {@link gamend.realtime.v1.PlayResult.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @static
+                 * @param {gamend.realtime.v1.PlayResult.$Properties} message PlayResult message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                PlayResult.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id") && message.id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id") && message.user_id !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.user_id);
+                    if (message.lobby_id != null && $Object.hasOwnProperty.call(message, "lobby_id") && message.lobby_id !== "")
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.lobby_id);
+                    if (message.kind != null && $Object.hasOwnProperty.call(message, "kind") && message.kind !== "")
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.kind);
+                    if (message.visibility != null && $Object.hasOwnProperty.call(message, "visibility") && message.visibility !== "")
+                        writer.uint32(/* id 5, wireType 2 =*/42).string(message.visibility);
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status") && message.status !== "")
+                        writer.uint32(/* id 6, wireType 2 =*/50).string(message.status);
+                    if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json") && message.metadata_json.length)
+                        writer.uint32(/* id 7, wireType 2 =*/58).bytes(message.metadata_json);
+                    if (message.started_at_ms != null && $Object.hasOwnProperty.call(message, "started_at_ms"))
+                        writer.uint32(/* id 8, wireType 0 =*/64).int64(message.started_at_ms);
+                    if (message.ended_at_ms != null && $Object.hasOwnProperty.call(message, "ended_at_ms"))
+                        writer.uint32(/* id 9, wireType 0 =*/72).int64(message.ended_at_ms);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a PlayResult message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.PlayResult & gamend.realtime.v1.PlayResult.$Shape} PlayResult
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                PlayResult.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.PlayResult();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.id = value;
+                                else
+                                    delete message.id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.user_id = value;
+                                else
+                                    delete message.user_id;
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.lobby_id = value;
+                                else
+                                    delete message.lobby_id;
+                                continue;
+                            }
+                        case 4: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.kind = value;
+                                else
+                                    delete message.kind;
+                                continue;
+                            }
+                        case 5: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.visibility = value;
+                                else
+                                    delete message.visibility;
+                                continue;
+                            }
+                        case 6: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.status = value;
+                                else
+                                    delete message.status;
+                                continue;
+                            }
+                        case 7: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.bytes()).length)
+                                    message.metadata_json = value;
+                                else
+                                    delete message.metadata_json;
+                                continue;
+                            }
+                        case 8: {
+                                if (wireType !== 0)
+                                    break;
+                                message.started_at_ms = reader.int64();
+                                message._started_at_ms = "started_at_ms";
+                                continue;
+                            }
+                        case 9: {
+                                if (wireType !== 0)
+                                    break;
+                                message.ended_at_ms = reader.int64();
+                                message._ended_at_ms = "ended_at_ms";
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a PlayResult message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.PlayResult} PlayResult
+                 */
+                PlayResult.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.PlayResult)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.PlayResult: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.PlayResult();
+                    if (object.id != null)
+                        if (typeof object.id !== "string" || object.id.length)
+                            message.id = $String(object.id);
+                    if (object.user_id != null)
+                        if (typeof object.user_id !== "string" || object.user_id.length)
+                            message.user_id = $String(object.user_id);
+                    if (object.lobby_id != null)
+                        if (typeof object.lobby_id !== "string" || object.lobby_id.length)
+                            message.lobby_id = $String(object.lobby_id);
+                    if (object.kind != null)
+                        if (typeof object.kind !== "string" || object.kind.length)
+                            message.kind = $String(object.kind);
+                    if (object.visibility != null)
+                        if (typeof object.visibility !== "string" || object.visibility.length)
+                            message.visibility = $String(object.visibility);
+                    if (object.status != null)
+                        if (typeof object.status !== "string" || object.status.length)
+                            message.status = $String(object.status);
+                    if (object.metadata_json != null)
+                        if (object.metadata_json.length)
+                            if (typeof object.metadata_json === "string")
+                                $util.base64.decode(object.metadata_json, message.metadata_json = $util.newBuffer($util.base64.length(object.metadata_json)), 0);
+                            else if (object.metadata_json.length >= 0)
+                                message.metadata_json = object.metadata_json;
+                    if (object.started_at_ms != null)
+                        if ($util.Long)
+                            message.started_at_ms = $util.Long.fromValue(object.started_at_ms, false);
+                        else if (typeof object.started_at_ms === "string")
+                            message.started_at_ms = $parseInt(object.started_at_ms, 10);
+                        else if (typeof object.started_at_ms === "number")
+                            message.started_at_ms = object.started_at_ms;
+                        else if (typeof object.started_at_ms === "object")
+                            message.started_at_ms = new $util.LongBits(object.started_at_ms.low >>> 0, object.started_at_ms.high >>> 0).toNumber();
+                    if (object.ended_at_ms != null)
+                        if ($util.Long)
+                            message.ended_at_ms = $util.Long.fromValue(object.ended_at_ms, false);
+                        else if (typeof object.ended_at_ms === "string")
+                            message.ended_at_ms = $parseInt(object.ended_at_ms, 10);
+                        else if (typeof object.ended_at_ms === "number")
+                            message.ended_at_ms = object.ended_at_ms;
+                        else if (typeof object.ended_at_ms === "object")
+                            message.ended_at_ms = new $util.LongBits(object.ended_at_ms.low >>> 0, object.ended_at_ms.high >>> 0).toNumber();
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a PlayResult message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @static
+                 * @param {gamend.realtime.v1.PlayResult} message PlayResult
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                PlayResult.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.id = "";
+                        object.user_id = "";
+                        object.lobby_id = "";
+                        object.kind = "";
+                        object.visibility = "";
+                        object.status = "";
+                        if (options.bytes === $String)
+                            object.metadata_json = "";
+                        else {
+                            object.metadata_json = [];
+                            if (options.bytes !== $Array)
+                                object.metadata_json = $util.newBuffer(object.metadata_json);
+                        }
+                    }
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id"))
+                        object.id = message.id;
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id"))
+                        object.user_id = message.user_id;
+                    if (message.lobby_id != null && $Object.hasOwnProperty.call(message, "lobby_id"))
+                        object.lobby_id = message.lobby_id;
+                    if (message.kind != null && $Object.hasOwnProperty.call(message, "kind"))
+                        object.kind = message.kind;
+                    if (message.visibility != null && $Object.hasOwnProperty.call(message, "visibility"))
+                        object.visibility = message.visibility;
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status"))
+                        object.status = message.status;
+                    if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json"))
+                        object.metadata_json = options.bytes === $String ? $util.base64.encode(message.metadata_json, 0, message.metadata_json.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.metadata_json) : message.metadata_json;
+                    if (message.started_at_ms != null && $Object.hasOwnProperty.call(message, "started_at_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.started_at_ms = typeof message.started_at_ms === "number" ? $BigInt(message.started_at_ms) : $util.Long.fromBits(message.started_at_ms.low >>> 0, message.started_at_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.started_at_ms === "number")
+                            object.started_at_ms = options.longs === $String ? $String(message.started_at_ms) : message.started_at_ms;
+                        else
+                            object.started_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.started_at_ms) : options.longs === $Number ? new $util.LongBits(message.started_at_ms.low >>> 0, message.started_at_ms.high >>> 0).toNumber() : message.started_at_ms;
+                    if (message.ended_at_ms != null && $Object.hasOwnProperty.call(message, "ended_at_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.ended_at_ms = typeof message.ended_at_ms === "number" ? $BigInt(message.ended_at_ms) : $util.Long.fromBits(message.ended_at_ms.low >>> 0, message.ended_at_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.ended_at_ms === "number")
+                            object.ended_at_ms = options.longs === $String ? $String(message.ended_at_ms) : message.ended_at_ms;
+                        else
+                            object.ended_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.ended_at_ms) : options.longs === $Number ? new $util.LongBits(message.ended_at_ms.low >>> 0, message.ended_at_ms.high >>> 0).toNumber() : message.ended_at_ms;
+                    return object;
+                };
+
+                /**
+                 * Converts this PlayResult to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                PlayResult.prototype.toJSON = function() {
+                    return PlayResult.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for PlayResult
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.PlayResult
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                PlayResult.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.PlayResult";
+                };
+
+                return PlayResult;
+            })();
+
+            v1.PlayResultEvent = (function() {
+
+                /**
+                 * Properties of a PlayResultEvent.
+                 * @typedef {Object} gamend.realtime.v1.PlayResultEvent.$Properties
+                 * @property {string|null} [id] PlayResultEvent id
+                 * @property {string|null} [result_id] PlayResultEvent result_id
+                 * @property {number|Long|null} [elapsed_ms] PlayResultEvent elapsed_ms
+                 * @property {string|null} [key] PlayResultEvent key
+                 * @property {number|null} [value] PlayResultEvent value
+                 * @property {Uint8Array|null} [metadata_json] PlayResultEvent metadata_json
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a PlayResultEvent.
+                 * @memberof gamend.realtime.v1
+                 * @interface IPlayResultEvent
+                 * @augments gamend.realtime.v1.PlayResultEvent.$Properties
+                 * @deprecated Use gamend.realtime.v1.PlayResultEvent.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a PlayResultEvent.
+                 * @typedef {gamend.realtime.v1.PlayResultEvent.$Properties} gamend.realtime.v1.PlayResultEvent.$Shape
+                 */
+
+                /**
+                 * Constructs a new PlayResultEvent.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a PlayResultEvent.
+                 * @constructor
+                 * @param {gamend.realtime.v1.PlayResultEvent.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const PlayResultEvent = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * PlayResultEvent id.
+                 * @member {string} id
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 */
+                PlayResultEvent.prototype.id = "";
+
+                /**
+                 * PlayResultEvent result_id.
+                 * @member {string} result_id
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 */
+                PlayResultEvent.prototype.result_id = "";
+
+                /**
+                 * PlayResultEvent elapsed_ms.
+                 * @member {number|Long} elapsed_ms
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 */
+                PlayResultEvent.prototype.elapsed_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+                /**
+                 * PlayResultEvent key.
+                 * @member {string} key
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 */
+                PlayResultEvent.prototype.key = "";
+
+                /**
+                 * PlayResultEvent value.
+                 * @member {number|null|undefined} value
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 */
+                PlayResultEvent.prototype.value = null;
+
+                /**
+                 * PlayResultEvent metadata_json.
+                 * @member {Uint8Array} metadata_json
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 */
+                PlayResultEvent.prototype.metadata_json = $util.newBuffer([]);
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(PlayResultEvent.prototype, "_value", {
+                    get: $util.oneOfGetter($oneOfFields = ["value"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified PlayResultEvent message. Does not implicitly {@link gamend.realtime.v1.PlayResultEvent.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @static
+                 * @param {gamend.realtime.v1.PlayResultEvent.$Properties} message PlayResultEvent message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                PlayResultEvent.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id") && message.id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
+                    if (message.result_id != null && $Object.hasOwnProperty.call(message, "result_id") && message.result_id !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.result_id);
+                    if (message.elapsed_ms != null && $Object.hasOwnProperty.call(message, "elapsed_ms") && (typeof message.elapsed_ms === "object" ? message.elapsed_ms.low || message.elapsed_ms.high : message.elapsed_ms !== 0))
+                        writer.uint32(/* id 3, wireType 0 =*/24).int64(message.elapsed_ms);
+                    if (message.key != null && $Object.hasOwnProperty.call(message, "key") && message.key !== "")
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.key);
+                    if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
+                        writer.uint32(/* id 5, wireType 1 =*/41).double(message.value);
+                    if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json") && message.metadata_json.length)
+                        writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.metadata_json);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a PlayResultEvent message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.PlayResultEvent & gamend.realtime.v1.PlayResultEvent.$Shape} PlayResultEvent
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                PlayResultEvent.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.PlayResultEvent();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.id = value;
+                                else
+                                    delete message.id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.result_id = value;
+                                else
+                                    delete message.result_id;
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 0)
+                                    break;
+                                if (typeof (value = reader.int64()) === "object" ? value.low || value.high : value !== 0)
+                                    message.elapsed_ms = value;
+                                else
+                                    delete message.elapsed_ms;
+                                continue;
+                            }
+                        case 4: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.key = value;
+                                else
+                                    delete message.key;
+                                continue;
+                            }
+                        case 5: {
+                                if (wireType !== 1)
+                                    break;
+                                message.value = reader.double();
+                                message._value = "value";
+                                continue;
+                            }
+                        case 6: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.bytes()).length)
+                                    message.metadata_json = value;
+                                else
+                                    delete message.metadata_json;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a PlayResultEvent message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.PlayResultEvent} PlayResultEvent
+                 */
+                PlayResultEvent.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.PlayResultEvent)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.PlayResultEvent: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.PlayResultEvent();
+                    if (object.id != null)
+                        if (typeof object.id !== "string" || object.id.length)
+                            message.id = $String(object.id);
+                    if (object.result_id != null)
+                        if (typeof object.result_id !== "string" || object.result_id.length)
+                            message.result_id = $String(object.result_id);
+                    if (object.elapsed_ms != null)
+                        if (typeof object.elapsed_ms === "object" ? object.elapsed_ms.low || object.elapsed_ms.high : $Number(object.elapsed_ms) !== 0)
+                            if ($util.Long)
+                                message.elapsed_ms = $util.Long.fromValue(object.elapsed_ms, false);
+                            else if (typeof object.elapsed_ms === "string")
+                                message.elapsed_ms = $parseInt(object.elapsed_ms, 10);
+                            else if (typeof object.elapsed_ms === "number")
+                                message.elapsed_ms = object.elapsed_ms;
+                            else if (typeof object.elapsed_ms === "object")
+                                message.elapsed_ms = new $util.LongBits(object.elapsed_ms.low >>> 0, object.elapsed_ms.high >>> 0).toNumber();
+                    if (object.key != null)
+                        if (typeof object.key !== "string" || object.key.length)
+                            message.key = $String(object.key);
+                    if (object.value != null)
+                        message.value = $Number(object.value);
+                    if (object.metadata_json != null)
+                        if (object.metadata_json.length)
+                            if (typeof object.metadata_json === "string")
+                                $util.base64.decode(object.metadata_json, message.metadata_json = $util.newBuffer($util.base64.length(object.metadata_json)), 0);
+                            else if (object.metadata_json.length >= 0)
+                                message.metadata_json = object.metadata_json;
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a PlayResultEvent message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @static
+                 * @param {gamend.realtime.v1.PlayResultEvent} message PlayResultEvent
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                PlayResultEvent.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.id = "";
+                        object.result_id = "";
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, false);
+                            object.elapsed_ms = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
+                        } else
+                            object.elapsed_ms = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
+                        object.key = "";
+                        if (options.bytes === $String)
+                            object.metadata_json = "";
+                        else {
+                            object.metadata_json = [];
+                            if (options.bytes !== $Array)
+                                object.metadata_json = $util.newBuffer(object.metadata_json);
+                        }
+                    }
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id"))
+                        object.id = message.id;
+                    if (message.result_id != null && $Object.hasOwnProperty.call(message, "result_id"))
+                        object.result_id = message.result_id;
+                    if (message.elapsed_ms != null && $Object.hasOwnProperty.call(message, "elapsed_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.elapsed_ms = typeof message.elapsed_ms === "number" ? $BigInt(message.elapsed_ms) : $util.Long.fromBits(message.elapsed_ms.low >>> 0, message.elapsed_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.elapsed_ms === "number")
+                            object.elapsed_ms = options.longs === $String ? $String(message.elapsed_ms) : message.elapsed_ms;
+                        else
+                            object.elapsed_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.elapsed_ms) : options.longs === $Number ? new $util.LongBits(message.elapsed_ms.low >>> 0, message.elapsed_ms.high >>> 0).toNumber() : message.elapsed_ms;
+                    if (message.key != null && $Object.hasOwnProperty.call(message, "key"))
+                        object.key = message.key;
+                    if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
+                        object.value = options.json && !$isFinite(message.value) ? $String(message.value) : message.value;
+                    if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json"))
+                        object.metadata_json = options.bytes === $String ? $util.base64.encode(message.metadata_json, 0, message.metadata_json.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.metadata_json) : message.metadata_json;
+                    return object;
+                };
+
+                /**
+                 * Converts this PlayResultEvent to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                PlayResultEvent.prototype.toJSON = function() {
+                    return PlayResultEvent.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for PlayResultEvent
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.PlayResultEvent
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                PlayResultEvent.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.PlayResultEvent";
+                };
+
+                return PlayResultEvent;
+            })();
+
+            v1.PlayResultEventPushed = (function() {
+
+                /**
+                 * Properties of a PlayResultEventPushed.
+                 * @typedef {Object} gamend.realtime.v1.PlayResultEventPushed.$Properties
+                 * @property {string|null} [result_id] PlayResultEventPushed result_id
+                 * @property {gamend.realtime.v1.PlayResultEvent.$Properties|null} [event] PlayResultEventPushed event
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a PlayResultEventPushed.
+                 * @memberof gamend.realtime.v1
+                 * @interface IPlayResultEventPushed
+                 * @augments gamend.realtime.v1.PlayResultEventPushed.$Properties
+                 * @deprecated Use gamend.realtime.v1.PlayResultEventPushed.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a PlayResultEventPushed.
+                 * @typedef {gamend.realtime.v1.PlayResultEventPushed.$Properties} gamend.realtime.v1.PlayResultEventPushed.$Shape
+                 */
+
+                /**
+                 * Constructs a new PlayResultEventPushed.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a PlayResultEventPushed.
+                 * @constructor
+                 * @param {gamend.realtime.v1.PlayResultEventPushed.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const PlayResultEventPushed = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * PlayResultEventPushed result_id.
+                 * @member {string} result_id
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @instance
+                 */
+                PlayResultEventPushed.prototype.result_id = "";
+
+                /**
+                 * PlayResultEventPushed event.
+                 * @member {gamend.realtime.v1.PlayResultEvent.$Properties|null|undefined} event
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @instance
+                 */
+                PlayResultEventPushed.prototype.event = null;
+
+                /**
+                 * Encodes the specified PlayResultEventPushed message. Does not implicitly {@link gamend.realtime.v1.PlayResultEventPushed.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @static
+                 * @param {gamend.realtime.v1.PlayResultEventPushed.$Properties} message PlayResultEventPushed message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                PlayResultEventPushed.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.result_id != null && $Object.hasOwnProperty.call(message, "result_id") && message.result_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.result_id);
+                    if (message.event != null && $Object.hasOwnProperty.call(message, "event"))
+                        $root.gamend.realtime.v1.PlayResultEvent.encode(message.event, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a PlayResultEventPushed message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.PlayResultEventPushed & gamend.realtime.v1.PlayResultEventPushed.$Shape} PlayResultEventPushed
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                PlayResultEventPushed.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.PlayResultEventPushed();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.result_id = value;
+                                else
+                                    delete message.result_id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                message.event = $root.gamend.realtime.v1.PlayResultEvent.decode(reader, reader.size(), $undefined, _depth + 1, message.event);
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a PlayResultEventPushed message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.PlayResultEventPushed} PlayResultEventPushed
+                 */
+                PlayResultEventPushed.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.PlayResultEventPushed)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.PlayResultEventPushed: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.PlayResultEventPushed();
+                    if (object.result_id != null)
+                        if (typeof object.result_id !== "string" || object.result_id.length)
+                            message.result_id = $String(object.result_id);
+                    if (object.event != null) {
+                        if (!$util.isObject(object.event))
+                            throw $TypeError(".gamend.realtime.v1.PlayResultEventPushed.event: object expected");
+                        message.event = $root.gamend.realtime.v1.PlayResultEvent.fromObject(object.event, _depth + 1);
+                    }
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a PlayResultEventPushed message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @static
+                 * @param {gamend.realtime.v1.PlayResultEventPushed} message PlayResultEventPushed
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                PlayResultEventPushed.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.result_id = "";
+                        object.event = null;
+                    }
+                    if (message.result_id != null && $Object.hasOwnProperty.call(message, "result_id"))
+                        object.result_id = message.result_id;
+                    if (message.event != null && $Object.hasOwnProperty.call(message, "event"))
+                        object.event = $root.gamend.realtime.v1.PlayResultEvent.toObject(message.event, options, _depth + 1);
+                    return object;
+                };
+
+                /**
+                 * Converts this PlayResultEventPushed to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                PlayResultEventPushed.prototype.toJSON = function() {
+                    return PlayResultEventPushed.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for PlayResultEventPushed
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.PlayResultEventPushed
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                PlayResultEventPushed.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.PlayResultEventPushed";
+                };
+
+                return PlayResultEventPushed;
+            })();
+
+            v1.AccountBan = (function() {
+
+                /**
+                 * Properties of an AccountBan.
+                 * @typedef {Object} gamend.realtime.v1.AccountBan.$Properties
+                 * @property {number|Long|null} [expires_at_ms] AccountBan expires_at_ms
+                 * @property {string|null} [reason] AccountBan reason
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of an AccountBan.
+                 * @memberof gamend.realtime.v1
+                 * @interface IAccountBan
+                 * @augments gamend.realtime.v1.AccountBan.$Properties
+                 * @deprecated Use gamend.realtime.v1.AccountBan.$Properties instead.
+                 */
+
+                /**
+                 * Shape of an AccountBan.
+                 * @typedef {gamend.realtime.v1.AccountBan.$Properties} gamend.realtime.v1.AccountBan.$Shape
+                 */
+
+                /**
+                 * Constructs a new AccountBan.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents an AccountBan.
+                 * @constructor
+                 * @param {gamend.realtime.v1.AccountBan.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const AccountBan = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * AccountBan expires_at_ms.
+                 * @member {number|Long|null|undefined} expires_at_ms
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @instance
+                 */
+                AccountBan.prototype.expires_at_ms = null;
+
+                /**
+                 * AccountBan reason.
+                 * @member {string} reason
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @instance
+                 */
+                AccountBan.prototype.reason = "";
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(AccountBan.prototype, "_expires_at_ms", {
+                    get: $util.oneOfGetter($oneOfFields = ["expires_at_ms"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified AccountBan message. Does not implicitly {@link gamend.realtime.v1.AccountBan.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @static
+                 * @param {gamend.realtime.v1.AccountBan.$Properties} message AccountBan message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                AccountBan.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.expires_at_ms != null && $Object.hasOwnProperty.call(message, "expires_at_ms"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).int64(message.expires_at_ms);
+                    if (message.reason != null && $Object.hasOwnProperty.call(message, "reason") && message.reason !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.reason);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes an AccountBan message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.AccountBan & gamend.realtime.v1.AccountBan.$Shape} AccountBan
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                AccountBan.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.AccountBan();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 0)
+                                    break;
+                                message.expires_at_ms = reader.int64();
+                                message._expires_at_ms = "expires_at_ms";
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.reason = value;
+                                else
+                                    delete message.reason;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates an AccountBan message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.AccountBan} AccountBan
+                 */
+                AccountBan.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.AccountBan)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.AccountBan: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.AccountBan();
+                    if (object.expires_at_ms != null)
+                        if ($util.Long)
+                            message.expires_at_ms = $util.Long.fromValue(object.expires_at_ms, false);
+                        else if (typeof object.expires_at_ms === "string")
+                            message.expires_at_ms = $parseInt(object.expires_at_ms, 10);
+                        else if (typeof object.expires_at_ms === "number")
+                            message.expires_at_ms = object.expires_at_ms;
+                        else if (typeof object.expires_at_ms === "object")
+                            message.expires_at_ms = new $util.LongBits(object.expires_at_ms.low >>> 0, object.expires_at_ms.high >>> 0).toNumber();
+                    if (object.reason != null)
+                        if (typeof object.reason !== "string" || object.reason.length)
+                            message.reason = $String(object.reason);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from an AccountBan message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @static
+                 * @param {gamend.realtime.v1.AccountBan} message AccountBan
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                AccountBan.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults)
+                        object.reason = "";
+                    if (message.expires_at_ms != null && $Object.hasOwnProperty.call(message, "expires_at_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.expires_at_ms = typeof message.expires_at_ms === "number" ? $BigInt(message.expires_at_ms) : $util.Long.fromBits(message.expires_at_ms.low >>> 0, message.expires_at_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.expires_at_ms === "number")
+                            object.expires_at_ms = options.longs === $String ? $String(message.expires_at_ms) : message.expires_at_ms;
+                        else
+                            object.expires_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.expires_at_ms) : options.longs === $Number ? new $util.LongBits(message.expires_at_ms.low >>> 0, message.expires_at_ms.high >>> 0).toNumber() : message.expires_at_ms;
+                    if (message.reason != null && $Object.hasOwnProperty.call(message, "reason"))
+                        object.reason = message.reason;
+                    return object;
+                };
+
+                /**
+                 * Converts this AccountBan to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                AccountBan.prototype.toJSON = function() {
+                    return AccountBan.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for AccountBan
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.AccountBan
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                AccountBan.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.AccountBan";
+                };
+
+                return AccountBan;
+            })();
+
+            v1.Empty = (function() {
+
+                /**
+                 * Properties of an Empty.
+                 * @typedef {Object} gamend.realtime.v1.Empty.$Properties
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of an Empty.
+                 * @memberof gamend.realtime.v1
+                 * @interface IEmpty
+                 * @augments gamend.realtime.v1.Empty.$Properties
+                 * @deprecated Use gamend.realtime.v1.Empty.$Properties instead.
+                 */
+
+                /**
+                 * Shape of an Empty.
+                 * @typedef {gamend.realtime.v1.Empty.$Properties} gamend.realtime.v1.Empty.$Shape
+                 */
+
+                /**
+                 * Constructs a new Empty.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents an Empty.
+                 * @constructor
+                 * @param {gamend.realtime.v1.Empty.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const Empty = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * Encodes the specified Empty message. Does not implicitly {@link gamend.realtime.v1.Empty.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.Empty
+                 * @static
+                 * @param {gamend.realtime.v1.Empty.$Properties} message Empty message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Empty.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Empty message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.Empty
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.Empty & gamend.realtime.v1.Empty.$Shape} Empty
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Empty.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.Empty();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        reader.skipType(tag & 7, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates an Empty message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.Empty
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.Empty} Empty
+                 */
+                Empty.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.Empty)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.Empty: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    return new $root.gamend.realtime.v1.Empty();
+                };
+
+                /**
+                 * Creates a plain object from an Empty message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.Empty
+                 * @static
+                 * @param {gamend.realtime.v1.Empty} message Empty
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Empty.toObject = function () {
+                    return {};
+                };
+
+                /**
+                 * Converts this Empty to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.Empty
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Empty.prototype.toJSON = function() {
+                    return Empty.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for Empty
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.Empty
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                Empty.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.Empty";
+                };
+
+                return Empty;
+            })();
+
+            v1.Friendship = (function() {
+
+                /**
+                 * Properties of a Friendship.
+                 * @typedef {Object} gamend.realtime.v1.Friendship.$Properties
+                 * @property {string|null} [id] Friendship id
+                 * @property {string|null} [requester_id] Friendship requester_id
+                 * @property {string|null} [target_id] Friendship target_id
+                 * @property {string|null} [status] Friendship status
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a Friendship.
+                 * @memberof gamend.realtime.v1
+                 * @interface IFriendship
+                 * @augments gamend.realtime.v1.Friendship.$Properties
+                 * @deprecated Use gamend.realtime.v1.Friendship.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a Friendship.
+                 * @typedef {gamend.realtime.v1.Friendship.$Properties} gamend.realtime.v1.Friendship.$Shape
+                 */
+
+                /**
+                 * Constructs a new Friendship.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a Friendship.
+                 * @constructor
+                 * @param {gamend.realtime.v1.Friendship.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const Friendship = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * Friendship id.
+                 * @member {string} id
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @instance
+                 */
+                Friendship.prototype.id = "";
+
+                /**
+                 * Friendship requester_id.
+                 * @member {string} requester_id
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @instance
+                 */
+                Friendship.prototype.requester_id = "";
+
+                /**
+                 * Friendship target_id.
+                 * @member {string} target_id
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @instance
+                 */
+                Friendship.prototype.target_id = "";
+
+                /**
+                 * Friendship status.
+                 * @member {string} status
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @instance
+                 */
+                Friendship.prototype.status = "";
+
+                /**
+                 * Encodes the specified Friendship message. Does not implicitly {@link gamend.realtime.v1.Friendship.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @static
+                 * @param {gamend.realtime.v1.Friendship.$Properties} message Friendship message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Friendship.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id") && message.id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
+                    if (message.requester_id != null && $Object.hasOwnProperty.call(message, "requester_id") && message.requester_id !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.requester_id);
+                    if (message.target_id != null && $Object.hasOwnProperty.call(message, "target_id") && message.target_id !== "")
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.target_id);
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status") && message.status !== "")
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.status);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Friendship message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.Friendship & gamend.realtime.v1.Friendship.$Shape} Friendship
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Friendship.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.Friendship();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.id = value;
+                                else
+                                    delete message.id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.requester_id = value;
+                                else
+                                    delete message.requester_id;
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.target_id = value;
+                                else
+                                    delete message.target_id;
+                                continue;
+                            }
+                        case 4: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.status = value;
+                                else
+                                    delete message.status;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a Friendship message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.Friendship} Friendship
+                 */
+                Friendship.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.Friendship)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.Friendship: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.Friendship();
+                    if (object.id != null)
+                        if (typeof object.id !== "string" || object.id.length)
+                            message.id = $String(object.id);
+                    if (object.requester_id != null)
+                        if (typeof object.requester_id !== "string" || object.requester_id.length)
+                            message.requester_id = $String(object.requester_id);
+                    if (object.target_id != null)
+                        if (typeof object.target_id !== "string" || object.target_id.length)
+                            message.target_id = $String(object.target_id);
+                    if (object.status != null)
+                        if (typeof object.status !== "string" || object.status.length)
+                            message.status = $String(object.status);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a Friendship message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @static
+                 * @param {gamend.realtime.v1.Friendship} message Friendship
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Friendship.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.id = "";
+                        object.requester_id = "";
+                        object.target_id = "";
+                        object.status = "";
+                    }
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id"))
+                        object.id = message.id;
+                    if (message.requester_id != null && $Object.hasOwnProperty.call(message, "requester_id"))
+                        object.requester_id = message.requester_id;
+                    if (message.target_id != null && $Object.hasOwnProperty.call(message, "target_id"))
+                        object.target_id = message.target_id;
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status"))
+                        object.status = message.status;
+                    return object;
+                };
+
+                /**
+                 * Converts this Friendship to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Friendship.prototype.toJSON = function() {
+                    return Friendship.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for Friendship
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.Friendship
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                Friendship.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.Friendship";
+                };
+
+                return Friendship;
+            })();
+
+            v1.WebrtcAnswer = (function() {
+
+                /**
+                 * Properties of a WebrtcAnswer.
+                 * @typedef {Object} gamend.realtime.v1.WebrtcAnswer.$Properties
+                 * @property {string|null} [sdp] WebrtcAnswer sdp
+                 * @property {string|null} [type] WebrtcAnswer type
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a WebrtcAnswer.
+                 * @memberof gamend.realtime.v1
+                 * @interface IWebrtcAnswer
+                 * @augments gamend.realtime.v1.WebrtcAnswer.$Properties
+                 * @deprecated Use gamend.realtime.v1.WebrtcAnswer.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a WebrtcAnswer.
+                 * @typedef {gamend.realtime.v1.WebrtcAnswer.$Properties} gamend.realtime.v1.WebrtcAnswer.$Shape
+                 */
+
+                /**
+                 * Constructs a new WebrtcAnswer.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a WebrtcAnswer.
+                 * @constructor
+                 * @param {gamend.realtime.v1.WebrtcAnswer.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const WebrtcAnswer = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * WebrtcAnswer sdp.
+                 * @member {string} sdp
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @instance
+                 */
+                WebrtcAnswer.prototype.sdp = "";
+
+                /**
+                 * WebrtcAnswer type.
+                 * @member {string} type
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @instance
+                 */
+                WebrtcAnswer.prototype.type = "";
+
+                /**
+                 * Encodes the specified WebrtcAnswer message. Does not implicitly {@link gamend.realtime.v1.WebrtcAnswer.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcAnswer.$Properties} message WebrtcAnswer message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                WebrtcAnswer.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.sdp != null && $Object.hasOwnProperty.call(message, "sdp") && message.sdp !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.sdp);
+                    if (message.type != null && $Object.hasOwnProperty.call(message, "type") && message.type !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.type);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a WebrtcAnswer message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.WebrtcAnswer & gamend.realtime.v1.WebrtcAnswer.$Shape} WebrtcAnswer
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                WebrtcAnswer.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.WebrtcAnswer();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.sdp = value;
+                                else
+                                    delete message.sdp;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.type = value;
+                                else
+                                    delete message.type;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a WebrtcAnswer message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.WebrtcAnswer} WebrtcAnswer
+                 */
+                WebrtcAnswer.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.WebrtcAnswer)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.WebrtcAnswer: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.WebrtcAnswer();
+                    if (object.sdp != null)
+                        if (typeof object.sdp !== "string" || object.sdp.length)
+                            message.sdp = $String(object.sdp);
+                    if (object.type != null)
+                        if (typeof object.type !== "string" || object.type.length)
+                            message.type = $String(object.type);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a WebrtcAnswer message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcAnswer} message WebrtcAnswer
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                WebrtcAnswer.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.sdp = "";
+                        object.type = "";
+                    }
+                    if (message.sdp != null && $Object.hasOwnProperty.call(message, "sdp"))
+                        object.sdp = message.sdp;
+                    if (message.type != null && $Object.hasOwnProperty.call(message, "type"))
+                        object.type = message.type;
+                    return object;
+                };
+
+                /**
+                 * Converts this WebrtcAnswer to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                WebrtcAnswer.prototype.toJSON = function() {
+                    return WebrtcAnswer.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for WebrtcAnswer
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.WebrtcAnswer
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                WebrtcAnswer.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.WebrtcAnswer";
+                };
+
+                return WebrtcAnswer;
+            })();
+
+            v1.WebrtcIce = (function() {
+
+                /**
+                 * Properties of a WebrtcIce.
+                 * @typedef {Object} gamend.realtime.v1.WebrtcIce.$Properties
+                 * @property {string|null} [candidate] WebrtcIce candidate
+                 * @property {string|null} [sdpMid] WebrtcIce sdpMid
+                 * @property {number|null} [sdpMLineIndex] WebrtcIce sdpMLineIndex
+                 * @property {string|null} [usernameFragment] WebrtcIce usernameFragment
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a WebrtcIce.
+                 * @memberof gamend.realtime.v1
+                 * @interface IWebrtcIce
+                 * @augments gamend.realtime.v1.WebrtcIce.$Properties
+                 * @deprecated Use gamend.realtime.v1.WebrtcIce.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a WebrtcIce.
+                 * @typedef {gamend.realtime.v1.WebrtcIce.$Properties} gamend.realtime.v1.WebrtcIce.$Shape
+                 */
+
+                /**
+                 * Constructs a new WebrtcIce.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a WebrtcIce.
+                 * @constructor
+                 * @param {gamend.realtime.v1.WebrtcIce.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const WebrtcIce = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * WebrtcIce candidate.
+                 * @member {string} candidate
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @instance
+                 */
+                WebrtcIce.prototype.candidate = "";
+
+                /**
+                 * WebrtcIce sdpMid.
+                 * @member {string|null|undefined} sdpMid
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @instance
+                 */
+                WebrtcIce.prototype.sdpMid = null;
+
+                /**
+                 * WebrtcIce sdpMLineIndex.
+                 * @member {number|null|undefined} sdpMLineIndex
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @instance
+                 */
+                WebrtcIce.prototype.sdpMLineIndex = null;
+
+                /**
+                 * WebrtcIce usernameFragment.
+                 * @member {string|null|undefined} usernameFragment
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @instance
+                 */
+                WebrtcIce.prototype.usernameFragment = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(WebrtcIce.prototype, "_sdpMid", {
+                    get: $util.oneOfGetter($oneOfFields = ["sdpMid"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(WebrtcIce.prototype, "_sdpMLineIndex", {
+                    get: $util.oneOfGetter($oneOfFields = ["sdpMLineIndex"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(WebrtcIce.prototype, "_usernameFragment", {
+                    get: $util.oneOfGetter($oneOfFields = ["usernameFragment"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified WebrtcIce message. Does not implicitly {@link gamend.realtime.v1.WebrtcIce.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcIce.$Properties} message WebrtcIce message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                WebrtcIce.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.candidate != null && $Object.hasOwnProperty.call(message, "candidate") && message.candidate !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.candidate);
+                    if (message.sdpMid != null && $Object.hasOwnProperty.call(message, "sdpMid"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.sdpMid);
+                    if (message.sdpMLineIndex != null && $Object.hasOwnProperty.call(message, "sdpMLineIndex"))
+                        writer.uint32(/* id 3, wireType 0 =*/24).int32(message.sdpMLineIndex);
+                    if (message.usernameFragment != null && $Object.hasOwnProperty.call(message, "usernameFragment"))
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.usernameFragment);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a WebrtcIce message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.WebrtcIce & gamend.realtime.v1.WebrtcIce.$Shape} WebrtcIce
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                WebrtcIce.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.WebrtcIce();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.candidate = value;
+                                else
+                                    delete message.candidate;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                message.sdpMid = reader.stringVerify();
+                                message._sdpMid = "sdpMid";
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 0)
+                                    break;
+                                message.sdpMLineIndex = reader.int32();
+                                message._sdpMLineIndex = "sdpMLineIndex";
+                                continue;
+                            }
+                        case 4: {
+                                if (wireType !== 2)
+                                    break;
+                                message.usernameFragment = reader.stringVerify();
+                                message._usernameFragment = "usernameFragment";
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a WebrtcIce message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.WebrtcIce} WebrtcIce
+                 */
+                WebrtcIce.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.WebrtcIce)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.WebrtcIce: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.WebrtcIce();
+                    if (object.candidate != null)
+                        if (typeof object.candidate !== "string" || object.candidate.length)
+                            message.candidate = $String(object.candidate);
+                    if (object.sdpMid != null)
+                        message.sdpMid = $String(object.sdpMid);
+                    if (object.sdpMLineIndex != null)
+                        message.sdpMLineIndex = object.sdpMLineIndex | 0;
+                    if (object.usernameFragment != null)
+                        message.usernameFragment = $String(object.usernameFragment);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a WebrtcIce message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcIce} message WebrtcIce
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                WebrtcIce.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults)
+                        object.candidate = "";
+                    if (message.candidate != null && $Object.hasOwnProperty.call(message, "candidate"))
+                        object.candidate = message.candidate;
+                    if (message.sdpMid != null && $Object.hasOwnProperty.call(message, "sdpMid"))
+                        object.sdpMid = message.sdpMid;
+                    if (message.sdpMLineIndex != null && $Object.hasOwnProperty.call(message, "sdpMLineIndex"))
+                        object.sdpMLineIndex = message.sdpMLineIndex;
+                    if (message.usernameFragment != null && $Object.hasOwnProperty.call(message, "usernameFragment"))
+                        object.usernameFragment = message.usernameFragment;
+                    return object;
+                };
+
+                /**
+                 * Converts this WebrtcIce to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                WebrtcIce.prototype.toJSON = function() {
+                    return WebrtcIce.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for WebrtcIce
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.WebrtcIce
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                WebrtcIce.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.WebrtcIce";
+                };
+
+                return WebrtcIce;
+            })();
+
+            v1.WebrtcChannelOpen = (function() {
+
+                /**
+                 * Properties of a WebrtcChannelOpen.
+                 * @typedef {Object} gamend.realtime.v1.WebrtcChannelOpen.$Properties
+                 * @property {string|null} [channel] WebrtcChannelOpen channel
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a WebrtcChannelOpen.
+                 * @memberof gamend.realtime.v1
+                 * @interface IWebrtcChannelOpen
+                 * @augments gamend.realtime.v1.WebrtcChannelOpen.$Properties
+                 * @deprecated Use gamend.realtime.v1.WebrtcChannelOpen.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a WebrtcChannelOpen.
+                 * @typedef {gamend.realtime.v1.WebrtcChannelOpen.$Properties} gamend.realtime.v1.WebrtcChannelOpen.$Shape
+                 */
+
+                /**
+                 * Constructs a new WebrtcChannelOpen.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a WebrtcChannelOpen.
+                 * @constructor
+                 * @param {gamend.realtime.v1.WebrtcChannelOpen.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const WebrtcChannelOpen = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * WebrtcChannelOpen channel.
+                 * @member {string} channel
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @instance
+                 */
+                WebrtcChannelOpen.prototype.channel = "";
+
+                /**
+                 * Encodes the specified WebrtcChannelOpen message. Does not implicitly {@link gamend.realtime.v1.WebrtcChannelOpen.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcChannelOpen.$Properties} message WebrtcChannelOpen message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                WebrtcChannelOpen.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.channel != null && $Object.hasOwnProperty.call(message, "channel") && message.channel !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.channel);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a WebrtcChannelOpen message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.WebrtcChannelOpen & gamend.realtime.v1.WebrtcChannelOpen.$Shape} WebrtcChannelOpen
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                WebrtcChannelOpen.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.WebrtcChannelOpen();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.channel = value;
+                                else
+                                    delete message.channel;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a WebrtcChannelOpen message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.WebrtcChannelOpen} WebrtcChannelOpen
+                 */
+                WebrtcChannelOpen.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.WebrtcChannelOpen)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.WebrtcChannelOpen: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.WebrtcChannelOpen();
+                    if (object.channel != null)
+                        if (typeof object.channel !== "string" || object.channel.length)
+                            message.channel = $String(object.channel);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a WebrtcChannelOpen message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcChannelOpen} message WebrtcChannelOpen
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                WebrtcChannelOpen.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults)
+                        object.channel = "";
+                    if (message.channel != null && $Object.hasOwnProperty.call(message, "channel"))
+                        object.channel = message.channel;
+                    return object;
+                };
+
+                /**
+                 * Converts this WebrtcChannelOpen to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                WebrtcChannelOpen.prototype.toJSON = function() {
+                    return WebrtcChannelOpen.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for WebrtcChannelOpen
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.WebrtcChannelOpen
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                WebrtcChannelOpen.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.WebrtcChannelOpen";
+                };
+
+                return WebrtcChannelOpen;
+            })();
+
+            v1.WebrtcState = (function() {
+
+                /**
+                 * Properties of a WebrtcState.
+                 * @typedef {Object} gamend.realtime.v1.WebrtcState.$Properties
+                 * @property {string|null} [state] WebrtcState state
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a WebrtcState.
+                 * @memberof gamend.realtime.v1
+                 * @interface IWebrtcState
+                 * @augments gamend.realtime.v1.WebrtcState.$Properties
+                 * @deprecated Use gamend.realtime.v1.WebrtcState.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a WebrtcState.
+                 * @typedef {gamend.realtime.v1.WebrtcState.$Properties} gamend.realtime.v1.WebrtcState.$Shape
+                 */
+
+                /**
+                 * Constructs a new WebrtcState.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a WebrtcState.
+                 * @constructor
+                 * @param {gamend.realtime.v1.WebrtcState.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const WebrtcState = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * WebrtcState state.
+                 * @member {string} state
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @instance
+                 */
+                WebrtcState.prototype.state = "";
+
+                /**
+                 * Encodes the specified WebrtcState message. Does not implicitly {@link gamend.realtime.v1.WebrtcState.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcState.$Properties} message WebrtcState message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                WebrtcState.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.state != null && $Object.hasOwnProperty.call(message, "state") && message.state !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.state);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a WebrtcState message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.WebrtcState & gamend.realtime.v1.WebrtcState.$Shape} WebrtcState
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                WebrtcState.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.WebrtcState();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.state = value;
+                                else
+                                    delete message.state;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a WebrtcState message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.WebrtcState} WebrtcState
+                 */
+                WebrtcState.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.WebrtcState)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.WebrtcState: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.WebrtcState();
+                    if (object.state != null)
+                        if (typeof object.state !== "string" || object.state.length)
+                            message.state = $String(object.state);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a WebrtcState message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @static
+                 * @param {gamend.realtime.v1.WebrtcState} message WebrtcState
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                WebrtcState.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults)
+                        object.state = "";
+                    if (message.state != null && $Object.hasOwnProperty.call(message, "state"))
+                        object.state = message.state;
+                    return object;
+                };
+
+                /**
+                 * Converts this WebrtcState to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                WebrtcState.prototype.toJSON = function() {
+                    return WebrtcState.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for WebrtcState
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.WebrtcState
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                WebrtcState.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.WebrtcState";
+                };
+
+                return WebrtcState;
+            })();
+
+            v1.SignalingPeer = (function() {
+
+                /**
+                 * Properties of a SignalingPeer.
+                 * @typedef {Object} gamend.realtime.v1.SignalingPeer.$Properties
+                 * @property {string|null} [user_id] SignalingPeer user_id
+                 * @property {string|null} [role] SignalingPeer role
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a SignalingPeer.
+                 * @memberof gamend.realtime.v1
+                 * @interface ISignalingPeer
+                 * @augments gamend.realtime.v1.SignalingPeer.$Properties
+                 * @deprecated Use gamend.realtime.v1.SignalingPeer.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a SignalingPeer.
+                 * @typedef {gamend.realtime.v1.SignalingPeer.$Properties} gamend.realtime.v1.SignalingPeer.$Shape
+                 */
+
+                /**
+                 * Constructs a new SignalingPeer.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a SignalingPeer.
+                 * @constructor
+                 * @param {gamend.realtime.v1.SignalingPeer.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const SignalingPeer = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * SignalingPeer user_id.
+                 * @member {string} user_id
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @instance
+                 */
+                SignalingPeer.prototype.user_id = "";
+
+                /**
+                 * SignalingPeer role.
+                 * @member {string} role
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @instance
+                 */
+                SignalingPeer.prototype.role = "";
+
+                /**
+                 * Encodes the specified SignalingPeer message. Does not implicitly {@link gamend.realtime.v1.SignalingPeer.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingPeer.$Properties} message SignalingPeer message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SignalingPeer.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id") && message.user_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.user_id);
+                    if (message.role != null && $Object.hasOwnProperty.call(message, "role") && message.role !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.role);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a SignalingPeer message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.SignalingPeer & gamend.realtime.v1.SignalingPeer.$Shape} SignalingPeer
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SignalingPeer.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.SignalingPeer();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.user_id = value;
+                                else
+                                    delete message.user_id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.role = value;
+                                else
+                                    delete message.role;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a SignalingPeer message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.SignalingPeer} SignalingPeer
+                 */
+                SignalingPeer.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.SignalingPeer)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.SignalingPeer: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.SignalingPeer();
+                    if (object.user_id != null)
+                        if (typeof object.user_id !== "string" || object.user_id.length)
+                            message.user_id = $String(object.user_id);
+                    if (object.role != null)
+                        if (typeof object.role !== "string" || object.role.length)
+                            message.role = $String(object.role);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a SignalingPeer message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingPeer} message SignalingPeer
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                SignalingPeer.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.user_id = "";
+                        object.role = "";
+                    }
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id"))
+                        object.user_id = message.user_id;
+                    if (message.role != null && $Object.hasOwnProperty.call(message, "role"))
+                        object.role = message.role;
+                    return object;
+                };
+
+                /**
+                 * Converts this SignalingPeer to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                SignalingPeer.prototype.toJSON = function() {
+                    return SignalingPeer.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for SignalingPeer
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.SignalingPeer
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                SignalingPeer.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.SignalingPeer";
+                };
+
+                return SignalingPeer;
+            })();
+
+            v1.SignalingPeerLeft = (function() {
+
+                /**
+                 * Properties of a SignalingPeerLeft.
+                 * @typedef {Object} gamend.realtime.v1.SignalingPeerLeft.$Properties
+                 * @property {string|null} [user_id] SignalingPeerLeft user_id
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a SignalingPeerLeft.
+                 * @memberof gamend.realtime.v1
+                 * @interface ISignalingPeerLeft
+                 * @augments gamend.realtime.v1.SignalingPeerLeft.$Properties
+                 * @deprecated Use gamend.realtime.v1.SignalingPeerLeft.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a SignalingPeerLeft.
+                 * @typedef {gamend.realtime.v1.SignalingPeerLeft.$Properties} gamend.realtime.v1.SignalingPeerLeft.$Shape
+                 */
+
+                /**
+                 * Constructs a new SignalingPeerLeft.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a SignalingPeerLeft.
+                 * @constructor
+                 * @param {gamend.realtime.v1.SignalingPeerLeft.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const SignalingPeerLeft = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * SignalingPeerLeft user_id.
+                 * @member {string} user_id
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @instance
+                 */
+                SignalingPeerLeft.prototype.user_id = "";
+
+                /**
+                 * Encodes the specified SignalingPeerLeft message. Does not implicitly {@link gamend.realtime.v1.SignalingPeerLeft.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingPeerLeft.$Properties} message SignalingPeerLeft message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SignalingPeerLeft.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id") && message.user_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.user_id);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a SignalingPeerLeft message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.SignalingPeerLeft & gamend.realtime.v1.SignalingPeerLeft.$Shape} SignalingPeerLeft
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SignalingPeerLeft.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.SignalingPeerLeft();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.user_id = value;
+                                else
+                                    delete message.user_id;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a SignalingPeerLeft message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.SignalingPeerLeft} SignalingPeerLeft
+                 */
+                SignalingPeerLeft.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.SignalingPeerLeft)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.SignalingPeerLeft: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.SignalingPeerLeft();
+                    if (object.user_id != null)
+                        if (typeof object.user_id !== "string" || object.user_id.length)
+                            message.user_id = $String(object.user_id);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a SignalingPeerLeft message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingPeerLeft} message SignalingPeerLeft
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                SignalingPeerLeft.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults)
+                        object.user_id = "";
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id"))
+                        object.user_id = message.user_id;
+                    return object;
+                };
+
+                /**
+                 * Converts this SignalingPeerLeft to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                SignalingPeerLeft.prototype.toJSON = function() {
+                    return SignalingPeerLeft.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for SignalingPeerLeft
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.SignalingPeerLeft
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                SignalingPeerLeft.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.SignalingPeerLeft";
+                };
+
+                return SignalingPeerLeft;
+            })();
+
+            v1.SignalingSdp = (function() {
+
+                /**
+                 * Properties of a SignalingSdp.
+                 * @typedef {Object} gamend.realtime.v1.SignalingSdp.$Properties
+                 * @property {string|null} [sdp] SignalingSdp sdp
+                 * @property {string|null} [from_user_id] SignalingSdp from_user_id
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a SignalingSdp.
+                 * @memberof gamend.realtime.v1
+                 * @interface ISignalingSdp
+                 * @augments gamend.realtime.v1.SignalingSdp.$Properties
+                 * @deprecated Use gamend.realtime.v1.SignalingSdp.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a SignalingSdp.
+                 * @typedef {gamend.realtime.v1.SignalingSdp.$Properties} gamend.realtime.v1.SignalingSdp.$Shape
+                 */
+
+                /**
+                 * Constructs a new SignalingSdp.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a SignalingSdp.
+                 * @constructor
+                 * @param {gamend.realtime.v1.SignalingSdp.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const SignalingSdp = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * SignalingSdp sdp.
+                 * @member {string} sdp
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @instance
+                 */
+                SignalingSdp.prototype.sdp = "";
+
+                /**
+                 * SignalingSdp from_user_id.
+                 * @member {string} from_user_id
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @instance
+                 */
+                SignalingSdp.prototype.from_user_id = "";
+
+                /**
+                 * Encodes the specified SignalingSdp message. Does not implicitly {@link gamend.realtime.v1.SignalingSdp.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingSdp.$Properties} message SignalingSdp message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SignalingSdp.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.sdp != null && $Object.hasOwnProperty.call(message, "sdp") && message.sdp !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.sdp);
+                    if (message.from_user_id != null && $Object.hasOwnProperty.call(message, "from_user_id") && message.from_user_id !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.from_user_id);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a SignalingSdp message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.SignalingSdp & gamend.realtime.v1.SignalingSdp.$Shape} SignalingSdp
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SignalingSdp.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.SignalingSdp();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.sdp = value;
+                                else
+                                    delete message.sdp;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.from_user_id = value;
+                                else
+                                    delete message.from_user_id;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a SignalingSdp message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.SignalingSdp} SignalingSdp
+                 */
+                SignalingSdp.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.SignalingSdp)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.SignalingSdp: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.SignalingSdp();
+                    if (object.sdp != null)
+                        if (typeof object.sdp !== "string" || object.sdp.length)
+                            message.sdp = $String(object.sdp);
+                    if (object.from_user_id != null)
+                        if (typeof object.from_user_id !== "string" || object.from_user_id.length)
+                            message.from_user_id = $String(object.from_user_id);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a SignalingSdp message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingSdp} message SignalingSdp
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                SignalingSdp.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.sdp = "";
+                        object.from_user_id = "";
+                    }
+                    if (message.sdp != null && $Object.hasOwnProperty.call(message, "sdp"))
+                        object.sdp = message.sdp;
+                    if (message.from_user_id != null && $Object.hasOwnProperty.call(message, "from_user_id"))
+                        object.from_user_id = message.from_user_id;
+                    return object;
+                };
+
+                /**
+                 * Converts this SignalingSdp to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                SignalingSdp.prototype.toJSON = function() {
+                    return SignalingSdp.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for SignalingSdp
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.SignalingSdp
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                SignalingSdp.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.SignalingSdp";
+                };
+
+                return SignalingSdp;
+            })();
+
+            v1.SignalingIce = (function() {
+
+                /**
+                 * Properties of a SignalingIce.
+                 * @typedef {Object} gamend.realtime.v1.SignalingIce.$Properties
+                 * @property {string|null} [candidate] SignalingIce candidate
+                 * @property {string|null} [from_user_id] SignalingIce from_user_id
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a SignalingIce.
+                 * @memberof gamend.realtime.v1
+                 * @interface ISignalingIce
+                 * @augments gamend.realtime.v1.SignalingIce.$Properties
+                 * @deprecated Use gamend.realtime.v1.SignalingIce.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a SignalingIce.
+                 * @typedef {gamend.realtime.v1.SignalingIce.$Properties} gamend.realtime.v1.SignalingIce.$Shape
+                 */
+
+                /**
+                 * Constructs a new SignalingIce.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a SignalingIce.
+                 * @constructor
+                 * @param {gamend.realtime.v1.SignalingIce.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const SignalingIce = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * SignalingIce candidate.
+                 * @member {string} candidate
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @instance
+                 */
+                SignalingIce.prototype.candidate = "";
+
+                /**
+                 * SignalingIce from_user_id.
+                 * @member {string} from_user_id
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @instance
+                 */
+                SignalingIce.prototype.from_user_id = "";
+
+                /**
+                 * Encodes the specified SignalingIce message. Does not implicitly {@link gamend.realtime.v1.SignalingIce.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingIce.$Properties} message SignalingIce message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SignalingIce.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.candidate != null && $Object.hasOwnProperty.call(message, "candidate") && message.candidate !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.candidate);
+                    if (message.from_user_id != null && $Object.hasOwnProperty.call(message, "from_user_id") && message.from_user_id !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.from_user_id);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a SignalingIce message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.SignalingIce & gamend.realtime.v1.SignalingIce.$Shape} SignalingIce
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SignalingIce.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.SignalingIce();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.candidate = value;
+                                else
+                                    delete message.candidate;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.from_user_id = value;
+                                else
+                                    delete message.from_user_id;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a SignalingIce message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.SignalingIce} SignalingIce
+                 */
+                SignalingIce.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.SignalingIce)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.SignalingIce: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.SignalingIce();
+                    if (object.candidate != null)
+                        if (typeof object.candidate !== "string" || object.candidate.length)
+                            message.candidate = $String(object.candidate);
+                    if (object.from_user_id != null)
+                        if (typeof object.from_user_id !== "string" || object.from_user_id.length)
+                            message.from_user_id = $String(object.from_user_id);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a SignalingIce message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingIce} message SignalingIce
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                SignalingIce.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.candidate = "";
+                        object.from_user_id = "";
+                    }
+                    if (message.candidate != null && $Object.hasOwnProperty.call(message, "candidate"))
+                        object.candidate = message.candidate;
+                    if (message.from_user_id != null && $Object.hasOwnProperty.call(message, "from_user_id"))
+                        object.from_user_id = message.from_user_id;
+                    return object;
+                };
+
+                /**
+                 * Converts this SignalingIce to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                SignalingIce.prototype.toJSON = function() {
+                    return SignalingIce.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for SignalingIce
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.SignalingIce
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                SignalingIce.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.SignalingIce";
+                };
+
+                return SignalingIce;
+            })();
+
+            v1.SignalingRoomClosed = (function() {
+
+                /**
+                 * Properties of a SignalingRoomClosed.
+                 * @typedef {Object} gamend.realtime.v1.SignalingRoomClosed.$Properties
+                 * @property {string|null} [room_id] SignalingRoomClosed room_id
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a SignalingRoomClosed.
+                 * @memberof gamend.realtime.v1
+                 * @interface ISignalingRoomClosed
+                 * @augments gamend.realtime.v1.SignalingRoomClosed.$Properties
+                 * @deprecated Use gamend.realtime.v1.SignalingRoomClosed.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a SignalingRoomClosed.
+                 * @typedef {gamend.realtime.v1.SignalingRoomClosed.$Properties} gamend.realtime.v1.SignalingRoomClosed.$Shape
+                 */
+
+                /**
+                 * Constructs a new SignalingRoomClosed.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a SignalingRoomClosed.
+                 * @constructor
+                 * @param {gamend.realtime.v1.SignalingRoomClosed.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const SignalingRoomClosed = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * SignalingRoomClosed room_id.
+                 * @member {string} room_id
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @instance
+                 */
+                SignalingRoomClosed.prototype.room_id = "";
+
+                /**
+                 * Encodes the specified SignalingRoomClosed message. Does not implicitly {@link gamend.realtime.v1.SignalingRoomClosed.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingRoomClosed.$Properties} message SignalingRoomClosed message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SignalingRoomClosed.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.room_id != null && $Object.hasOwnProperty.call(message, "room_id") && message.room_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.room_id);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a SignalingRoomClosed message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.SignalingRoomClosed & gamend.realtime.v1.SignalingRoomClosed.$Shape} SignalingRoomClosed
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SignalingRoomClosed.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.SignalingRoomClosed();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.room_id = value;
+                                else
+                                    delete message.room_id;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a SignalingRoomClosed message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.SignalingRoomClosed} SignalingRoomClosed
+                 */
+                SignalingRoomClosed.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.SignalingRoomClosed)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.SignalingRoomClosed: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.SignalingRoomClosed();
+                    if (object.room_id != null)
+                        if (typeof object.room_id !== "string" || object.room_id.length)
+                            message.room_id = $String(object.room_id);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a SignalingRoomClosed message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @static
+                 * @param {gamend.realtime.v1.SignalingRoomClosed} message SignalingRoomClosed
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                SignalingRoomClosed.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults)
+                        object.room_id = "";
+                    if (message.room_id != null && $Object.hasOwnProperty.call(message, "room_id"))
+                        object.room_id = message.room_id;
+                    return object;
+                };
+
+                /**
+                 * Converts this SignalingRoomClosed to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                SignalingRoomClosed.prototype.toJSON = function() {
+                    return SignalingRoomClosed.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for SignalingRoomClosed
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.SignalingRoomClosed
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                SignalingRoomClosed.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.SignalingRoomClosed";
+                };
+
+                return SignalingRoomClosed;
             })();
 
             v1.RpcCall = (function() {

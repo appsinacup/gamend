@@ -170,6 +170,7 @@ defmodule GamendWeb.GroupsLive do
 
   # ── Events ──────────────────────────────────────────────────────────────────
 
+  event("search", search: :string)
   @impl true
   def handle_event("search", %{"search" => term}, socket) do
     {:noreply,
@@ -178,12 +179,16 @@ defmodule GamendWeb.GroupsLive do
      |> load_groups()}
   end
 
+  event("filter_type", type: :string)
+
   def handle_event("filter_type", %{"type" => type}, socket) do
     {:noreply,
      socket
      |> assign(type_filter: type, page: 1)
      |> load_groups()}
   end
+
+  event("sort_by", sort: :string)
 
   def handle_event("sort_by", %{"sort" => sort}, socket) do
     {:noreply,
@@ -192,18 +197,28 @@ defmodule GamendWeb.GroupsLive do
      |> load_groups()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> load_groups()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> load_groups()}
 
+  event("groups_page_size", size: :string)
+
   def handle_event("groups_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> load_groups()}
+
+  event("view_group", id: :uuid)
 
   def handle_event("view_group", %{"id" => id}, socket) do
     {:noreply, push_patch(socket, to: ~p"/groups/#{id}")}
   end
+
+  event("join_group", id: :uuid)
 
   def handle_event("join_group", %{"id" => id}, socket) do
     group_id = id
@@ -232,6 +247,8 @@ defmodule GamendWeb.GroupsLive do
         {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
+
+  event("request_join", id: :uuid)
 
   def handle_event("request_join", %{"id" => id}, socket) do
     group_id = id
@@ -268,6 +285,8 @@ defmodule GamendWeb.GroupsLive do
     end
   end
 
+  event("leave_group", id: :uuid)
+
   def handle_event("leave_group", %{"id" => id}, socket) do
     group_id = id
 
@@ -290,11 +309,17 @@ defmodule GamendWeb.GroupsLive do
     end
   end
 
+  event("members_prev")
+
   def handle_event("members_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:members_page) |> load_members()}
 
+  event("members_next")
+
   def handle_event("members_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:members_page) |> load_members()}
+
+  event("search_members", search: :string)
 
   def handle_event("search_members", %{"search" => term}, socket) do
     {:noreply, load_members(assign(socket, members_search: term, members_page: 1))}

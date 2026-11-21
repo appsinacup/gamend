@@ -45,19 +45,19 @@
     "channel": "user",
     "event": "result_started",
     "signal": "result_started",
-    "message": null
+    "message": "PlayResult"
   },
   {
     "channel": "user",
     "event": "result_event",
     "signal": "result_event",
-    "message": null
+    "message": "PlayResultEventPushed"
   },
   {
     "channel": "user",
     "event": "result_ended",
     "signal": "result_ended",
-    "message": null
+    "message": "PlayResult"
   },
   {
     "channel": "user",
@@ -93,13 +93,13 @@
     "channel": "user",
     "event": "account_banned",
     "signal": "account_banned",
-    "message": null
+    "message": "AccountBan"
   },
   {
     "channel": "user",
     "event": "account_unbanned",
     "signal": "account_unbanned",
-    "message": null
+    "message": "Empty"
   },
   {
     "channel": "user",
@@ -207,49 +207,49 @@
     "channel": "user",
     "event": "outgoing_request",
     "signal": "friend_added",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "incoming_request",
     "signal": "friend_added",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "request_cancelled",
     "signal": "friend_request_cancelled",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "friend_accepted",
     "signal": "friend_added",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "friend_rejected",
     "signal": "friend_rejected",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "friend_removed",
     "signal": "friend_removed",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "friend_blocked",
     "signal": "friend_blocked",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
     "event": "friend_unblocked",
     "signal": "friend_unblocked",
-    "message": null
+    "message": "Friendship"
   },
   {
     "channel": "user",
@@ -279,31 +279,31 @@
     "channel": "user",
     "event": "webrtc:answer",
     "signal": "webrtc_answer",
-    "message": null
+    "message": "WebrtcAnswer"
   },
   {
     "channel": "user",
     "event": "webrtc:ice",
     "signal": "webrtc_ice",
-    "message": null
+    "message": "WebrtcIce"
   },
   {
     "channel": "user",
     "event": "webrtc:channel_open",
     "signal": "webrtc_channel_open",
-    "message": null
+    "message": "WebrtcChannelOpen"
   },
   {
     "channel": "user",
     "event": "webrtc:channel_closed",
     "signal": "webrtc_channel_closed",
-    "message": null
+    "message": "Empty"
   },
   {
     "channel": "user",
     "event": "webrtc:state",
     "signal": "webrtc_state",
-    "message": null
+    "message": "WebrtcState"
   },
   {
     "channel": "lobby",
@@ -405,19 +405,19 @@
     "channel": "lobby",
     "event": "result_started",
     "signal": "lobby_result_started",
-    "message": null
+    "message": "PlayResult"
   },
   {
     "channel": "lobby",
     "event": "result_event",
     "signal": "lobby_result_event",
-    "message": null
+    "message": "PlayResultEventPushed"
   },
   {
     "channel": "lobby",
     "event": "result_ended",
     "signal": "lobby_result_ended",
-    "message": null
+    "message": "PlayResult"
   },
   {
     "channel": "lobbies",
@@ -633,42 +633,42 @@
     "channel": "signaling",
     "event": "user_joined",
     "signal": "signaling_user_joined",
-    "message": null
+    "message": "SignalingPeer"
   },
   {
     "channel": "signaling",
     "event": "user_rejoined",
     "signal": "signaling_user_rejoined",
-    "message": null
+    "message": "SignalingPeer"
   },
   {
     "channel": "signaling",
     "event": "user_left",
     "signal": "signaling_user_left",
-    "message": null
+    "message": "SignalingPeerLeft"
   },
   {
     "channel": "signaling",
     "event": "offer",
     "signal": "signaling_offer",
-    "message": null
+    "message": "SignalingSdp"
   },
   {
     "channel": "signaling",
     "event": "answer",
     "signal": "signaling_answer",
-    "message": null
+    "message": "SignalingSdp"
   },
   {
     "channel": "signaling",
     "event": "ice",
     "signal": "signaling_ice",
-    "message": null
+    "message": "SignalingIce"
   },
   {
     "channel": "signaling",
     "event": "room_closed",
     "signal": "signaling_room_closed",
-    "message": null
+    "message": "SignalingRoomClosed"
   }
 ]

@@ -37,14 +37,28 @@ defmodule GamendWeb.UserChannel do
       -> reply {:ok, %{subscribed: true, ...}}
   """
 
-  use Phoenix.Channel
+  use GamendWeb, :channel
 
   import GamendWeb.ChannelPush
   require Logger
 
   require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
-  intercept [RealtimeEvent.updated(), RealtimeEvent.friend_updated()]
+  # The friendship events are `Gamend.Friends`' broadcasts on this topic: held
+  # here so a protobuf socket gets them as `Friendship` (`handle_out/3`), where a
+  # broadcast would reach it as JSON.
+  intercept [
+    RealtimeEvent.updated(),
+    RealtimeEvent.friend_updated(),
+    RealtimeEvent.outgoing_request(),
+    RealtimeEvent.incoming_request(),
+    RealtimeEvent.request_cancelled(),
+    RealtimeEvent.friend_accepted(),
+    RealtimeEvent.friend_rejected(),
+    RealtimeEvent.friend_removed(),
+    RealtimeEvent.friend_blocked(),
+    RealtimeEvent.friend_unblocked()
+  ]
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Online

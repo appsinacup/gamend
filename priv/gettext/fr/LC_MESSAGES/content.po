@@ -89,5 +89,4 @@ msgstr "Coupe hebdomadaire"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-
 msgstr "Inscris-toi quand tu veux ; le tableau est tiré chaque lundi."

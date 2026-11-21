@@ -90,9 +90,9 @@ defmodule GamendWeb.Api.V1.ProviderLinkTest do
       assert Accounts.get_user!(ctx.user.id).discord_id == nil
     end
 
-    test "a missing code is missing_param", ctx do
-      resp = ctx.anon |> post("/api/v1/auth/discord/callback", %{}) |> json_response(400)
-      assert resp["error"] == "missing_param"
+    test "a missing code is validation_failed", ctx do
+      resp = ctx.anon |> post("/api/v1/auth/discord/callback", %{}) |> json_response(422)
+      assert resp["error"] == "validation_failed"
     end
   end
 
@@ -110,8 +110,8 @@ defmodule GamendWeb.Api.V1.ProviderLinkTest do
       body = ctx.conn |> post("/api/v1/me/providers/steam", %{code: "t-7"}) |> json_response(200)
       assert body["data"]["linked_providers"]["steam"]
 
-      resp = ctx.conn |> post("/api/v1/me/providers/steam", %{}) |> json_response(400)
-      assert resp["error"] == "missing_param"
+      resp = ctx.conn |> post("/api/v1/me/providers/steam", %{}) |> json_response(422)
+      assert resp["error"] == "validation_failed"
     end
 
     test "an account already linked elsewhere is a conflict", ctx do
@@ -134,8 +134,9 @@ defmodule GamendWeb.Api.V1.ProviderLinkTest do
 
       assert resp["error"] == "exchange_failed"
 
+      # Not one of the path's documented providers: a URL that names nothing.
       resp = ctx.conn |> post("/api/v1/me/providers/myspace", %{code: "x"}) |> json_response(404)
-      assert resp["error"] == "unknown_provider"
+      assert resp["error"] == "not_found"
 
       assert ctx.anon
              |> post("/api/v1/me/providers/discord", %{code: "d-4"})

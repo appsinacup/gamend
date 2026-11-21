@@ -110,9 +110,9 @@ defmodule GamendWeb.Api.V1.QuestRedeemControllerTest do
                conn |> auth_conn(guest) |> redeem(code(code_quest()).token) |> json_response(403)
     end
 
-    test "400 with no token", %{authed: authed} do
-      assert %{"error" => "missing_param"} =
-               authed |> post("/api/v1/me/quests/redeem", %{}) |> json_response(400)
+    test "422 with no token", %{authed: authed} do
+      assert %{"error" => "validation_failed"} =
+               authed |> post("/api/v1/me/quests/redeem", %{}) |> json_response(422)
     end
 
     test "401 signed out", %{conn: conn} do

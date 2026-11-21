@@ -48,13 +48,15 @@ defmodule GamendWeb.AuthControllerApiTest do
   describe "GET /api/v1/auth/session/:session_id" do
     test "empty session path is a 404", %{conn: conn} do
       # Matches the :provider route with "session", which no provider is.
-      assert_error_sent 404, fn -> get(conn, "/api/v1/auth/session/") end
+      assert %{"error" => "not_found"} =
+               conn |> get("/api/v1/auth/session/") |> json_response(404)
     end
   end
 
   describe "GET /api/v1/auth/:provider API request" do
     test "unknown provider is a 404", %{conn: conn} do
-      assert_error_sent 404, fn -> get(conn, ~p"/api/v1/auth/invalid-provider") end
+      assert %{"error" => "not_found"} =
+               conn |> get(~p"/api/v1/auth/invalid-provider") |> json_response(404)
     end
 
     test "steam returns its request URL and session id", %{conn: conn} do
@@ -629,10 +631,9 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert json_response(conn, 400)["error"] == "invalid_token"
     end
 
-    test "returns 400 when id_token missing", %{conn: conn} do
+    test "returns 422 when id_token missing", %{conn: conn} do
       conn = post(conn, "/api/v1/auth/google/id_token", %{})
-      assert conn.status == 400
-      assert json_response(conn, 400)["error"] == "missing_param"
+      assert json_response(conn, 422)["error"] == "validation_failed"
     end
   end
 

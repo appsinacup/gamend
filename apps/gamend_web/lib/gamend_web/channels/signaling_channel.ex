@@ -40,7 +40,7 @@ defmodule GamendWeb.SignalingChannel do
       "room_closed"   — %{}
   """
 
-  use Phoenix.Channel
+  use GamendWeb, :channel
 
   intercept ["presence_diff"]
 

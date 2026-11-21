@@ -24,7 +24,7 @@ defmodule GamendWeb.PartyChannel do
   - `"chat_message_deleted"` - A chat message was deleted. Payload: `%{id: integer}`
   """
 
-  use Phoenix.Channel
+  use GamendWeb, :channel
 
   import GamendWeb.ChannelPush
   require Logger

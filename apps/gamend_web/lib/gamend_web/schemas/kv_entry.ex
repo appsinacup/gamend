@@ -14,8 +14,8 @@ defmodule GamendWeb.Schemas.KvEntry do
       key: %Schema{type: :string},
       user_id: %Schema{type: :string, description: "Owning user; empty when not user-scoped"},
       lobby_id: %Schema{type: :string, description: "Owning lobby; empty when not lobby-scoped"},
-      data: %Schema{type: :object, description: "The stored value"},
-      metadata: %Schema{type: :object}
+      data: GamendWeb.Schemas.FreeForm.kv_value(description: "The stored value"),
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [:key, :user_id, :lobby_id, :data, :metadata]
   })

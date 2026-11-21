@@ -613,31 +613,25 @@ defmodule GamendWeb.HostLayoutNavigation do
       data-tone={tone(@link)}
       class={
         [
-          "relative flex flex-col items-center rounded-field",
           # A tab's edge is drawn inside it: a border's 2 px a tab cut every
-          # Spanish label short on a 360 px phone (2026-10-26).
-          if(@compact, do: "ring-inset", else: "border"),
-          "text-center font-semibold leading-tight transition-colors",
-          if(@compact,
-            do: "min-w-0 flex-auto gap-0.5 px-0 py-1.5 text-[10px] tracking-tight",
-            else: "gap-1 px-0.5 py-2 text-[11px]"
-          ),
-          "@min-[8rem]/side:flex-row @min-[8rem]/side:gap-3 @min-[8rem]/side:px-3",
-          "@min-[8rem]/side:text-start @min-[8rem]/side:text-sm",
+          # Spanish label short on a 360 px phone (2026-10-26). Classes in
+          # `gamend.css` (`.side-link`).
+          if(@compact, do: "side-link-tab", else: "side-link-rail"),
+          "side-link",
           cond do
-            disabled?(@link) -> "border-transparent pointer-events-none opacity-70"
-            @active? and tone(@link) != nil and @compact -> [tone_active(), tone_ring()]
-            @active? and tone(@link) != nil -> tone_active()
-            @active? -> "border-transparent bg-primary text-primary-content"
-            true -> "border-transparent hover:bg-base-100"
+            disabled?(@link) -> "side-link-off"
+            @active? and tone(@link) != nil and @compact -> "nav-tone-active nav-tone-ring"
+            @active? and tone(@link) != nil -> "nav-tone-active"
+            @active? -> "side-link-primary"
+            true -> "side-link-idle"
           end
         ]
       }
     >
       <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link, "size-6 shrink-0")} />
       <span class={[
-        "min-w-0 max-w-full @min-[8rem]/side:flex-1 @min-[8rem]/side:truncate",
-        if(@compact, do: "truncate", else: "line-clamp-2 break-words hyphens-auto")
+        if(@compact, do: "side-link-label-tab", else: "side-link-label-rail"),
+        "side-link-label"
       ]}>
         {translate_label(@link["label"])}
       </span>
@@ -823,7 +817,12 @@ defmodule GamendWeb.HostLayoutNavigation do
         rel={@link[:rel]}
         data-no-live-nav
         aria-current={if(@link.locale == @locale, do: "true")}
-        class={if(@link.locale == @locale, do: "locale-option locale-option-current", else: "locale-option")}
+        class={
+          if(@link.locale == @locale,
+            do: "locale-option locale-option-current",
+            else: "locale-option"
+          )
+        }
       >
         <%!-- `deferred`: this row is in the document ~30 times over, in a
               dropdown and a sheet that are both closed. --%>
@@ -1343,6 +1342,43 @@ defmodule GamendWeb.HostLayoutNavigation do
     do: Map.get(navigation, "layout") == NavLayout.auto()
 
   def auto_layout?(_navigation), do: false
+
+  @doc """
+  The icons of the sidebar's links (and the tab bar's, its phone form), as
+  the files their `hero-*` classes mask (`GamendWeb.Icons.class_path/1`),
+  for the root layout's `<link rel="preload">`s. A mask's file is asked for
+  only once the stylesheet is in and the page laid out, so a first visit
+  painted the sidebar with no icons and they came a round trip later (host,
+  2026-11-21). A link the tab bar leaves out (`"mobile": "hidden"`) is
+  preloaded from `md` up only (`media`), as only the sidebar draws it.
+  None for a bar layout: its links are in a closed menu on a phone.
+  """
+  @spec shell_icons(map() | nil, Scope.t() | nil) :: [
+          %{href: String.t(), media: String.t() | nil}
+        ]
+  def shell_icons(navigation, scope) when is_map(navigation) do
+    if side_layout?(navigation) or auto_layout?(navigation) do
+      links =
+        navigation
+        |> section_entries(
+          NavLinkGroup.primary_links(),
+          auth_level(Scope.user(scope)),
+          NavAuth.any(),
+          scope
+        )
+        |> Enum.filter(&(side_link?(&1) and is_binary(&1["icon"])))
+
+      on_phone = for link <- links, not phone_hidden?(link), into: MapSet.new(), do: link["icon"]
+
+      for icon <- links |> Enum.map(& &1["icon"]) |> Enum.uniq(),
+          href = GamendWeb.Icons.class_path(icon),
+          do: %{href: href, media: if(!MapSet.member?(on_phone, icon), do: "(min-width: 48rem)")}
+    else
+      []
+    end
+  end
+
+  def shell_icons(_navigation, _scope), do: []
 
   # What the sidebar draws: a plain link. A group, an entry the host draws
   # and a readonly badge stay in the bar.
@@ -1987,12 +2023,8 @@ defmodule GamendWeb.HostLayoutNavigation do
     end
   end
 
-  # `oklab`, not `oklch`: the light theme's base is a grey at hue 0, and an
-  # `oklch` mix turns the tone's hue towards it (a blue tint came out pink).
-  @tone_active "bg-[color-mix(in_oklab,var(--nav-tone)_16%,var(--color-base-100))] border-[color-mix(in_oklab,var(--nav-tone)_45%,transparent)]"
-
-  # The same edge drawn inside, for a tab of the tab bar (`side_nav_item/1`).
-  @tone_ring "ring-1 ring-[color-mix(in_oklab,var(--nav-tone)_45%,transparent)]"
+  # A link's own page in its tone: `gamend.css`'s `nav-tone-active`.
+  @tone_active "nav-tone-active"
 
   # A link button's colour: the page's own (`active?`) filled with the
   # primary, or tinted with its tone; any other `inactive`.
@@ -2001,9 +2033,6 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   defp state_class(_entry, false, inactive), do: inactive
-
-  defp tone_active, do: @tone_active
-  defp tone_ring, do: @tone_ring
 
   attr :current_path, :string, default: nil
 

@@ -87,6 +87,7 @@ defmodule GamendWeb.UserLive.Registration do
      |> assign_form(changeset), temporary_assigns: [form: nil]}
   end
 
+  event("save", user: {:schema, Gamend.Accounts.User})
   @impl true
   def handle_event("save", %{"user" => user_params} = params, socket) do
     with :ok <- GamendWeb.LiveHelpers.check_rate_limit(socket.assigns.client_ip, :auth),
@@ -101,6 +102,8 @@ defmodule GamendWeb.UserLive.Registration do
          put_flash(socket, :error, gettext("Too many attempts. Please try again later."))}
     end
   end
+
+  event("validate", user: {:schema, Gamend.Accounts.User})
 
   def handle_event("validate", %{"user" => user_params}, socket) do
     # The keystroke path skips the uniqueness query — see

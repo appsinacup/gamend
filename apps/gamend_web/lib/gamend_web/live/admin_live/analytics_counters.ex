@@ -35,6 +35,7 @@ defmodule GamendWeb.AdminLive.AnalyticsCounters do
      |> load()}
   end
 
+  event("refresh")
   @impl true
   def handle_event("refresh", _params, socket), do: {:noreply, load(socket)}
 

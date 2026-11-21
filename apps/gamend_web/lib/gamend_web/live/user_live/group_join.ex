@@ -34,6 +34,7 @@ defmodule GamendWeb.UserLive.GroupJoin do
      |> assign(:group_path, link && GroupLinks.group_path(socket, link.group_id))}
   end
 
+  event("join")
   @impl true
   def handle_event("join", _params, socket) do
     %{user: user, token: token, link: link} = socket.assigns

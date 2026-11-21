@@ -70,23 +70,34 @@ defmodule GamendWeb.AdminLive.Runtime do
      |> paginate()}
   end
 
+  event("search", q: :string)
   @impl true
   def handle_event("search", %{"q" => q}, socket) do
     {:noreply, socket |> assign(:search, q) |> assign(:page, 1) |> paginate()}
   end
 
+  event("facet", value: :string)
+
   def handle_event("facet", %{"value" => value}, socket) do
     {:noreply, socket |> assign(:facet, value) |> assign(:page, 1) |> paginate()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> paginate()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> paginate()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> paginate()}
+
+  event("toggle_row", id: :uuid)
 
   def handle_event("toggle_row", %{"id" => id}, socket) do
     expanded = socket.assigns.expanded
@@ -98,6 +109,8 @@ defmodule GamendWeb.AdminLive.Runtime do
 
     {:noreply, assign(socket, :expanded, expanded)}
   end
+
+  event("toggle_diagram")
 
   def handle_event("toggle_diagram", _params, socket) do
     {:noreply,

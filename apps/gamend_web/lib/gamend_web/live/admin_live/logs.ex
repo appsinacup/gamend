@@ -658,6 +658,7 @@ defmodule GamendWeb.AdminLive.Logs do
 
   # ── Events ──────────────────────────────────────────────────────────────────
 
+  event("switch_tab", tab: {:in, [LogSource.server(), LogSource.client()]})
   @impl true
   def handle_event("switch_tab", %{"tab" => tab}, socket)
       when tab in [LogSource.server(), LogSource.client()] do
@@ -665,9 +666,13 @@ defmodule GamendWeb.AdminLive.Logs do
     {:noreply, if(tab == LogSource.client(), do: load_sessions(socket), else: socket)}
   end
 
+  event("filter_level", level: :string)
+
   def handle_event("filter_level", %{"level" => level}, socket) do
     {:noreply, socket |> assign(level_filter: level) |> refresh_logs()}
   end
+
+  event("update_filters")
 
   def handle_event("update_filters", params, socket) do
     {:noreply,
@@ -683,6 +688,8 @@ defmodule GamendWeb.AdminLive.Logs do
      |> refresh_logs()}
   end
 
+  event("clear_filters")
+
   def handle_event("clear_filters", _params, socket) do
     {:noreply,
      socket
@@ -696,6 +703,8 @@ defmodule GamendWeb.AdminLive.Logs do
      )
      |> refresh_logs()}
   end
+
+  event("update_session_filters")
 
   def handle_event("update_session_filters", params, socket) do
     filters = %{
@@ -712,6 +721,8 @@ defmodule GamendWeb.AdminLive.Logs do
     {:noreply, socket |> assign(session_filters: filters, session_page: 1) |> load_sessions()}
   end
 
+  event("clear_session_filters")
+
   def handle_event("clear_session_filters", _params, socket) do
     {:noreply,
      socket
@@ -719,20 +730,28 @@ defmodule GamendWeb.AdminLive.Logs do
      |> load_sessions()}
   end
 
+  event("page", dir: {:optional, :string})
+
   def handle_event("page", %{"dir" => "next"}, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:session_page) |> load_sessions()}
 
   def handle_event("page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:session_page) |> load_sessions()}
 
+  event("select_session", id: :string)
+
   def handle_event("select_session", %{"id" => id}, socket) do
     {:noreply, socket |> assign(:open_session, id) |> select_session(id)}
   end
+
+  event("close_session")
 
   def handle_event("close_session", _params, socket) do
     {:noreply,
      assign(socket, open_session: nil, selected: nil, selected_entries: [], selected_lobbies: [])}
   end
+
+  event("toggle_flag")
 
   def handle_event("toggle_flag", _params, %{assigns: %{selected: nil}} = socket),
     do: {:noreply, socket}

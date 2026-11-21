@@ -37,7 +37,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           },
           starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
-          metadata: %Schema{type: :object}
+          metadata: GamendWeb.Schemas.FreeForm.metadata()
         },
         required: [:slug, :title]
       }
@@ -78,7 +78,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           icon_url: %Schema{type: :string},
           starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
-          metadata: %Schema{type: :object}
+          metadata: GamendWeb.Schemas.FreeForm.metadata()
         }
       }
     },

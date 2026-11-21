@@ -73,10 +73,13 @@ defmodule GamendWeb.LobbyLive.Index do
      |> assign_managing(params["manage"])}
   end
 
+  event("create_change", title: :string)
   @impl true
   def handle_event("create_change", %{"title" => title}, socket) do
     {:noreply, assign(socket, title: title)}
   end
+
+  event("create", title: :string)
 
   def handle_event("create", %{"title" => title}, socket) do
     attrs = %{"title" => title}
@@ -103,6 +106,8 @@ defmodule GamendWeb.LobbyLive.Index do
         {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
+
+  event("leave")
 
   def handle_event("leave", _params, socket) do
     case Scope.user(socket.assigns.current_scope) do
@@ -144,6 +149,8 @@ defmodule GamendWeb.LobbyLive.Index do
     end
   end
 
+  event("join_lobby", id: :uuid)
+
   def handle_event("join_lobby", %{"id" => id}, socket) do
     case Lobbies.get_lobby(id) do
       lobby when lobby != nil ->
@@ -159,6 +166,8 @@ defmodule GamendWeb.LobbyLive.Index do
     end
   end
 
+  event("confirm_join", _id: :string, password: :string)
+
   def handle_event("confirm_join", %{"_id" => id, "password" => password}, socket) do
     case Scope.user(socket.assigns.current_scope) do
       %User{} = user ->
@@ -169,10 +178,13 @@ defmodule GamendWeb.LobbyLive.Index do
     end
   end
 
+  event("join_change", password: :string)
+
   def handle_event("join_change", %{"password" => password}, socket) do
     {:noreply, assign(socket, join_password: password)}
   end
 
+  event("start_join", id: :uuid)
   @impl true
   def handle_event("start_join", %{"id" => id}, socket) do
     case parse_int(id) do
@@ -198,17 +210,25 @@ defmodule GamendWeb.LobbyLive.Index do
     end
   end
 
+  event("cancel_join")
+
   def handle_event("cancel_join", _params, socket) do
     {:noreply, patch_lobbies(socket, join: nil)}
   end
+
+  event("start_manage", id: :uuid)
 
   def handle_event("start_manage", %{"id" => id}, socket) do
     {:noreply, patch_lobbies(socket, manage: id)}
   end
 
+  event("cancel_manage")
+
   def handle_event("cancel_manage", _params, socket) do
     {:noreply, patch_lobbies(socket, manage: nil)}
   end
+
+  event("manage_change")
 
   def handle_event("manage_change", params, socket) do
     if (params["_id"] || params["id"]) == socket.assigns.editing_lobby_id do
@@ -226,75 +246,21 @@ defmodule GamendWeb.LobbyLive.Index do
     end
   end
 
+  event("update_lobby")
+
   def handle_event("update_lobby", params, socket) do
     case Scope.user(socket.assigns.current_scope) do
       %User{} = user ->
-        id = params["_id"] || params["id"]
-        lobby = Lobbies.get_lobby(id)
-
-        attrs = %{}
-        attrs = if params["title"], do: Map.put(attrs, "title", params["title"]), else: attrs
-
-        # A player-facing form: `String.to_integer/1` here crashed the page on a
-        # non-numeric value. An unparseable one is simply not applied.
-        attrs =
-          case Gamend.Parse.integer(params["max_users"]) do
-            nil -> attrs
-            max_users -> Map.put(attrs, "max_users", max_users)
-          end
-
-        attrs =
-          if Map.get(params, "is_locked") == "true",
-            do: Map.put(attrs, "is_locked", true),
-            else: Map.put(attrs, "is_locked", false)
-
-        attrs =
-          if Map.get(params, "is_hidden") == "true",
-            do: Map.put(attrs, "is_hidden", true),
-            else: Map.put(attrs, "is_hidden", false)
-
-        attrs =
-          if params["password"] && params["password"] != "",
-            do: Map.put(attrs, "password", params["password"]),
-            else: attrs
-
-        case Lobbies.update_lobby_by_host(user, lobby, attrs) do
-          {:ok, updated_lobby} ->
-            lobbies =
-              Lobbies.list_lobbies_for_user(user, %{},
-                page: socket.assigns[:lobbies_page] || 1,
-                page_size: socket.assigns[:lobbies_page_size] || 12
-              )
-
-            memberships_map =
-              Enum.into(lobbies, %{}, fn lp ->
-                {lp.id, Lobbies.list_memberships_for_lobby(lp.id)}
-              end)
-
-            {:noreply,
-             socket
-             |> put_flash(:info, gettext("Success."))
-             |> assign(
-               lobbies: lobbies,
-               memberships_map: memberships_map,
-               editing_lobby_id: updated_lobby.id,
-               # refresh edit_attrs so the form shows updated values
-               edit_attrs: edit_attrs(updated_lobby)
-             )}
-
-          {:error, reason} ->
-            {:noreply,
-             put_flash(
-               socket,
-               :error,
-               LiveHelpers.failure_message(gettext("Failed"), reason)
-             )}
-        end
+        # A form's id, which a stale tab or a hand-sent event can leave out.
+        id = Gamend.UUIDv7.cast_or_nil(params["_id"] || params["id"])
+        update_lobby(socket, user, id && Lobbies.get_lobby(id), params)
 
       _ ->
         {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
+
+  event("kick", lobby_id: :uuid, target_id: :uuid)
 
   def handle_event("kick", %{"lobby_id" => lobby_id, "target_id" => target_id}, socket) do
     case Scope.user(socket.assigns.current_scope) do
@@ -332,10 +298,14 @@ defmodule GamendWeb.LobbyLive.Index do
     end
   end
 
+  event("lobbies_prev")
+
   def handle_event("lobbies_prev", _params, socket) do
     page = max(1, (socket.assigns[:lobbies_page] || 1) - 1)
     {:noreply, refresh_lobbies(assign(socket, lobbies_page: page))}
   end
+
+  event("lobbies_next")
 
   def handle_event("lobbies_next", _params, socket) do
     page = (socket.assigns[:lobbies_page] || 1) + 1
@@ -1003,5 +973,76 @@ defmodule GamendWeb.LobbyLive.Index do
       </div>
     </Layouts.app>
     """
+  end
+
+  # Gone since the page drew it, or an id that names nothing.
+  defp update_lobby(socket, _user, nil, _params),
+    do:
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         LiveHelpers.failure_message(gettext("Failed"), :not_found)
+       )}
+
+  defp update_lobby(socket, user, lobby, params) do
+    attrs = %{}
+    attrs = if params["title"], do: Map.put(attrs, "title", params["title"]), else: attrs
+
+    # A player-facing form: `String.to_integer/1` here crashed the page on a
+    # non-numeric value. An unparseable one is simply not applied.
+    attrs =
+      case Gamend.Parse.integer(params["max_users"]) do
+        nil -> attrs
+        max_users -> Map.put(attrs, "max_users", max_users)
+      end
+
+    attrs =
+      if Map.get(params, "is_locked") == "true",
+        do: Map.put(attrs, "is_locked", true),
+        else: Map.put(attrs, "is_locked", false)
+
+    attrs =
+      if Map.get(params, "is_hidden") == "true",
+        do: Map.put(attrs, "is_hidden", true),
+        else: Map.put(attrs, "is_hidden", false)
+
+    attrs =
+      if params["password"] && params["password"] != "",
+        do: Map.put(attrs, "password", params["password"]),
+        else: attrs
+
+    case Lobbies.update_lobby_by_host(user, lobby, attrs) do
+      {:ok, updated_lobby} ->
+        lobbies =
+          Lobbies.list_lobbies_for_user(user, %{},
+            page: socket.assigns[:lobbies_page] || 1,
+            page_size: socket.assigns[:lobbies_page_size] || 12
+          )
+
+        memberships_map =
+          Enum.into(lobbies, %{}, fn lp ->
+            {lp.id, Lobbies.list_memberships_for_lobby(lp.id)}
+          end)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Success."))
+         |> assign(
+           lobbies: lobbies,
+           memberships_map: memberships_map,
+           editing_lobby_id: updated_lobby.id,
+           # refresh edit_attrs so the form shows updated values
+           edit_attrs: edit_attrs(updated_lobby)
+         )}
+
+      {:error, reason} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           LiveHelpers.failure_message(gettext("Failed"), reason)
+         )}
+    end
   end
 end

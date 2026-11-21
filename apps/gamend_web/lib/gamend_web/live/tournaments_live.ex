@@ -97,6 +97,7 @@ defmodule GamendWeb.TournamentsLive do
     {:noreply, load_index(socket, page_param(params))}
   end
 
+  event("prev_page")
   @impl true
   # The "next" handlers clamped to `total_pages` with no floor, so an empty list
   # (0 pages) put the reader on page 0. `LiveHelpers.next_page/3` never goes
@@ -106,33 +107,56 @@ defmodule GamendWeb.TournamentsLive do
     {:noreply, load_index(socket, socket.assigns.page)}
   end
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket) do
     socket = LiveHelpers.next_page(socket)
     {:noreply, load_index(socket, socket.assigns.page)}
   end
 
+  event("brackets_prev")
+
+  # A tournament's own events, with none open (the index, a stale tab, an event
+  # sent by hand): nothing to page, join or leave.
+  def handle_event(event, _params, %{assigns: %{tournament: nil}} = socket)
+      # literal-ok: event names, as in the handle_event/3 heads they guard
+      when event in ~w(brackets_prev brackets_next players_prev players_next search
+                       filter_state join_tournament leave_tournament older_edition newer_edition),
+      do: {:noreply, socket}
+
   def handle_event("brackets_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> load_brackets()}
+
+  event("brackets_next")
 
   def handle_event("brackets_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> load_brackets()}
 
+  event("players_prev")
+
   def handle_event("players_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:players_page) |> load_players()}
+
+  event("players_next")
 
   def handle_event("players_next", _params, socket),
     do:
       {:noreply, socket |> LiveHelpers.next_page(:players_page, :players_pages) |> load_players()}
 
+  event("search", search: :string)
+
   def handle_event("search", %{"search" => term}, socket) do
     {:noreply, socket |> assign(:search, term) |> assign(:players_page, 1) |> load_players()}
   end
+
+  event("filter_state", state: :string)
 
   def handle_event("filter_state", %{"state" => state}, socket) do
     {:noreply,
      socket |> assign(:state_filter, state) |> assign(:players_page, 1) |> load_players()}
   end
 
+  event("join_tournament")
   # Registration is server-authoritative: the button only offers the action, and
   # `before_tournament_register` may still refuse it (entry fee, rank gate, ...).
   # A visitor joins as a guest where the host makes guest accounts
@@ -158,6 +182,8 @@ defmodule GamendWeb.TournamentsLive do
     end)
   end
 
+  event("leave_tournament")
+
   def handle_event("leave_tournament", _params, socket) do
     with_current_user(socket, fn user, tournament ->
       case Tournaments.leave_tournament(user, tournament) do
@@ -167,8 +193,10 @@ defmodule GamendWeb.TournamentsLive do
     end)
   end
 
+  event("older_edition")
   # Editions are ordered newest-first, so "older" moves down the list.
   def handle_event("older_edition", _params, socket), do: move_edition(socket, +1)
+  event("newer_edition")
   def handle_event("newer_edition", _params, socket), do: move_edition(socket, -1)
 
   defp with_current_user(socket, fun) do

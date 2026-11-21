@@ -52,7 +52,10 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
           properties: %{
             event: %Schema{type: :string},
             target: %Schema{type: :integer},
-            params: %Schema{type: :object}
+            params:
+              GamendWeb.Schemas.FreeForm.object(
+                "the meta an objective's event must carry, the game's own"
+              )
           },
           required: [:event]
         }
@@ -80,7 +83,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
       starts_at: %Schema{type: :string, format: "date-time", nullable: true},
       ends_at: %Schema{type: :string, format: "date-time", nullable: true},
       active: %Schema{type: :boolean},
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     }
   }
 
@@ -90,10 +93,10 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     description: "1 is single-use, N the first N players, null every player once"
   }
 
-  @code_metadata_schema %Schema{
-    type: :object,
-    description: "Copied onto each player's progress row, where they can read it"
-  }
+  @code_metadata_schema GamendWeb.Schemas.FreeForm.metadata(
+                          description:
+                            "Copied onto each player's progress row, where they can read it"
+                        )
 
   @user_quest_body %Schema{
     type: :object,

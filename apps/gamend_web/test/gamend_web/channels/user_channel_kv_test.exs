@@ -66,7 +66,8 @@ defmodule GamendWeb.UserChannelKvTest do
 
     ref = push(socket, "kv:subscribe", %{})
 
-    assert_reply ref, :error, %{error: "invalid_key"}
+    # Refused by its row in `RealtimeCommands` before the handler runs.
+    assert_reply ref, :error, %{error: "validation_failed", errors: %{"key" => ["is required"]}}
   end
 
   test "kv:subscribe owner_only allows requested user owner" do

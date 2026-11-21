@@ -226,24 +226,24 @@ defmodule GamendWeb.Api.V1.ChatControllerTest do
                |> json_response(403)
     end
 
-    test "a malformed chat id answers 400, not a crash", ctx do
-      assert %{"error" => "invalid_chat_ref"} =
+    test "a malformed chat id answers 422, not a crash", ctx do
+      assert %{"error" => "validation_failed"} =
                ctx.owner_conn
                |> post("/api/v1/chat/messages", %{
                  chat_type: "group",
                  chat_ref_id: "not-an-id",
                  content: "hi"
                })
-               |> json_response(400)
+               |> json_response(422)
 
-      assert %{"error" => "invalid_message"} =
+      assert %{"error" => "validation_failed"} =
                ctx.owner_conn
                |> post("/api/v1/chat/read", %{
                  chat_type: "group",
                  chat_ref_id: ctx.group.id,
                  message_id: "not-an-id"
                })
-               |> json_response(400)
+               |> json_response(422)
     end
 
     test "editing or deleting another player's message answers 403 forbidden", ctx do

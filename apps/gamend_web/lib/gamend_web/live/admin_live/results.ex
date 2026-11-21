@@ -42,25 +42,36 @@ defmodule GamendWeb.AdminLive.Results do
 
   def handle_params(_params, _uri, socket), do: {:noreply, load_list(socket)}
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     filters = Map.merge(socket.assigns.filters, Map.take(params, @filters))
     {:noreply, assign(socket, filters: filters, page: 1)}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, LiveHelpers.prev_page(socket)}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, LiveHelpers.next_page(socket)}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, LiveHelpers.put_page_size(socket, size)}
+
+  event("refresh")
 
   def handle_event("refresh", _params, %{assigns: %{result: %Result{} = result}} = socket),
     do: {:noreply, load_result(socket, Results.get(result.id) || result)}
 
   def handle_event("refresh", _params, socket), do: {:noreply, load_list(socket)}
+
+  event("more_events")
 
   def handle_event("more_events", _params, %{assigns: %{result: %Result{} = result}} = socket) do
     last = List.last(socket.assigns.events)
@@ -69,6 +80,11 @@ defmodule GamendWeb.AdminLive.Results do
     {:noreply,
      socket |> update(:events, &(&1 ++ more)) |> assign(:more?, length(more) == @events_page)}
   end
+
+  # No result open (a stale tab, an event sent by hand): nothing to load.
+  def handle_event("more_events", _params, socket), do: {:noreply, socket}
+
+  event("delete", id: :uuid)
 
   def handle_event("delete", %{"id" => id}, socket) do
     socket =

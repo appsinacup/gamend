@@ -20,6 +20,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView
 
   alias Gamend.Friends
@@ -1173,6 +1174,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     """
   end
 
+  event("groups_tab", tab: :string)
+
   def handle_event("groups_tab", %{"tab" => tab}, socket) do
     socket = assign(socket, groups_tab: tab, groups_tab_picked?: true)
 
@@ -1183,16 +1186,20 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     {:noreply, socket}
   end
 
+  event("groups_toggle_create")
+
   def handle_event("groups_toggle_create", _params, socket) do
     {:noreply, patch_groups(socket, create: !socket.assigns.groups_show_create)}
   end
 
+  event("group_random_name")
   # A new random title, what else was typed so far staying.
   def handle_event("group_random_name", _params, socket) do
     params = Map.put(socket.assigns.create_group_form.params, "title", Groups.random_title())
     handle_event("group_validate_create", %{"group" => params}, socket)
   end
 
+  event("group_validate_create", group: {:schema, Gamend.Groups.Group})
   # The slug follows the title until it is typed into.
   def handle_event("group_validate_create", %{"group" => group_params}, socket) do
     auto = Gamend.Slug.slugify(group_params["title"], "")
@@ -1212,6 +1219,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
        create_slug_auto: auto
      )}
   end
+
+  event("group_create", group: {:schema, Gamend.Groups.Group})
 
   def handle_event("group_create", %{"group" => group_params}, socket) do
     user = Shared.current_user(socket)
@@ -1247,9 +1256,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_icon_cancel", ref: :string)
+
   def handle_event("group_icon_cancel", %{"ref" => ref}, socket) do
     {:noreply, GroupIconUpload.cancel(socket, ref)}
   end
+
+  event("group_leave", group_id: :uuid)
 
   def handle_event("group_leave", %{"group_id" => gid}, socket) do
     user = Shared.current_user(socket)
@@ -1270,6 +1283,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_join", group_id: :uuid)
+
   def handle_event("group_join", %{"group_id" => gid}, socket) do
     user = Shared.current_user(socket)
     gid = to_string(gid)
@@ -1282,6 +1297,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         {:noreply, put_failure_flash(socket, reason)}
     end
   end
+
+  event("group_request_join", group_id: :uuid)
 
   def handle_event("group_request_join", %{"group_id" => gid}, socket) do
     user = Shared.current_user(socket)
@@ -1296,6 +1313,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_accept_invite", invite_id: :uuid)
+
   def handle_event("group_accept_invite", %{"invite_id" => iid}, socket) do
     user = Shared.current_user(socket)
     iid = to_string(iid)
@@ -1308,6 +1327,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         {:noreply, put_failure_flash(socket, reason)}
     end
   end
+
+  event("group_decline_invite", invite_id: :uuid)
 
   def handle_event("group_decline_invite", %{"invite_id" => iid}, socket) do
     user = Shared.current_user(socket)
@@ -1322,6 +1343,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_cancel_request", request_id: :uuid)
+
   def handle_event("group_cancel_request", %{"request_id" => rid}, socket) do
     user = Shared.current_user(socket)
     rid = to_string(rid)
@@ -1334,6 +1357,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         {:noreply, put_failure_flash(socket, reason)}
     end
   end
+
+  event("group_cancel_invite", invite_id: :uuid)
 
   def handle_event("group_cancel_invite", %{"invite_id" => iid}, socket) do
     user = Shared.current_user(socket)
@@ -1351,6 +1376,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         {:noreply, put_failure_flash(socket, reason)}
     end
   end
+
+  event("group_approve_request", request_id: :uuid)
 
   def handle_event("group_approve_request", %{"request_id" => rid}, socket) do
     user = Shared.current_user(socket)
@@ -1373,6 +1400,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_reject_request", request_id: :uuid)
+
   def handle_event("group_reject_request", %{"request_id" => rid}, socket) do
     user = Shared.current_user(socket)
     rid = to_string(rid)
@@ -1392,6 +1421,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("browse_groups_filter",
+    browse_groups: [title: {:optional, :string}, type: {:optional, :string}]
+  )
+
   def handle_event("browse_groups_filter", %{"browse_groups" => filter_params}, socket) do
     title = String.trim(filter_params["title"] || "")
     type = filter_params["type"] || ""
@@ -1408,6 +1441,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
      |> reload_browse_groups()}
   end
 
+  event("browse_groups_clear")
+
   def handle_event("browse_groups_clear", _params, socket) do
     {:noreply,
      socket
@@ -1417,19 +1452,33 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
      |> reload_browse_groups()}
   end
 
+  event("browse_groups_prev")
+
   def handle_event("browse_groups_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:browse_groups_page) |> reload_browse_groups()}
 
+  event("browse_groups_next")
+
   def handle_event("browse_groups_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:browse_groups_page) |> reload_browse_groups()}
+
+  event("group_close_detail")
 
   def handle_event("group_close_detail", _params, socket) do
     {:noreply, patch_groups(socket, group: nil, edit: false)}
   end
 
+  event("group_toggle_edit")
+
   def handle_event("group_toggle_edit", _params, socket) do
     {:noreply, patch_groups(socket, edit: !socket.assigns.group_editing)}
   end
+
+  event("group_validate_edit", group: {:schema, Gamend.Groups.Group})
+
+  # No group open for editing (a stale tab, an event sent by hand).
+  def handle_event("group_validate_edit", _params, %{assigns: %{group_detail: nil}} = socket),
+    do: {:noreply, socket}
 
   def handle_event("group_validate_edit", %{"group" => group_params}, socket) do
     changeset =
@@ -1438,6 +1487,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
     {:noreply, assign(socket, group_edit_form: to_form(changeset, as: :group))}
   end
+
+  event("group_save_edit", group: {:schema, Gamend.Groups.Group})
+
+  # No group open for editing (a stale tab, an event sent by hand).
+  def handle_event("group_save_edit", _params, %{assigns: %{group_detail: nil}} = socket),
+    do: {:noreply, socket}
 
   def handle_event("group_save_edit", %{"group" => group_params}, socket) do
     user = Shared.current_user(socket)
@@ -1463,6 +1518,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_kick", group_id: :uuid, user_id: :uuid)
+
   def handle_event("group_kick", %{"group_id" => gid, "user_id" => uid}, socket) do
     user = Shared.current_user(socket)
     gid = to_string(gid)
@@ -1482,6 +1539,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_promote", group_id: :uuid, user_id: :uuid)
+
   def handle_event("group_promote", %{"group_id" => gid, "user_id" => uid}, socket) do
     user = Shared.current_user(socket)
     gid = to_string(gid)
@@ -1499,6 +1558,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
          put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
     end
   end
+
+  event("group_demote", group_id: :uuid, user_id: :uuid)
 
   def handle_event("group_demote", %{"group_id" => gid, "user_id" => uid}, socket) do
     user = Shared.current_user(socket)
@@ -1518,11 +1579,21 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_members_prev")
+
   def handle_event("group_members_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page(:group_members_page) |> reload_group_members()}
 
+  event("group_members_next")
+
   def handle_event("group_members_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:group_members_page) |> reload_group_members()}
+
+  event("group_invite_search", value: :string)
+
+  # No group open (a stale tab, an event sent by hand): nobody to search for.
+  def handle_event("group_invite_search", _params, %{assigns: %{group_detail: nil}} = socket),
+    do: {:noreply, socket}
 
   def handle_event("group_invite_search", %{"value" => query}, socket) do
     query = String.trim(query)
@@ -1540,6 +1611,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
      |> assign(:invite_search_query, query)
      |> assign(:invite_search_results, results)}
   end
+
+  event("group_invite_user", group_id: :uuid, user_id: :uuid)
 
   def handle_event("group_invite_user", %{"group_id" => gid, "user_id" => uid}, socket) do
     user = Shared.current_user(socket)
@@ -1575,6 +1648,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
+  event("group_link_create")
   # Making one replaces the old link, so this is also New link.
   def handle_event("group_link_create", _params, socket) do
     user = Shared.current_user(socket)
@@ -1592,6 +1666,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         {:noreply, socket}
     end
   end
+
+  event("group_link_delete")
 
   def handle_event("group_link_delete", _params, socket) do
     user = Shared.current_user(socket)

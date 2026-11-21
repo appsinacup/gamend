@@ -81,7 +81,7 @@ defmodule GamendWeb.Api.V1.Admin.LobbyController do
           is_hidden: %Schema{type: :boolean},
           is_locked: %Schema{type: :boolean},
           password: %Schema{type: :string},
-          metadata: %Schema{type: :object},
+          metadata: GamendWeb.Schemas.FreeForm.metadata(),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled)"

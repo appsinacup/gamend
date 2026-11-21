@@ -8,6 +8,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView, only: [put_flash: 3]
 
   alias Gamend.Accounts.ApiToken
@@ -156,6 +157,8 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
     """
   end
 
+  event("api_token_create", api_token: {:schema, Gamend.Accounts.ApiToken})
+
   def handle_event("api_token_create", %{"api_token" => params}, socket) do
     attrs = %{
       "name" => params["name"],
@@ -180,9 +183,13 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
     end
   end
 
+  event("api_token_dismiss")
+
   def handle_event("api_token_dismiss", _params, socket) do
     {:noreply, assign(socket, :api_token_created, nil)}
   end
+
+  event("api_token_revoke", id: :uuid)
 
   def handle_event("api_token_revoke", %{"id" => id}, socket) do
     case ApiTokens.revoke(socket.assigns.user.id, to_string(id)) do
@@ -194,10 +201,14 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
     end
   end
 
+  event("api_tokens_prev")
+
   def handle_event("api_tokens_prev", _params, socket) do
     page = max(1, (socket.assigns.api_tokens_page || 1) - 1)
     {:noreply, socket |> assign(:api_tokens_page, page) |> reload_api_tokens()}
   end
+
+  event("api_tokens_next")
 
   def handle_event("api_tokens_next", _params, socket) do
     page = (socket.assigns.api_tokens_page || 1) + 1

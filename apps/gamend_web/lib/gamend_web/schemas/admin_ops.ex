@@ -12,8 +12,8 @@ defmodule GamendWeb.Schemas.AdminKvEntry do
       key: %Schema{type: :string},
       user_id: %Schema{type: :string, description: "Empty when not user-scoped"},
       lobby_id: %Schema{type: :string, description: "Empty when not lobby-scoped"},
-      data: %Schema{type: :object},
-      metadata: %Schema{type: :object},
+      data: GamendWeb.Schemas.FreeForm.kv_value(),
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },

@@ -311,9 +311,12 @@ defmodule GamendWeb.AdminLive.Notifications do
     """
   end
 
+  event("notify_toggle")
   @impl true
   def handle_event("notify_toggle", params, socket),
     do: NotificationsTab.handle_event("notify_toggle", params, socket)
+
+  event("filter")
 
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -323,8 +326,26 @@ defmodule GamendWeb.AdminLive.Notifications do
      |> reload_notifications()}
   end
 
+  event("validate_announcement",
+    announcement: [
+      title: {:optional, :string},
+      content: {:optional, :string},
+      url: {:optional, :string},
+      site_only: {:optional, :boolean}
+    ]
+  )
+
   def handle_event("validate_announcement", %{"announcement" => params}, socket),
     do: {:noreply, assign(socket, :announce_form, announce_form(params, :validate))}
+
+  event("announce",
+    announcement: [
+      title: {:optional, :string},
+      content: {:optional, :string},
+      url: {:optional, :string},
+      site_only: {:optional, :boolean}
+    ]
+  )
 
   def handle_event("announce", %{"announcement" => params}, socket) do
     case Notifications.announce_to_all(params) do
@@ -340,11 +361,13 @@ defmodule GamendWeb.AdminLive.Notifications do
     end
   end
 
+  event("toggle_create")
   @impl true
   def handle_event("toggle_create", _params, socket) do
     {:noreply, assign(socket, :show_create, !socket.assigns.show_create)}
   end
 
+  event("create_notification", notification: {:schema, Gamend.Notifications.Notification})
   @impl true
   def handle_event("create_notification", %{"notification" => params}, socket) do
     sender_id = parse_id(params["sender_id"])
@@ -365,6 +388,7 @@ defmodule GamendWeb.AdminLive.Notifications do
     end
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -383,6 +407,7 @@ defmodule GamendWeb.AdminLive.Notifications do
      |> sync_selected_ids(notification_ids(socket.assigns.notifications))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     notifications = socket.assigns.notifications
@@ -399,6 +424,7 @@ defmodule GamendWeb.AdminLive.Notifications do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = MapSet.to_list(socket.assigns.selected_ids)
@@ -441,6 +467,7 @@ defmodule GamendWeb.AdminLive.Notifications do
     {:noreply, reload_notifications(socket)}
   end
 
+  event("delete_notification", id: :uuid)
   @impl true
   def handle_event("delete_notification", %{"id" => id}, socket) do
     notification_id = to_string(id)
@@ -457,14 +484,17 @@ defmodule GamendWeb.AdminLive.Notifications do
     end
   end
 
+  event("admin_notifications_prev")
   @impl true
   def handle_event("admin_notifications_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_notifications()}
 
+  event("admin_notifications_next")
   @impl true
   def handle_event("admin_notifications_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_notifications()}
 
+  event("admin_notifications_page_size", size: :string)
   @impl true
   def handle_event("admin_notifications_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_notifications()}

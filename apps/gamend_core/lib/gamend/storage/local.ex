@@ -188,14 +188,14 @@ defmodule Gamend.Storage.Local do
   @doc false
   # Absolute path for a key, with traversal components stripped so a crafted key
   # cannot escape the storage root.
+  # A key with nothing left (`""`, `".."`) is the root itself, which no read,
+  # write or delete can act on: each answers its error, where `Path.join([])`
+  # raised.
   def path_for(key) do
-    safe =
-      key
-      |> Path.split()
-      |> Enum.reject(&(&1 in ["", ".", "..", "/"]))
-      |> Path.join()
-
-    Path.join(root_dir(), safe)
+    case key |> Path.split() |> Enum.reject(&(&1 in ["", ".", "..", "/"])) do
+      [] -> root_dir()
+      parts -> Path.join([root_dir() | parts])
+    end
   end
 
   @doc """

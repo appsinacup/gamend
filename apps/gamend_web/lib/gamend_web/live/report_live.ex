@@ -132,10 +132,13 @@ defmodule GamendWeb.ReportLive do
 
   # ── events ───────────────────────────────────────────────────────────────
 
+  event("validate")
   @impl true
   def handle_event("validate", params, socket) do
     {:noreply, take_form(socket, params)}
   end
+
+  event("client")
 
   def handle_event("client", params, socket) do
     client =
@@ -147,20 +150,31 @@ defmodule GamendWeb.ReportLive do
     {:noreply, update(socket, :client, &Map.merge(&1, client))}
   end
 
+  event("cancel_upload", ref: :string)
+
+  # Only an entry the upload holds: another ref (a stale tab, an event sent
+  # by hand) made `cancel_upload/3` raise.
   def handle_event("cancel_upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :attachments, ref)}
+    if Enum.any?(socket.assigns.uploads.attachments.entries, &(&1.ref == ref)),
+      do: {:noreply, cancel_upload(socket, :attachments, ref)},
+      else: {:noreply, socket}
   end
+
+  event("again")
 
   def handle_event("again", _params, socket) do
     {:noreply, socket |> assign(:sent, nil) |> assign(:replacing, nil) |> reset_form()}
   end
 
+  event("edit")
   # The form comes back as it was sent. The report stands until the edit is
   # sent, so leaving now loses nothing.
   def handle_event("edit", _params, socket) do
     replacing = if match?(%Report{}, socket.assigns.sent), do: socket.assigns.sent
     {:noreply, socket |> assign(:sent, nil) |> assign(:replacing, replacing)}
   end
+
+  event("send")
 
   def handle_event("send", params, socket) do
     socket = take_form(socket, params)

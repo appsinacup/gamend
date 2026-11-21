@@ -233,6 +233,7 @@ defmodule GamendWeb.AdminLive.Translations do
     """
   end
 
+  event("select_locale", locale: :string)
   @impl true
   def handle_event("select_locale", %{"locale" => locale}, socket) do
     domains = TranslationStats.domains(locale)
@@ -252,6 +253,7 @@ defmodule GamendWeb.AdminLive.Translations do
      |> assign(:page, 1)}
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     domain = Map.get(params, "domain", "")
@@ -274,10 +276,12 @@ defmodule GamendWeb.AdminLive.Translations do
      |> assign(:page, 1)}
   end
 
+  event("prev_page")
   @impl true
   def handle_event("prev_page", _params, socket),
     do: {:noreply, LiveHelpers.prev_page(socket)}
 
+  event("next_page")
   # The strings are all in memory, so the page count is derived here rather
   # than stored by a reload.
   @impl true
@@ -286,6 +290,7 @@ defmodule GamendWeb.AdminLive.Translations do
     {:noreply, socket |> assign(:total_pages, total_pages) |> LiveHelpers.next_page()}
   end
 
+  event("translations_page_size", size: :string)
   @impl true
   def handle_event("translations_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size)}

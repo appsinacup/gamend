@@ -74,7 +74,7 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
           description: %Schema{type: :string},
           type: %Schema{type: :string},
           max_members: %Schema{type: :integer},
-          metadata: %Schema{type: :object},
+          metadata: GamendWeb.Schemas.FreeForm.metadata(),
           slowdown: %Schema{
             type: :integer,
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"

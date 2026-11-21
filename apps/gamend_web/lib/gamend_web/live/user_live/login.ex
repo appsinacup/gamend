@@ -171,6 +171,7 @@ defmodule GamendWeb.UserLive.Login do
      )}
   end
 
+  event("remember_email", user: {:optional, [email: {:optional, :string}]})
   @impl true
   def handle_event("remember_email", %{"user" => %{"email" => email}}, socket) do
     {:noreply, assign(socket, :email, email)}
@@ -178,9 +179,13 @@ defmodule GamendWeb.UserLive.Login do
 
   def handle_event("remember_email", _params, socket), do: {:noreply, socket}
 
+  event("submit_password")
+
   def handle_event("submit_password", _params, socket) do
     {:noreply, assign(socket, :trigger_submit, true)}
   end
+
+  event("submit_magic", user: [email: :string])
 
   def handle_event("submit_magic", %{"user" => %{"email" => email}} = params, socket) do
     with :ok <- GamendWeb.LiveHelpers.check_rate_limit(socket.assigns.client_ip, :auth),

@@ -188,6 +188,25 @@ reload — the page painted at the top and glided down to where it had been. --%
         crossorigin="anonymous"
       />
     <% end %>
+    <%!-- The sidebar's and tab bar's icons, loaded beside the stylesheet:
+          a `hero-*` mask's file is otherwise asked for only once the
+          stylesheet is in, and the shell painted without its icons.
+          `crossorigin`: a mask is fetched in CORS mode, and a preload in
+          another mode is not used (`HostLayoutNavigation.shell_icons/2`). --%>
+    <link
+      :for={
+        icon <-
+          GamendWeb.HostLayoutNavigation.shell_icons(
+            Map.get(theme, "navigation"),
+            assigns[:current_scope]
+          )
+      }
+      rel="preload"
+      as="image"
+      href={icon.href}
+      media={icon.media}
+      crossorigin="anonymous"
+    />
     <%= if favicon = Map.get(theme, "favicon") do %>
       <link rel="icon" type="image/x-icon" href={SRI.versioned_path(favicon) || favicon} />
     <% end %>
@@ -220,15 +239,31 @@ reload — the page painted at the top and glided down to where it had been. --%
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <% extra_hook_modules = GamendWeb.HostLayouts.extra_hook_modules() %>
+    <%!-- A module script, not only a `modulepreload`: it runs after the
+          parse, before `app.js` (deferred, after it here) and before the
+          first paint, as `app.js` does. Run only from `app.js`'s dynamic
+          import, a host's starters (a heading measured to fit its row)
+          came a frame or more after the first paint, and the page moved
+          under the reader (host, 2026-11-20: a game's heading painted on
+          three lines, then on one). `app.js`'s `import()` of the same
+          address gets this instance, so it runs once. `blocking="render"`:
+          a module script is deferred, so on a first visit (not cached) the
+          page was painted before it had come, and every starter changed it
+          after (host, 2026-11-21: a heading's search 58px tall, then 40).
+          Blocking, the first paint waits for it as for the stylesheet,
+          which it loads beside: keep it small and without static imports
+          (a chunk it imports later is no wait). --%>
     <%= for hook_module <- extra_hook_modules do %>
       <% hook_module_href = SRI.versioned_path(hook_module) || hook_module %>
-      <link
-        rel="modulepreload"
+      <script
+        type="module"
+        blocking="render"
         phx-track-static
-        href={hook_module_href}
+        src={hook_module_href}
         integrity={SRI.integrity(hook_module)}
         crossorigin="anonymous"
-      />
+      >
+      </script>
     <% end %>
     <%= if extra_hook_modules != [] do %>
       <meta

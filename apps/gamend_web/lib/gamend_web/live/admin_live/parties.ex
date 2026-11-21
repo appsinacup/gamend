@@ -439,6 +439,7 @@ defmodule GamendWeb.AdminLive.Parties do
   # Events
   # ---------------------------------------------------------------------------
 
+  event("show_create")
   @impl true
   def handle_event("show_create", _params, socket) do
     {:noreply,
@@ -450,11 +451,13 @@ defmodule GamendWeb.AdminLive.Parties do
      )}
   end
 
+  event("cancel_create")
   @impl true
   def handle_event("cancel_create", _params, socket) do
     {:noreply, assign(socket, :show_create, false)}
   end
 
+  event("create_party", party: {:schema, Gamend.Parties.Party})
   @impl true
   def handle_event("create_party", %{"party" => params}, socket) do
     leader_id = Gamend.UUIDv7.cast_or_nil(params["leader_id"])
@@ -497,6 +500,7 @@ defmodule GamendWeb.AdminLive.Parties do
     end
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || SortKey.updated_at())
@@ -509,6 +513,7 @@ defmodule GamendWeb.AdminLive.Parties do
      |> reload_parties()}
   end
 
+  event("sort", sort_by: :string)
   @impl true
   def handle_event("sort", %{"sort_by" => sort_by}, socket) do
     {:noreply,
@@ -518,6 +523,7 @@ defmodule GamendWeb.AdminLive.Parties do
      |> reload_parties()}
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -536,6 +542,7 @@ defmodule GamendWeb.AdminLive.Parties do
      |> sync_selected_ids(party_ids(socket.assigns.parties))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     parties = socket.assigns.parties || []
@@ -552,6 +559,7 @@ defmodule GamendWeb.AdminLive.Parties do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = socket.assigns[:selected_ids] |> MapSet.to_list()
@@ -594,6 +602,7 @@ defmodule GamendWeb.AdminLive.Parties do
     {:noreply, reload_parties(socket)}
   end
 
+  event("edit_party", id: :uuid)
   @impl true
   def handle_event("edit_party", %{"id" => id}, socket) do
     Shared.with_record(socket, Parties.get_party(to_string(id)), fn party ->
@@ -608,6 +617,7 @@ defmodule GamendWeb.AdminLive.Parties do
     end)
   end
 
+  event("cancel_edit")
   @impl true
   def handle_event("cancel_edit", _, socket) do
     {:noreply,
@@ -616,7 +626,12 @@ defmodule GamendWeb.AdminLive.Parties do
      |> assign(:form, nil)}
   end
 
+  event("save_party", party: {:schema, Gamend.Parties.Party})
   @impl true
+  # Nothing open to save: a stale tab, or an event sent by hand.
+  def handle_event("save_party", _params, %{assigns: %{selected_party: nil}} = socket),
+    do: {:noreply, socket}
+
   def handle_event("save_party", %{"party" => params}, socket) do
     party = socket.assigns.selected_party
 
@@ -642,6 +657,7 @@ defmodule GamendWeb.AdminLive.Parties do
     end
   end
 
+  event("delete_party", id: :uuid)
   @impl true
   def handle_event("delete_party", %{"id" => id}, socket) do
     party_id = to_string(id)
@@ -658,6 +674,7 @@ defmodule GamendWeb.AdminLive.Parties do
     end
   end
 
+  event("view_members", id: :uuid)
   @impl true
   def handle_event("view_members", %{"id" => id}, socket) do
     Shared.with_record(socket, Parties.get_party(to_string(id)), fn party ->
@@ -672,6 +689,7 @@ defmodule GamendWeb.AdminLive.Parties do
     end)
   end
 
+  event("close_members")
   @impl true
   def handle_event("close_members", _, socket) do
     {:noreply,
@@ -683,11 +701,13 @@ defmodule GamendWeb.AdminLive.Parties do
      |> assign(:add_member_id, "")}
   end
 
+  event("update_add_member_id", value: :string)
   @impl true
   def handle_event("update_add_member_id", %{"value" => val}, socket) do
     {:noreply, assign(socket, :add_member_id, val)}
   end
 
+  event("add_party_member")
   @impl true
   def handle_event("add_party_member", _params, socket) do
     party = socket.assigns.selected_party
@@ -721,7 +741,13 @@ defmodule GamendWeb.AdminLive.Parties do
     end
   end
 
+  event("kick_member", "party-id": :uuid, "user-id": :uuid)
+
+  # No party open (a stale tab, an event sent by hand): nobody to kick.
   @impl true
+  def handle_event("kick_member", _params, %{assigns: %{selected_party: nil}} = socket),
+    do: {:noreply, socket}
+
   def handle_event("kick_member", %{"party-id" => pid, "user-id" => uid}, socket) do
     _party_id = to_string(pid)
     user_id = to_string(uid)
@@ -746,18 +772,21 @@ defmodule GamendWeb.AdminLive.Parties do
     end
   end
 
+  event("admin_parties_prev")
   @impl true
   def handle_event("admin_parties_prev", _params, socket) do
     page = max(1, (socket.assigns[:parties_page] || 1) - 1)
     {:noreply, socket |> assign(:parties_page, page) |> reload_parties()}
   end
 
+  event("admin_parties_next")
   @impl true
   def handle_event("admin_parties_next", _params, socket) do
     page = (socket.assigns[:parties_page] || 1) + 1
     {:noreply, socket |> assign(:parties_page, page) |> reload_parties()}
   end
 
+  event("admin_parties_page_size", size: :string)
   @impl true
   def handle_event("admin_parties_page_size", %{"size" => size}, socket),
     do:

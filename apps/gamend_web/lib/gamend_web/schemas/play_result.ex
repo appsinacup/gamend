@@ -47,7 +47,8 @@ defmodule GamendWeb.Schemas.PlayResult do
         ]
       },
       status: %Schema{type: :string, enum: ResultStatus.all()},
-      metadata: %Schema{type: :object, description: "What the play was: its settings"},
+      metadata:
+        GamendWeb.Schemas.FreeForm.metadata(description: "What the play was: its settings"),
       started_at: %Schema{type: :string, format: :"date-time"},
       ended_at: %Schema{type: :string, format: :"date-time", nullable: true},
       stats: %Schema{
@@ -85,7 +86,7 @@ defmodule GamendWeb.Schemas.PlayResultEvent do
       elapsed_ms: %Schema{type: :integer, description: "Milliseconds since the play began"},
       key: %Schema{type: :string, description: "What happened"},
       value: %Schema{type: :number, nullable: true},
-      metadata: %Schema{type: :object}
+      metadata: GamendWeb.Schemas.FreeForm.metadata()
     },
     required: [:id, :result_id, :elapsed_ms, :key, :metadata]
   })

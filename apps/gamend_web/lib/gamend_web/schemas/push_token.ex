@@ -20,7 +20,7 @@ defmodule GamendWeb.Schemas.PushToken do
         description: "Set when the provider reported the token dead"
       },
       last_used_at: %Schema{type: :string, format: :"date-time", nullable: true},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [

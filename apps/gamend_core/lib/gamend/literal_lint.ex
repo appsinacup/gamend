@@ -27,7 +27,8 @@ defmodule Gamend.LiteralLint do
       `get_in/2`. Keys are the shape of a document, not a closed set of values
     * text: gettext, `Logger`, `raise`, `IO`, `Mix`, `System`, and any sigil
       other than a string `~w` or a template
-    * a LiveView event's name in `handle_event/3`, and HTTP header names
+    * a LiveView event's name in `handle_event/3` and in its `event/2`
+      declaration, and HTTP header names
     * an API error's code in `reply_error/3`, which has to be a literal:
       `mix gamend.api.lint` (R18) holds it to `GamendWeb.ErrorStatus`
     * a CSS class of the shared vocabulary (`"badge-error"`), and `"true"`
@@ -245,6 +246,8 @@ defmodule Gamend.LiteralLint do
   defp walk({name, _, args}, _module, acc) when name in @silent_calls and is_list(args), do: acc
 
   defp walk({:handle_event, _, [_event | rest]}, module, acc), do: walk(rest, module, acc)
+  # The same name, declared beside its handler (`GamendWeb.LiveEvents.event/2`).
+  defp walk({:event, _, [_event | rest]}, module, acc), do: walk(rest, module, acc)
 
   defp walk({:sigil_w, meta, [{:<<>>, _, [words]}, []]}, module, acc) when is_binary(words) do
     for word <- String.split(words), name?(word), reduce: acc do

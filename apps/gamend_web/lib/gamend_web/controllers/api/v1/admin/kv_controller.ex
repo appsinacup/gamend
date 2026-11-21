@@ -23,10 +23,15 @@ defmodule GamendWeb.Api.V1.Admin.KvController do
           key: %Schema{type: :string},
           user_id: %Schema{type: :string, description: "Owning user; omit or empty for none"},
           lobby_id: %Schema{type: :string, description: "Owning lobby; omit or empty for none"},
-          data: %Schema{type: :object},
-          metadata: %Schema{type: :object}
+          data: GamendWeb.Schemas.FreeForm.kv_value(),
+          value:
+            GamendWeb.Schemas.FreeForm.kv_value(
+              description: "The same as `data`, read when `data` is absent"
+            ),
+          metadata: GamendWeb.Schemas.FreeForm.metadata()
         },
-        required: [:key, :data]
+        # `data` or `value`: the action answers 422 when both are missing.
+        required: [:key]
       }
     },
     responses: [

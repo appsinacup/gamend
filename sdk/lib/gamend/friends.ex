@@ -145,11 +145,13 @@ defmodule Gamend.Friends do
     stays correct. Any existing row between the pair (in either direction) is
     replaced, so blocking supersedes a pending request or an active friendship.
     
-    Returns `{:ok, friendship}`, or `{:error, :cannot_block_self}`.
+    Returns `{:ok, friendship}`, `{:error, :cannot_block_self}`, or
+    `{:error, :not_found}` when no player has that id.
     
   """
   @spec block_user(Gamend.Accounts.User.t(), user_id()) ::
-          {:ok, Gamend.Friends.Friendship.t()} | {:error, :cannot_block_self | Ecto.Changeset.t()}
+          {:ok, Gamend.Friends.Friendship.t()}
+          | {:error, :cannot_block_self | :not_found | Ecto.Changeset.t()}
   def block_user(_user, _blocked_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -341,6 +343,7 @@ defmodule Gamend.Friends do
           {:ok, Gamend.Friends.Friendship.t()}
           | {:error,
              :cannot_friend_self
+             | :not_found
              | :blocked
              | :too_many_pending_requests
              | accept_error()

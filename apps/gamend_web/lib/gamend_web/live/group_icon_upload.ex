@@ -87,9 +87,16 @@ defmodule GamendWeb.GroupIconUpload do
     end
   end
 
-  @doc "The picked file, `ref`, dropped."
+  @doc """
+  The picked file, `ref`, dropped. A ref the upload does not hold (a stale
+  tab, an event sent by hand) drops nothing, where `cancel_upload/3` raised.
+  """
   @spec cancel(Phoenix.LiveView.Socket.t(), String.t()) :: Phoenix.LiveView.Socket.t()
-  def cancel(socket, ref), do: cancel_upload(socket, @name, ref)
+  def cancel(%{assigns: %{uploads: %{@name => %{entries: entries}}}} = socket, ref) do
+    if Enum.any?(entries, &(&1.ref == ref)), do: cancel_upload(socket, @name, ref), else: socket
+  end
+
+  def cancel(socket, _ref), do: socket
 
   @doc "Every picked file dropped: a form closed without saving."
   @spec cancel_all(Phoenix.LiveView.Socket.t()) :: Phoenix.LiveView.Socket.t()

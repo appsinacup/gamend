@@ -73,9 +73,6 @@ pub async fn upsert_kv(params: any) -> any {
     if !core::given(params, "key") {
         return core::missing("gamend::admin_kv::upsert_kv", "key");
     }
-    if !core::given(params, "data") {
-        return core::missing("gamend::admin_kv::upsert_kv", "data");
-    }
     let reply = await core::rest("PUT", "/api/v1/admin/kv", params);
     reply
 }

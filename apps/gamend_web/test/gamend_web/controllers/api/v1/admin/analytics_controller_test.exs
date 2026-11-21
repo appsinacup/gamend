@@ -61,13 +61,14 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsControllerTest do
     assert body["series"]["level.finished"][Date.to_iso8601(Date.utc_today())] >= 3
   end
 
-  test "daily series honours ?days and clamps garbage to the default", %{conn: conn} do
+  test "daily series honours ?days and refuses one past its maximum", %{conn: conn} do
     body = json_response(get(conn, "/api/v1/admin/analytics/daily?days=7"), 200)["data"]
     assert body["days"] == 7
     assert length(body["series"]) == 7
     assert List.last(body["series"])["day"] == Date.to_iso8601(Date.utc_today())
 
-    body = json_response(get(conn, "/api/v1/admin/analytics/daily?days=9999"), 200)["data"]
-    assert body["days"] == 30
+    # Past the documented maximum: refused by the request check (`RequestContract`).
+    assert %{"error" => "validation_failed", "errors" => %{"days" => [_]}} =
+             json_response(get(conn, "/api/v1/admin/analytics/daily?days=9999"), 422)
   end
 end

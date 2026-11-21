@@ -63,7 +63,7 @@ defmodule GamendWeb.Schemas.CurrentUser do
       },
       username: %Schema{type: :string, description: "Unique handle"},
       display_name: %Schema{type: :string, description: "Chosen name"},
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       lobby_id: %Schema{type: :string, description: "Current lobby id, or empty"},
       party_id: %Schema{type: :string, description: "Current party id, or empty"},
       is_online: %Schema{type: :boolean},
@@ -110,11 +110,11 @@ defmodule GamendWeb.Schemas.PublicUser do
       id: %Schema{type: :string, format: :uuid},
       username: %Schema{type: :string, description: "Unique handle"},
       display_name: %Schema{type: :string, description: "Chosen name"},
-      metadata: %Schema{
-        type: :object,
-        description:
-          "User metadata, restricted to the keys named by the :public_user_metadata_keys setting. Empty by default."
-      },
+      metadata:
+        GamendWeb.Schemas.FreeForm.metadata(
+          description:
+            "User metadata, restricted to the keys named by the :public_user_metadata_keys setting. Empty by default."
+        ),
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
       last_seen_at: %Schema{type: :string, format: :"date-time"}

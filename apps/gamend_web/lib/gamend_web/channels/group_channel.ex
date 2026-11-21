@@ -24,7 +24,7 @@ defmodule GamendWeb.GroupChannel do
   - `"member_offline"` - A group member went offline. Payload: `%{user_id, is_online: false}`
   """
 
-  use Phoenix.Channel
+  use GamendWeb, :channel
 
   import GamendWeb.ChannelPush
 

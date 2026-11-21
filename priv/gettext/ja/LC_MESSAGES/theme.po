@@ -55,6 +55,9 @@ msgstr "ストア"
 msgid "Server Stats"
 msgstr "サーバー統計"
 
+msgid "Consulting"
+msgstr ""
+
 msgid "Help"
 msgstr "ヘルプ"
 
@@ -82,8 +85,53 @@ msgstr "トーナメント"
 msgid "Groups"
 msgstr "グループ"
 
-msgid "News"
-msgstr "ニュース"
+msgid "Email contact@gamend.org"
+msgstr ""
+
+msgid "Apps in a Cup consulting"
+msgstr ""
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting sessions**: short, focused help to get you unstuck. **€50 per hour.**"
+msgstr ""
+
+msgid "Deployment"
+msgstr ""
+
+msgid "Your own server, Docker, fly.io or a VPS: Postgres or SQLite, domains, TLS and backups."
+msgstr ""
+
+msgid "Deployment & hosting"
+msgstr ""
+
+msgid "Game logic on the server where players cannot reach it: hooks, plugins and GDScript hooks."
+msgstr ""
+
+msgid "Server scripting & hooks"
+msgstr ""
+
+msgid "Benchmarks"
+msgstr "ベンチマーク"
+
+msgid "Clustering, load testing, and finding what slows a busy server down."
+msgstr ""
+
+msgid "Scaling & performance"
+msgstr ""
+
+msgid "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](https://balaurengine.org) SDKs into your game."
+msgstr ""
+
+msgid "Client integration"
+msgstr ""
+
+msgid "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need."
+msgstr ""
+
+msgid "How it works"
+msgstr ""
 
 msgid "Getting Started"
 msgstr "はじめに"
@@ -94,20 +142,11 @@ msgstr "紹介動画"
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
 msgstr "リアルタイムマルチプレイヤーゲームのための**オープンソース**の Elixir ゲームサーバー。バックエンド、プレイヤー向けウェブサイト、管理パネルをひとつに。"
 
-msgid "Gamend"
-msgstr "Gamend"
-
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
 msgstr "Gamend の管理パネル、クエスト、ストア、サーバーフックの紹介"
 
-msgid "Benchmarks"
-msgstr "ベンチマーク"
-
-msgid "Godot SDK"
-msgstr "Godot SDK"
-
-msgid "C++ SDK"
-msgstr "C++ SDK"
+msgid "Architecture"
+msgstr "アーキテクチャ"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
 msgstr "**マルチプレイヤーゲームのためのバックエンド**：アカウント、ロビー、チャット、リーダーボードなど、ゲーム本体の周りでプレイヤーが期待するものをすべて備えています。さらに、その周りの Web UI として、すぐに使えるプレイヤー向けウェブサイト（ストア、リーダーボード、トーナメント、クエスト、グループ、チャット）と本格的な管理パネルも同梱しています。サーバーサイドスクリプトで、独自のロジックをプレイヤーの手が届かない場所で実行できます。自分のサーバーで運用するもので、ホスティングサービスはありません。"
@@ -178,6 +217,24 @@ msgstr "スコア計算、報酬、マッチメイキングのルール、検証
 msgid "Server Scripting & Scheduling"
 msgstr "サーバースクリプトとスケジューリング"
 
+msgid "Godot SDK"
+msgstr "Godot SDK"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Unreal プラグイン"
+
+msgid "C++ SDK"
+msgstr "C++ SDK"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "**Godot、Unity、Unreal、C++、C#、Rust、JavaScript/TypeScript、Balaur** 向けの SDK。どれもプレイヤー向けのすべての呼び出し、型付きモデル、リアルタイムイベントを備え、サーバーのリリースごとにビルドし直されます。それ以外の環境からは HTTP API と WebSocket チャンネルを直接使えます。"
+
+msgid "Client SDKs"
+msgstr "クライアント SDK"
+
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
 msgstr "REST API、リアルタイム WebSocket チャンネル、低遅延の WebRTC DataChannels に加え、オプトインの protobuf リアルタイム形式にも対応。管理ポータルと Web UI は 30 言語に翻訳済み。"
 
@@ -231,18 +288,3 @@ msgstr "分析、ログ、オブザーバビリティ"
 
 msgid "Game + Backend"
 msgstr "ゲーム + バックエンド"
-
-msgid "Architecture"
-msgstr "アーキテクチャ"
-
-msgid "Unity SDK"
-msgstr "Unity SDK"
-
-msgid "Unreal plugin"
-msgstr "Unreal プラグイン"
-
-msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
-msgstr "**Godot、Unity、Unreal、C++、C#、Rust、JavaScript/TypeScript、Balaur** 向けの SDK。どれもプレイヤー向けのすべての呼び出し、型付きモデル、リアルタイムイベントを備え、サーバーのリリースごとにビルドし直されます。それ以外の環境からは HTTP API と WebSocket チャンネルを直接使えます。"
-
-msgid "Client SDKs"
-msgstr "クライアント SDK"

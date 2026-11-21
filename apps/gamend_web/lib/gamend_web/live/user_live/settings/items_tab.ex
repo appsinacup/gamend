@@ -6,6 +6,7 @@ defmodule GamendWeb.UserLive.Settings.ItemsTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView, only: [stream: 4]
 
   alias Gamend.Inventory
@@ -75,10 +76,14 @@ defmodule GamendWeb.UserLive.Settings.ItemsTab do
     """
   end
 
+  event("items_prev")
+
   def handle_event("items_prev", _params, socket) do
     page = max(1, (socket.assigns.items_page || 1) - 1)
     {:noreply, socket |> assign(:items_page, page) |> reload_items()}
   end
+
+  event("items_next")
 
   def handle_event("items_next", _params, socket) do
     page = (socket.assigns.items_page || 1) + 1

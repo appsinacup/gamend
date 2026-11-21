@@ -184,11 +184,12 @@ defmodule GamendWeb.Api.V1.Admin.IconUploadTest do
            |> json_response(400)
   end
 
-  test "a missing key is a bad request, not a crash", %{conn: conn} do
+  test "a missing key is refused, not a crash", %{conn: conn} do
     [{segment, id, _} | _] = targets()
 
-    assert conn
-           |> post(~p"/api/v1/admin/#{segment}/#{id}/icon", %{})
-           |> json_response(400)
+    assert %{"error" => "validation_failed", "errors" => %{"key" => [_]}} =
+             conn
+             |> post(~p"/api/v1/admin/#{segment}/#{id}/icon", %{})
+             |> json_response(422)
   end
 end

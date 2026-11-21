@@ -6,6 +6,7 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView, only: [stream: 4]
 
   alias Gamend.Economy
@@ -108,10 +109,14 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
     """
   end
 
+  event("wallet_ledger_prev")
+
   def handle_event("wallet_ledger_prev", _params, socket) do
     page = max(1, (socket.assigns.ledger_page || 1) - 1)
     {:noreply, socket |> assign(:ledger_page, page) |> reload_ledger()}
   end
+
+  event("wallet_ledger_next")
 
   def handle_event("wallet_ledger_next", _params, socket) do
     page = (socket.assigns.ledger_page || 1) + 1

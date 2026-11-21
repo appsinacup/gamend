@@ -40,6 +40,7 @@ defmodule GamendWeb.AdminLive.Storage do
     {:ok, socket}
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -49,24 +50,41 @@ defmodule GamendWeb.AdminLive.Storage do
      |> reload()}
   end
 
+  event("prev_page")
+
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_objects()}
+
+  event("next_page")
 
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_objects()}
 
+  event("page_size", size: :string)
+
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload()}
 
+  event("refresh")
   def handle_event("refresh", _params, socket), do: {:noreply, reload(socket)}
 
+  event("cancel_upload_entry", ref: :string)
+
+  # Only an entry the upload holds: another ref (a stale tab, an event sent
+  # by hand) made `cancel_upload/3` raise.
   def handle_event("cancel_upload_entry", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :object, ref)}
+    if Enum.any?(socket.assigns.uploads.object.entries, &(&1.ref == ref)),
+      do: {:noreply, cancel_upload(socket, :object, ref)},
+      else: {:noreply, socket}
   end
+
+  event("validate_upload")
 
   def handle_event("validate_upload", params, socket) do
     {:noreply, assign(socket, :upload_path, Map.get(params, "path", socket.assigns.upload_path))}
   end
+
+  event("delete", key: :string)
 
   def handle_event("delete", %{"key" => key}, socket) do
     socket =
@@ -77,6 +95,8 @@ defmodule GamendWeb.AdminLive.Storage do
 
     {:noreply, reload(socket)}
   end
+
+  event("upload")
 
   def handle_event("upload", params, socket) do
     path = String.trim(Map.get(params, "path", ""))

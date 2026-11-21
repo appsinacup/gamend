@@ -205,6 +205,7 @@ defmodule GamendWeb.UserLive.Settings do
     {:ok, socket}
   end
 
+  event("settings_tab", tab: :string)
   @impl true
   def handle_event("settings_tab", %{"tab" => tab}, socket) when tab in @valid_tabs do
     if tab_enabled?(tab),

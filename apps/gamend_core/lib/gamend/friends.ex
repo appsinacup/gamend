@@ -219,6 +219,7 @@ defmodule Gamend.Friends do
           {:ok, Friendship.t()}
           | {:error,
              :cannot_friend_self
+             | :not_found
              | :blocked
              | :too_many_pending_requests
              | accept_error()
@@ -228,64 +229,74 @@ defmodule Gamend.Friends do
 
   def create_request(requester_id, target_id)
       when is_binary(requester_id) and is_binary(target_id) do
-    if requester_id == target_id do
-      {:error, :cannot_friend_self}
-    else
-      # Lock on the canonical (direction-independent) pair so concurrent
-      # A→B and B→A requests serialize — the unique index only covers one
-      # direction, so without this both could insert reciprocal pending rows.
-      Lock.serialize(:friendship, canonical_pair_id(requester_id, target_id), fn ->
-        # Both directions are read from the database, not the cache: under the
-        # lock these reads are the gate, and a block or an accept commits
-        # before its writer evicts the cached row.
-        same = Repo.get_by(Friendship, requester_id: requester_id, target_id: target_id)
-        reverse = Repo.get_by(Friendship, requester_id: target_id, target_id: requester_id)
+    cond do
+      requester_id == target_id ->
+        {:error, :cannot_friend_self}
 
-        cond do
-          status?(same, FriendshipStatus.blocked()) or
-              status?(reverse, FriendshipStatus.blocked()) ->
-            Repo.rollback(:blocked)
+      # Nobody by that id (deleted, or never there): the insert's foreign key raised.
+      not player?(target_id) ->
+        {:error, :not_found}
 
-          status?(same, FriendshipStatus.accepted()) ->
-            Repo.rollback({:already_friends, same})
+      true ->
+        do_create_request(requester_id, target_id)
+    end
+  end
 
-          status?(reverse, FriendshipStatus.accepted()) ->
-            Repo.rollback({:already_friends, reverse})
+  defp do_create_request(requester_id, target_id) do
+    # Lock on the canonical (direction-independent) pair so concurrent
+    # A→B and B→A requests serialize — the unique index only covers one
+    # direction, so without this both could insert reciprocal pending rows.
+    Lock.serialize(:friendship, canonical_pair_id(requester_id, target_id), fn ->
+      # Both directions are read from the database, not the cache: under the
+      # lock these reads are the gate, and a block or an accept commits
+      # before its writer evicts the cached row.
+      same = Repo.get_by(Friendship, requester_id: requester_id, target_id: target_id)
+      reverse = Repo.get_by(Friendship, requester_id: target_id, target_id: requester_id)
 
-          status?(same, FriendshipStatus.pending()) ->
-            Repo.rollback({:already_requested, same})
+      cond do
+        status?(same, FriendshipStatus.blocked()) or
+            status?(reverse, FriendshipStatus.blocked()) ->
+          Repo.rollback(:blocked)
 
-          status?(reverse, FriendshipStatus.pending()) ->
-            # Roll back so accept_friend_request can use its own transaction
-            Repo.rollback({:accept_reverse, reverse.id})
+        status?(same, FriendshipStatus.accepted()) ->
+          Repo.rollback({:already_friends, same})
 
-          true ->
-            insert_friend_request(same, requester_id, target_id)
-        end
-      end)
-      |> case do
-        {:ok, f} ->
-          _ = invalidate_friendship_cache(f.id)
-          _ = invalidate_friends_cache_pair(requester_id, target_id)
-          broadcast_user(target_id, {:incoming_request, f})
-          broadcast_user(requester_id, {:outgoing_request, f})
-          broadcast_all({:friend_created, f})
-          notify_friend_request(f)
-          {:ok, f}
+        status?(reverse, FriendshipStatus.accepted()) ->
+          Repo.rollback({:already_friends, reverse})
 
-        {:error, {:accept_reverse, friendship_id}} ->
-          accept_friend_request(friendship_id, %User{id: requester_id})
+        status?(same, FriendshipStatus.pending()) ->
+          Repo.rollback({:already_requested, same})
 
-        # Idempotent: the request or the friendship that already stands.
-        {:error, {:already_requested, %Friendship{} = f}} ->
-          {:ok, f}
+        status?(reverse, FriendshipStatus.pending()) ->
+          # Roll back so accept_friend_request can use its own transaction
+          Repo.rollback({:accept_reverse, reverse.id})
 
-        {:error, {:already_friends, %Friendship{} = f}} ->
-          {:ok, f}
-
-        {:error, reason} ->
-          {:error, reason}
+        true ->
+          insert_friend_request(same, requester_id, target_id)
       end
+    end)
+    |> case do
+      {:ok, f} ->
+        _ = invalidate_friendship_cache(f.id)
+        _ = invalidate_friends_cache_pair(requester_id, target_id)
+        broadcast_user(target_id, {:incoming_request, f})
+        broadcast_user(requester_id, {:outgoing_request, f})
+        broadcast_all({:friend_created, f})
+        notify_friend_request(f)
+        {:ok, f}
+
+      {:error, {:accept_reverse, friendship_id}} ->
+        accept_friend_request(friendship_id, %User{id: requester_id})
+
+      # Idempotent: the request or the friendship that already stands.
+      {:error, {:already_requested, %Friendship{} = f}} ->
+        {:ok, f}
+
+      {:error, {:already_friends, %Friendship{} = f}} ->
+        {:ok, f}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -614,15 +625,24 @@ defmodule Gamend.Friends do
   stays correct. Any existing row between the pair (in either direction) is
   replaced, so blocking supersedes a pending request or an active friendship.
 
-  Returns `{:ok, friendship}`, or `{:error, :cannot_block_self}`.
+  Returns `{:ok, friendship}`, `{:error, :cannot_block_self}`, or
+  `{:error, :not_found}` when no player has that id.
   """
   @spec block_user(User.t(), user_id()) ::
-          {:ok, Friendship.t()} | {:error, :cannot_block_self | Ecto.Changeset.t()}
+          {:ok, Friendship.t()} | {:error, :cannot_block_self | :not_found | Ecto.Changeset.t()}
   def block_user(%User{id: blocker_id}, blocked_id) when is_binary(blocked_id) do
-    if blocker_id == blocked_id do
-      {:error, :cannot_block_self}
-    else
-      do_block_user(blocker_id, blocked_id)
+    cond do
+      blocker_id == blocked_id -> {:error, :cannot_block_self}
+      # Nobody by that id (deleted, or never there): the insert's foreign key raised.
+      not player?(blocked_id) -> {:error, :not_found}
+      true -> do_block_user(blocker_id, blocked_id)
+    end
+  end
+
+  defp player?(id) do
+    case Ecto.UUID.cast(id) do
+      {:ok, id} -> Repo.exists?(from u in User, where: u.id == ^id)
+      :error -> false
     end
   end
 

@@ -64,7 +64,11 @@ defmodule GamendWeb.Router.Shared do
   @moved_to_router ~w(web_chat web_friends web_groups web_tournaments web_store web_redeem play
                       stripe_checkout_api list_payments_catalog)a
 
-  @browser_csp "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
+  # `'inline-speculation-rules'`: the rules `live_nav.js` writes as a link is
+  # pressed (`startPressPrefetch`) are an inline `<script
+  # type="speculationrules">`, JSON the browser never runs; the keyword lets
+  # that type only, no inline script.
+  @browser_csp "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
   @swagger_csp "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
   # Oban Web serves its own JS/CSS from 'self' but its root layout emits a
   # nonce'd inline <script>, which the strict browser CSP would block. This

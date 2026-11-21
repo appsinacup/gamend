@@ -547,6 +547,194 @@ defmodule Gamend.Realtime.V1.KvEntry do
   field :data_pb, 6, proto3_optional: true, type: :bytes, json_name: "dataPb"
 end
 
+defmodule Gamend.Realtime.V1.PlayResult do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.PlayResult",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :id, 1, type: :string
+  field :user_id, 2, type: :string, json_name: "userId"
+  field :lobby_id, 3, type: :string, json_name: "lobbyId"
+  field :kind, 4, type: :string
+  field :visibility, 5, type: :string
+  field :status, 6, type: :string
+  field :metadata_json, 7, type: :bytes, json_name: "metadataJson"
+  field :started_at_ms, 8, proto3_optional: true, type: :int64, json_name: "startedAtMs"
+  field :ended_at_ms, 9, proto3_optional: true, type: :int64, json_name: "endedAtMs"
+end
+
+defmodule Gamend.Realtime.V1.PlayResultEvent do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.PlayResultEvent",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :id, 1, type: :string
+  field :result_id, 2, type: :string, json_name: "resultId"
+  field :elapsed_ms, 3, type: :int64, json_name: "elapsedMs"
+  field :key, 4, type: :string
+  field :value, 5, proto3_optional: true, type: :double
+  field :metadata_json, 6, type: :bytes, json_name: "metadataJson"
+end
+
+defmodule Gamend.Realtime.V1.PlayResultEventPushed do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.PlayResultEventPushed",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :result_id, 1, type: :string, json_name: "resultId"
+  field :event, 2, type: Gamend.Realtime.V1.PlayResultEvent
+end
+
+defmodule Gamend.Realtime.V1.AccountBan do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.AccountBan",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :expires_at_ms, 1, proto3_optional: true, type: :int64, json_name: "expiresAtMs"
+  field :reason, 2, type: :string
+end
+
+defmodule Gamend.Realtime.V1.Empty do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.Empty",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+end
+
+defmodule Gamend.Realtime.V1.Friendship do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.Friendship",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :id, 1, type: :string
+  field :requester_id, 2, type: :string, json_name: "requesterId"
+  field :target_id, 3, type: :string, json_name: "targetId"
+  field :status, 4, type: :string
+end
+
+defmodule Gamend.Realtime.V1.WebrtcAnswer do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.WebrtcAnswer",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :sdp, 1, type: :string
+  field :type, 2, type: :string
+end
+
+defmodule Gamend.Realtime.V1.WebrtcIce do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.WebrtcIce",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :candidate, 1, type: :string
+  field :sdpMid, 2, proto3_optional: true, type: :string
+  field :sdpMLineIndex, 3, proto3_optional: true, type: :int32
+  field :usernameFragment, 4, proto3_optional: true, type: :string
+end
+
+defmodule Gamend.Realtime.V1.WebrtcChannelOpen do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.WebrtcChannelOpen",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :channel, 1, type: :string
+end
+
+defmodule Gamend.Realtime.V1.WebrtcState do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.WebrtcState",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :state, 1, type: :string
+end
+
+defmodule Gamend.Realtime.V1.SignalingPeer do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.SignalingPeer",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :user_id, 1, type: :string, json_name: "userId"
+  field :role, 2, type: :string
+end
+
+defmodule Gamend.Realtime.V1.SignalingPeerLeft do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.SignalingPeerLeft",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :user_id, 1, type: :string, json_name: "userId"
+end
+
+defmodule Gamend.Realtime.V1.SignalingSdp do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.SignalingSdp",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :sdp, 1, type: :string
+  field :from_user_id, 2, type: :string, json_name: "fromUserId"
+end
+
+defmodule Gamend.Realtime.V1.SignalingIce do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.SignalingIce",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :candidate, 1, type: :string
+  field :from_user_id, 2, type: :string, json_name: "fromUserId"
+end
+
+defmodule Gamend.Realtime.V1.SignalingRoomClosed do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.SignalingRoomClosed",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :room_id, 1, type: :string, json_name: "roomId"
+end
+
 defmodule Gamend.Realtime.V1.RpcCall do
   @moduledoc false
 

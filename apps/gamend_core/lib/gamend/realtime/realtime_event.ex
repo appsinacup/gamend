@@ -16,5 +16,7 @@ defmodule Gamend.Realtime.RealtimeEvent do
          lobby_membership_changed member_joined member_left member_kicked member_promoted
          member_demoted member_online member_offline member_updated join_request_approved
          join_request_rejected tournament_updated tournament_finished tournament_match_ready
-         tournament_match_resolved disbanded)
+         tournament_match_resolved disbanded account_unbanned outgoing_request incoming_request
+         request_cancelled friend_accepted friend_rejected friend_removed friend_blocked
+         friend_unblocked user_rejoined offer answer ice room_closed)
 end

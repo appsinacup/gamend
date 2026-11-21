@@ -48,6 +48,46 @@
   .locale-option-flag {
     @apply rounded-[2px] shadow-sm ring-1 ring-base-content/10;
   }
+  /* A closed menu's flags are not fetched. The flag is a background
+     (`flag/1`'s `deferred`), fetched when its box is styled, and a closed
+     `<details>` dropdown's list is still laid out: every page fetched all
+     ~30 flags half a second after its socket joined, for a menu nobody
+     opened (2026-11-20). `!important` beats the flag's inline style. */
+  details:not([open]) .locale-option-flag,
+  .modal-toggle:not(:checked) ~ .modal .locale-option-flag {
+    background-image: none !important;
+  }
+}
+
+/* The sidebar's links and the tab bar's tabs (`HostLayoutNavigation.
+   side_nav_item/1`): one class each, not their utilities on every link, in
+   every page and every join (2026-11-21). The rail's and the tab's own
+   sizes come first, so the open sidebar's (`@min-[8rem]/side:`, in
+   `.side-link` after them) wins where it applies, as the utilities did. */
+@layer components {
+  .side-link-rail { @apply border gap-1 px-0.5 py-2 text-[11px]; }
+  .side-link-tab { @apply ring-inset min-w-0 flex-auto gap-0.5 px-0 py-1.5 text-[10px] tracking-tight; }
+  .side-link {
+    @apply relative flex flex-col items-center rounded-field text-center font-semibold leading-tight transition-colors;
+    @apply @min-[8rem]/side:flex-row @min-[8rem]/side:gap-3 @min-[8rem]/side:px-3 @min-[8rem]/side:text-start @min-[8rem]/side:text-sm;
+  }
+  .side-link-idle { @apply border-transparent hover:bg-base-100; }
+  .side-link-off { @apply border-transparent pointer-events-none opacity-70; }
+  .side-link-primary { @apply border-transparent bg-primary text-primary-content; }
+  .side-link-label-rail { @apply line-clamp-2 break-words hyphens-auto; }
+  .side-link-label-tab { @apply truncate; }
+  .side-link-label { @apply min-w-0 max-w-full @min-[8rem]/side:flex-1 @min-[8rem]/side:truncate; }
+}
+
+/* A nav link's own page in its tone (`HostLayoutNavigation`): utilities, so
+   they win over a button's colours as the bracketed classes did. `oklab`,
+   not `oklch`: the light theme's base is a grey at hue 0, and an `oklch` mix
+   turns the tone's hue towards it (a blue tint came out pink). */
+@utility nav-tone-active {
+  @apply bg-[color-mix(in_oklab,var(--nav-tone)_16%,var(--color-base-100))] border-[color-mix(in_oklab,var(--nav-tone)_45%,transparent)];
+}
+@utility nav-tone-ring {
+  @apply ring-1 ring-[color-mix(in_oklab,var(--nav-tone)_45%,transparent)];
 }
 
 .summary-no-marker {

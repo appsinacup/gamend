@@ -40,10 +40,11 @@ defmodule GamendWeb.Schemas.HookFunction do
         },
         arities: %Schema{type: :array, items: %Schema{type: :integer}},
         signatures: %Schema{type: :array, items: HookSignature},
-        meta: %Schema{
-          type: :object,
-          description: "A dynamic function's registration; `{}` otherwise"
-        }
+        meta:
+          GamendWeb.Schemas.FreeForm.object(
+            "a dynamic function's registration, as its plugin made it",
+            description: "A dynamic function's registration; `{}` otherwise"
+          )
       },
       required: [:plugin, :fn, :dynamic, :arities, :signatures, :meta]
     },
@@ -64,6 +65,6 @@ defmodule GamendWeb.Schemas.HookCallResponse do
   one whatever it returned.
   """
   use GamendWeb.Schemas.Envelope,
-    data: %OpenApiSpex.Schema{description: "The hook's return value"},
+    data: GamendWeb.Schemas.FreeForm.value("the plugin function's own return value"),
     description: "The hook's return value under `data`"
 end

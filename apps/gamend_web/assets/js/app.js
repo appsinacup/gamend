@@ -38,7 +38,7 @@ import {startSideNav} from "./side_nav"
 import {startConfirmDialog} from "./confirm_dialog"
 import {startUnsavedChanges} from "./unsaved_changes"
 import {startAnonymousSession} from "./anonymous_session"
-import {startLiveNav} from "./live_nav"
+import {startLiveNav, startPressPrefetch} from "./live_nav"
 import {startBackLink} from "./back_link"
 import {ReportForm, ReportPagePath, startLastPage} from "./report_form"
 import topbar from "../vendor/topbar"
@@ -615,7 +615,9 @@ loadExtraHooks().then((extraHooks) => {
 
   // A plain link to another LiveView page of this `live_session` moves over
   // the open socket rather than loading the page (`GamendWeb.LiveNav`).
-  startLiveNav(liveSocket)
+  // A link that loads its page is fetched as it is pressed (`live_nav.js`).
+  const isLive = startLiveNav(liveSocket)
+  startPressPrefetch(isLive || undefined)
 
   // expose liveSocket on window for web console debug logs and latency simulation:
   // >> liveSocket.enableDebug()

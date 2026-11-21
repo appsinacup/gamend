@@ -235,7 +235,111 @@ defmodule GamendWeb.EventCodec do
       reason: get(p, :reason) || ""
     }
 
+  # Plays (`Gamend.Results`), on the user and lobby channels.
+  defp message_for(_kind, event, p)
+       when event in [RealtimeEvent.result_started(), RealtimeEvent.result_ended()],
+       do: play_result(p)
+
+  defp message_for(_kind, RealtimeEvent.result_event(), p),
+    do: %PB.PlayResultEventPushed{
+      result_id: get(p, :result_id) || "",
+      event: play_result_event(get(p, :event) || %{})
+    }
+
+  defp message_for(ChannelTopic.user(), RealtimeEvent.account_banned(), p),
+    do: %PB.AccountBan{expires_at_ms: ms(p, :expires_at), reason: get(p, :reason) || ""}
+
+  defp message_for(ChannelTopic.user(), event, _p)
+       when event in [RealtimeEvent.account_unbanned(), "webrtc:channel_closed"],
+       do: %PB.Empty{}
+
+  defp message_for(ChannelTopic.user(), event, p)
+       when event in [
+              RealtimeEvent.outgoing_request(),
+              RealtimeEvent.incoming_request(),
+              RealtimeEvent.request_cancelled(),
+              RealtimeEvent.friend_accepted(),
+              RealtimeEvent.friend_rejected(),
+              RealtimeEvent.friend_removed(),
+              RealtimeEvent.friend_blocked(),
+              RealtimeEvent.friend_unblocked()
+            ],
+       do: %PB.Friendship{
+         id: get(p, :id) || "",
+         requester_id: get(p, :requester_id) || "",
+         target_id: get(p, :target_id) || "",
+         status: id_string(get(p, :status) || "")
+       }
+
+  # WebRTC signalling with the server, on the user channel.
+  defp message_for(ChannelTopic.user(), "webrtc:answer", p),
+    do: %PB.WebrtcAnswer{sdp: get(p, :sdp) || "", type: get(p, :type) || ""}
+
+  defp message_for(ChannelTopic.user(), "webrtc:ice", p),
+    do: %PB.WebrtcIce{
+      candidate: get(p, :candidate) || "",
+      sdpMid: get(p, :sdpMid),
+      sdpMLineIndex: get(p, :sdpMLineIndex),
+      usernameFragment: get(p, :usernameFragment)
+    }
+
+  defp message_for(ChannelTopic.user(), "webrtc:channel_open", p),
+    do: %PB.WebrtcChannelOpen{channel: get(p, :channel) || ""}
+
+  defp message_for(ChannelTopic.user(), "webrtc:state", p),
+    do: %PB.WebrtcState{state: get(p, :state) || ""}
+
+  # Peer-to-peer signalling, on the signaling channel.
+  defp message_for(ChannelTopic.signaling(), event, p)
+       when event in [RealtimeEvent.user_joined(), RealtimeEvent.user_rejoined()],
+       do: %PB.SignalingPeer{
+         user_id: get(p, :user_id) || "",
+         role: id_string(get(p, :role) || "")
+       }
+
+  defp message_for(ChannelTopic.signaling(), RealtimeEvent.user_left(), p),
+    do: %PB.SignalingPeerLeft{user_id: get(p, :user_id) || ""}
+
+  defp message_for(ChannelTopic.signaling(), event, p)
+       when event in [RealtimeEvent.offer(), RealtimeEvent.answer()],
+       do: %PB.SignalingSdp{sdp: get(p, :sdp) || "", from_user_id: get(p, :from_user_id) || ""}
+
+  defp message_for(ChannelTopic.signaling(), RealtimeEvent.ice(), p),
+    do: %PB.SignalingIce{
+      candidate: get(p, :candidate) || "",
+      from_user_id: get(p, :from_user_id) || ""
+    }
+
+  defp message_for(ChannelTopic.signaling(), RealtimeEvent.room_closed(), p),
+    do: %PB.SignalingRoomClosed{room_id: get(p, :room_id) || ""}
+
   defp message_for(_kind, _event, _payload), do: nil
+
+  defp play_result(p),
+    do: %PB.PlayResult{
+      id: get(p, :id) || "",
+      user_id: get(p, :user_id) || "",
+      lobby_id: get(p, :lobby_id) || "",
+      kind: id_string(get(p, :kind) || ""),
+      visibility: id_string(get(p, :visibility) || ""),
+      status: id_string(get(p, :status) || ""),
+      metadata_json: json_bytes(p, :metadata) || "",
+      started_at_ms: ms(p, :started_at),
+      ended_at_ms: ms(p, :ended_at)
+    }
+
+  defp play_result_event(p),
+    do: %PB.PlayResultEvent{
+      id: get(p, :id) || "",
+      result_id: get(p, :result_id) || "",
+      elapsed_ms: get(p, :elapsed_ms) || 0,
+      key: get(p, :key) || "",
+      value: number(get(p, :value)),
+      metadata_json: json_bytes(p, :metadata) || ""
+    }
+
+  defp number(nil), do: nil
+  defp number(value) when is_number(value), do: value / 1
 
   defp stringify_map(map) when is_map(map) do
     Map.new(map, fn {k, v} -> {to_string(k), to_string(v)} end)

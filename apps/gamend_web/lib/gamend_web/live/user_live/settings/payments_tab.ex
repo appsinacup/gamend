@@ -5,6 +5,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView
 
   alias Gamend.Payments
@@ -249,6 +250,8 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
     """
   end
 
+  event("open_stripe_portal")
+
   def handle_event("open_stripe_portal", _params, socket) do
     user = Shared.current_user(socket)
     return_url = GamendWeb.Endpoint.url() <> ~p"/users/settings?tab=payments"
@@ -259,6 +262,8 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
       nil -> {:noreply, socket}
     end
   end
+
+  event("cancel_stripe_subscription", id: :uuid)
 
   def handle_event("cancel_stripe_subscription", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
@@ -275,6 +280,8 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
     end
   end
 
+  event("resume_stripe_subscription", id: :uuid)
+
   def handle_event("resume_stripe_subscription", %{"id" => id}, socket) do
     user = Shared.current_user(socket)
 
@@ -290,6 +297,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
     end
   end
 
+  event("refund_stripe_purchase", id: :uuid)
   # Refunds and ends the purchase now. Nothing is revoked here: Stripe's
   # refund and cancellation webhooks do it, as for one made in its Dashboard.
   def handle_event("refund_stripe_purchase", %{"id" => id}, socket) do

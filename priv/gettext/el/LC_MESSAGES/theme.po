@@ -55,6 +55,9 @@ msgstr "Κατάστημα"
 msgid "Server Stats"
 msgstr "Στατιστικά διακομιστή"
 
+msgid "Consulting"
+msgstr ""
+
 msgid "Help"
 msgstr "Βοήθεια"
 
@@ -82,8 +85,53 @@ msgstr "Τουρνουά"
 msgid "Groups"
 msgstr "Ομάδες"
 
-msgid "News"
-msgstr "Νέα"
+msgid "Email contact@gamend.org"
+msgstr ""
+
+msgid "Apps in a Cup consulting"
+msgstr ""
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Need help setting up, scaling or extending Gamend? I offer **one-on-one consulting sessions**: short, focused help to get you unstuck. **€50 per hour.**"
+msgstr ""
+
+msgid "Deployment"
+msgstr ""
+
+msgid "Your own server, Docker, fly.io or a VPS: Postgres or SQLite, domains, TLS and backups."
+msgstr ""
+
+msgid "Deployment & hosting"
+msgstr ""
+
+msgid "Game logic on the server where players cannot reach it: hooks, plugins and GDScript hooks."
+msgstr ""
+
+msgid "Server scripting & hooks"
+msgstr ""
+
+msgid "Benchmarks"
+msgstr "Μετρήσεις επιδόσεων"
+
+msgid "Clustering, load testing, and finding what slows a busy server down."
+msgstr ""
+
+msgid "Scaling & performance"
+msgstr ""
+
+msgid "Wiring the Godot, Unity, Unreal, C++, C#, Rust, JavaScript or [Balaur](https://balaurengine.org) SDKs into your game."
+msgstr ""
+
+msgid "Client integration"
+msgstr ""
+
+msgid "An online call on Discord, Google Meet, Teams or whatever you use. You share your screen, and we work through the problem together. Email [contact@gamend.org](mailto:contact@gamend.org) with a short description of what you need."
+msgstr ""
+
+msgid "How it works"
+msgstr ""
 
 msgid "Getting Started"
 msgstr "Ξεκινώντας με το back-end"
@@ -94,20 +142,11 @@ msgstr "Βίντεο Παρουσίασης"
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
 msgstr "Διακομιστής παιχνιδιών σε Elixir **ανοιχτού κώδικα** για παιχνίδια πολλών παικτών σε πραγματικό χρόνο: backend, ιστότοπος για παίκτες και πίνακας διαχείρισης σε ένα."
 
-msgid "Gamend"
-msgstr "Gamend"
-
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
 msgstr "Μια περιήγηση στον πίνακα διαχείρισης του Gamend, στις αποστολές, στο κατάστημα και στα hooks διακομιστή"
 
-msgid "Benchmarks"
-msgstr "Μετρήσεις επιδόσεων"
-
-msgid "Godot SDK"
-msgstr "Godot SDK"
-
-msgid "C++ SDK"
-msgstr "C++ SDK"
+msgid "Architecture"
+msgstr "Αρχιτεκτονική"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
 msgstr "Το **backend για το παιχνίδι πολλών παικτών σου**: λογαριασμοί, λόμπι, συνομιλία, πίνακες κατάταξης και όλα όσα περιμένουν οι παίκτες γύρω από το ίδιο το παιχνίδι. Περιλαμβάνει επίσης το διαδικτυακό περιβάλλον γύρω από αυτό: έναν έτοιμο ιστότοπο για παίκτες (κατάστημα, πίνακες κατάταξης, τουρνουά, αποστολές, ομάδες, συνομιλία) και έναν πλήρη πίνακα διαχείρισης. Τα σενάρια από την πλευρά του διακομιστή εκτελούν τη δική σου λογική εκεί όπου οι παίκτες δεν έχουν πρόσβαση. Το εκτελείς στον δικό σου διακομιστή· δεν υπάρχει φιλοξενούμενη υπηρεσία."
@@ -178,6 +217,24 @@ msgstr "Γράψε hooks διακομιστή σε **Elixir, GDScript ή Gleam**
 msgid "Server Scripting & Scheduling"
 msgstr "Σενάρια διακομιστή και χρονοπρογραμματισμός"
 
+msgid "Godot SDK"
+msgstr "Godot SDK"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Πρόσθετο Unreal"
+
+msgid "C++ SDK"
+msgstr "C++ SDK"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "SDK για **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript και Balaur**, το καθένα με κάθε κλήση για τους παίκτες, τυποποιημένα μοντέλα και τα συμβάντα πραγματικού χρόνου, που χτίζονται ξανά με κάθε έκδοση του διακομιστή. Οτιδήποτε άλλο μιλά απευθείας με το HTTP API και τα κανάλια WebSocket."
+
+msgid "Client SDKs"
+msgstr "SDK πελάτη"
+
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
 msgstr "REST API, κανάλια WebSocket σε πραγματικό χρόνο και WebRTC DataChannels χαμηλής καθυστέρησης, με προαιρετική μορφή πραγματικού χρόνου protobuf. Πύλη διαχείρισης και διαδικτυακό περιβάλλον, μεταφρασμένα σε 30 γλώσσες."
 
@@ -231,18 +288,3 @@ msgstr "Αναλυτικά στοιχεία, αρχεία καταγραφής �
 
 msgid "Game + Backend"
 msgstr "Παιχνίδι + backend"
-
-msgid "Architecture"
-msgstr "Αρχιτεκτονική"
-
-msgid "Unity SDK"
-msgstr "Unity SDK"
-
-msgid "Unreal plugin"
-msgstr "Πρόσθετο Unreal"
-
-msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
-msgstr "SDK για **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript και Balaur**, το καθένα με κάθε κλήση για τους παίκτες, τυποποιημένα μοντέλα και τα συμβάντα πραγματικού χρόνου, που χτίζονται ξανά με κάθε έκδοση του διακομιστή. Οτιδήποτε άλλο μιλά απευθείας με το HTTP API και τα κανάλια WebSocket."
-
-msgid "Client SDKs"
-msgstr "SDK πελάτη"

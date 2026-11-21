@@ -101,6 +101,29 @@ defmodule GamendWeb.Icons do
                |> binary_part(0, 8)}
             end)
 
+  # Each `hero-*` class's file, as `assets/vendor/heroicons.js` writes it
+  # into the stylesheet (the same content hash), so `class_path/1` names
+  # the very URL a class's mask fetches.
+  @class_paths Map.merge(
+                 Map.new(@svgs, fn {name, _svg} ->
+                   dashed = name |> Atom.to_string() |> String.replace("_", "-")
+
+                   {"hero-" <> dashed <> "-solid",
+                    "/icons/" <> dashed <> ".svg?v=" <> Map.fetch!(@versions, name)}
+                 end),
+                 Map.new(@set_files, fn {{set, file}, svg} ->
+                   base = Path.basename(file, ".svg")
+                   class = if set == "outline", do: "hero-" <> base, else: "hero-#{base}-#{set}"
+
+                   hash =
+                     :crypto.hash(:sha256, svg)
+                     |> Base.url_encode64(padding: false)
+                     |> binary_part(0, 8)
+
+                   {class, "/icons/#{set}/#{file}?v=#{hash}"}
+                 end)
+               )
+
   @defaults %{
     group: :user_group,
     tournament: :bolt,
@@ -180,6 +203,19 @@ defmodule GamendWeb.Icons do
   @spec draw_path(icon()) :: String.t()
   def draw_path(icon) when is_map_key(@versions, icon),
     do: path(icon) <> "?v=" <> Map.fetch!(@versions, icon)
+
+  @doc """
+  The file a `hero-*` class is a mask of, with the hash the stylesheet
+  gives it, or `nil` for a class we do not ship. For a
+  `<link rel="preload">` of an icon a page shows from its first paint
+  (`HostLayoutNavigation.shell_icons/2`): the stylesheet's mask then finds
+  it loaded, instead of asking for it only once the stylesheet is in.
+
+      GamendWeb.Icons.class_path("hero-trophy-solid")
+      #=> "/icons/trophy.svg?v=1jIiob3E"
+  """
+  @spec class_path(String.t()) :: String.t() | nil
+  def class_path(class) when is_binary(class), do: Map.get(@class_paths, class)
 
   @doc """
   The icon a `path/1` URL refers to, or `:error` for anything else — an

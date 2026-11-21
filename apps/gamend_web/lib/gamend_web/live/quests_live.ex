@@ -89,6 +89,7 @@ defmodule GamendWeb.QuestsLive do
     {:noreply, socket}
   end
 
+  event("category", category: :string)
   @impl true
   def handle_event("category", %{"category" => category}, socket) do
     category = if category == "", do: nil, else: category
@@ -100,6 +101,8 @@ defmodule GamendWeb.QuestsLive do
      |> load_quests()}
   end
 
+  event("group", group: :string)
+
   def handle_event("group", %{"group" => key}, socket) do
     key = if key == "", do: nil, else: key
 
@@ -110,6 +113,8 @@ defmodule GamendWeb.QuestsLive do
      |> load_quests()}
   end
 
+  event("status", status: :string)
+
   def handle_event("status", %{"status" => status}, socket) do
     status = if status == "", do: nil, else: status
 
@@ -119,6 +124,8 @@ defmodule GamendWeb.QuestsLive do
      |> assign(:page, 1)
      |> load_quests()}
   end
+
+  event("claim", key: :string)
 
   def handle_event("claim", %{"key" => key}, socket) do
     case get_user(socket) do
@@ -145,20 +152,31 @@ defmodule GamendWeb.QuestsLive do
     end
   end
 
+  event("show_group", group: :string)
+
   def handle_event("show_group", %{"group" => group_key}, socket) do
     {:noreply, socket |> assign(:shown_group, group_key) |> load_group()}
   end
 
+  event("close_group")
+
   def handle_event("close_group", _params, socket),
     do: {:noreply, socket |> assign(:shown_group, nil) |> load_group()}
 
+  event("modal_noop")
   def handle_event("modal_noop", _params, socket), do: {:noreply, socket}
+
+  event("prev_page")
 
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> load_quests()}
 
+  event("next_page")
+
   def handle_event("next_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> load_quests()}
+
+  event("page_size", size: :string)
 
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size, min: 24) |> load_quests()}

@@ -58,7 +58,7 @@ defmodule GamendWeb.Schemas.Leaderboard do
         },
         required: [:label, :path]
       },
-      metadata: %Schema{type: :object},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(),
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -146,7 +146,7 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
         type: :string,
         description: "The host's badge beside the name (Pro); empty for none"
       },
-      metadata: %Schema{type: :object, description: "Per-record metadata"},
+      metadata: GamendWeb.Schemas.FreeForm.metadata(description: "Per-record metadata"),
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [

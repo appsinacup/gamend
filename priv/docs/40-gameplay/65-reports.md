@@ -103,6 +103,28 @@ has filtered, for a kind whose fixes happen somewhere else (a spreadsheet, a
 translation tool). `error_message/1` turns your `cast/2` errors into words for
 the reporter.
 
+### Taken elsewhere
+
+A kind whose reports have a better home than the queue (a word's
+translators, a support desk) implements `take/1`. It gets the attrs as they
+would be inserted, after `before_report_create`, and answers `:taken` once
+it has put the report there itself, `:file` to file it as usual, or
+`{:error, reason}` to refuse it. A report taken stores no row, raises no
+admin alert and keeps no image; the reporter sees it received, and
+`Reports.create/2` answers `{:ok, :taken}`.
+
+```elixir
+@impl true
+def take(%{"topic" => "translation", "user_id" => user_id} = attrs) when is_binary(user_id) do
+  case MyGame.Translators.flag(attrs) do
+    :ok -> :taken
+    :not_here -> :file
+  end
+end
+
+def take(_attrs), do: :file
+```
+
 ## Limits
 
 | Setting | Default | |
@@ -176,7 +198,8 @@ Both need a token (a device token is enough). `kinds` answers
 `{data: {kinds: [{key, topics, max_attachments, max_attachment_bytes}]}}`.
 The body of `POST` is the report's
 fields, with images as base64 strings in `attachments`. Answers `201` with
-`{id, kind, status}`; `400 invalid_report`, `409 already_reported`,
+`{id, kind, status}` (`id` null and `status` `taken` when the kind took it
+elsewhere); `400 invalid_report`, `409 already_reported`,
 `429 report_limit`.
 
 A host with no reports leaves them out of its router: `except: [:report]` on

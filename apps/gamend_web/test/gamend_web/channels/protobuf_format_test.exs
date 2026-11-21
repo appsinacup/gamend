@@ -201,7 +201,6 @@ defmodule GamendWeb.ProtobufFormatTest do
   end
 
   test "unmapped events fall back to JSON" do
-    assert EventCodec.encode("user:x", "webrtc:answer", %{sdp: "..."}) == :json
     assert EventCodec.encode("user:x", "some_future_event", %{}) == :json
   end
 

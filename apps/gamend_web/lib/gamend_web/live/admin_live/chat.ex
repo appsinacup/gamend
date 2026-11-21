@@ -223,6 +223,7 @@ defmodule GamendWeb.AdminLive.Chat do
     """
   end
 
+  event("filter")
   @impl true
   def handle_event("filter", params, socket) do
     {:noreply,
@@ -232,6 +233,7 @@ defmodule GamendWeb.AdminLive.Chat do
      |> reload_messages()}
   end
 
+  event("toggle_select", id: :uuid)
   @impl true
   def handle_event("toggle_select", %{"id" => id}, socket) do
     id = to_string(id)
@@ -250,6 +252,7 @@ defmodule GamendWeb.AdminLive.Chat do
      |> sync_selected_ids(message_ids(socket.assigns.messages))}
   end
 
+  event("toggle_select_all")
   @impl true
   def handle_event("toggle_select_all", _params, socket) do
     messages = socket.assigns.messages
@@ -266,6 +269,7 @@ defmodule GamendWeb.AdminLive.Chat do
     {:noreply, assign(socket, :selected_ids, selected)}
   end
 
+  event("bulk_delete")
   @impl true
   def handle_event("bulk_delete", _params, socket) do
     ids = MapSet.to_list(socket.assigns.selected_ids)
@@ -308,6 +312,7 @@ defmodule GamendWeb.AdminLive.Chat do
     {:noreply, socket |> reload_messages()}
   end
 
+  event("delete_message", id: :uuid)
   @impl true
   def handle_event("delete_message", %{"id" => id}, socket) do
     message_id = to_string(id)
@@ -324,14 +329,17 @@ defmodule GamendWeb.AdminLive.Chat do
     end
   end
 
+  event("admin_chat_prev")
   @impl true
   def handle_event("admin_chat_prev", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> reload_messages()}
 
+  event("admin_chat_next")
   @impl true
   def handle_event("admin_chat_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page() |> reload_messages()}
 
+  event("admin_chat_page_size", size: :string)
   @impl true
   def handle_event("admin_chat_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_messages()}

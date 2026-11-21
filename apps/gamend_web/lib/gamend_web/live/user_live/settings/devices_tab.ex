@@ -6,6 +6,7 @@ defmodule GamendWeb.UserLive.Settings.DevicesTab do
   """
 
   use GamendWeb, :html
+  use GamendWeb.LiveEvents
   import Phoenix.LiveView, only: [put_flash: 3]
 
   alias Gamend.Push
@@ -100,15 +101,21 @@ defmodule GamendWeb.UserLive.Settings.DevicesTab do
     """
   end
 
+  event("devices_prev")
+
   def handle_event("devices_prev", _params, socket) do
     page = max(1, (socket.assigns.devices_page || 1) - 1)
     {:noreply, socket |> assign(:devices_page, page) |> reload_devices()}
   end
 
+  event("devices_next")
+
   def handle_event("devices_next", _params, socket) do
     page = (socket.assigns.devices_page || 1) + 1
     {:noreply, socket |> assign(:devices_page, page) |> reload_devices()}
   end
+
+  event("device_remove", id: :uuid)
 
   def handle_event("device_remove", %{"id" => id}, socket) do
     user = socket.assigns.user

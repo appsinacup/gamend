@@ -14,7 +14,7 @@ defmodule GamendWeb.GroupsChannel do
   - `"group_deleted"` - A group was deleted. Payload: `%{id: integer}`
   """
 
-  use Phoenix.Channel
+  use GamendWeb, :channel
 
   import GamendWeb.ChannelPush
 

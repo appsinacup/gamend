@@ -69,11 +69,11 @@ defmodule GamendWeb.Api.V1.NotificationController do
             description: "Icon URL (optional)",
             nullable: true
           },
-          metadata: %Schema{
-            type: :object,
-            description: "Arbitrary metadata (optional)",
-            nullable: true
-          }
+          metadata:
+            GamendWeb.Schemas.FreeForm.metadata(
+              description: "Arbitrary metadata (optional)",
+              nullable: true
+            )
         },
         required: [:user_id, :title]
       }
@@ -105,7 +105,7 @@ defmodule GamendWeb.Api.V1.NotificationController do
         properties: %{
           ids: %Schema{
             type: :array,
-            items: %Schema{type: :integer},
+            items: %Schema{type: :string, format: :uuid},
             description: "Array of notification IDs to delete"
           }
         },

@@ -89,5 +89,4 @@ msgstr "Щотижневий кубок"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-
 msgstr "Реєструйся будь-коли; сітку жеребкують щопонеділка."

@@ -126,15 +126,6 @@ pub async fn update_tournament(id: str, params: any) -> any {
     if id == "" {
         return core::missing("gamend::admin_tournaments::update_tournament", "id");
     }
-    if !core::given(params, "slug") {
-        return core::missing("gamend::admin_tournaments::update_tournament", "slug");
-    }
-    if !core::given(params, "title") {
-        return core::missing("gamend::admin_tournaments::update_tournament", "title");
-    }
-    if !core::given(params, "round_window_sec") {
-        return core::missing("gamend::admin_tournaments::update_tournament", "round_window_sec");
-    }
     let reply = await core::rest("PATCH", "/api/v1/admin/tournaments/{id}", params);
     reply
 }

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1496">
+    <meta name="project" content="gamend_core v1.1.1501">
 
 
-    <title>Gamend.Friends — gamend_core v1.1.1496</title>
+    <title>Gamend.Friends — gamend_core v1.1.1501</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-280E27A0.js"></script>
+    <script defer src="dist/sidebar_items-CBB0FCB9.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1496
+          v1.1.1501
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Friends</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1496)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1501)</small>
 
     </h1>
 
@@ -664,7 +664,7 @@ already, or a friend list at its cap.</p>
       <h1 class="signature" translate="no">accept_friend_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L447" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L458" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -697,7 +697,7 @@ already, or a friend list at its cap.</p>
       <h1 class="signature" translate="no">any_blocked?(user_id, other_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L934" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L954" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -726,7 +726,7 @@ direction. One query, regardless of how many others are checked.</p>
       <h1 class="signature" translate="no">any_blocked_between?(ids, other_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L953" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L973" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -756,7 +756,7 @@ query.</p>
       <h1 class="signature" translate="no">block_friend_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L587" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L598" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -788,7 +788,7 @@ it was accepted (or blocked) first.</p>
       <h1 class="signature" translate="no">block_user(user, blocked_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L621" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L633" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -801,14 +801,15 @@ it was accepted (or blocked) first.</p>
 
           <pre translate="no"><span class="attribute">@spec</span> block_user(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="#t:user_id/0">user_id</a>()) ::
   {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()}
-  | {:error, :cannot_block_self | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+  | {:error, :cannot_block_self | :not_found | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
 <p>Block an arbitrary user, with or without any prior friendship between them.</p><p>Blocked rows are stored in a canonical direction — <code class="inline">target_id</code> is the
 blocker, <code class="inline">requester_id</code> is the blocked user — so <a href="#list_blocked_for_user/2"><code class="inline">list_blocked_for_user/2</code></a>
 stays correct. Any existing row between the pair (in either direction) is
-replaced, so blocking supersedes a pending request or an active friendship.</p><p>Returns <code class="inline">{:ok, friendship}</code>, or <code class="inline">{:error, :cannot_block_self}</code>.</p>
+replaced, so blocking supersedes a pending request or an active friendship.</p><p>Returns <code class="inline">{:ok, friendship}</code>, <code class="inline">{:error, :cannot_block_self}</code>, or
+<code class="inline">{:error, :not_found}</code> when no player has that id.</p>
   </section>
 </section>
 <section class="detail" id="blocked?/2">
@@ -821,7 +822,7 @@ replaced, so blocking supersedes a pending request or an active friendship.</p><
       <h1 class="signature" translate="no">blocked?(requester_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L407" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L418" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -850,7 +851,7 @@ direction between the two user IDs.</p>
       <h1 class="signature" translate="no">blocked_pairs(user_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L715" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L735" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -881,7 +882,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">cancel_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L516" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L527" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -913,7 +914,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_all_blocks(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L780" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L800" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -943,7 +944,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_all_friendships(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L850" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L870" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -971,7 +972,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_blocked_for_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L999" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1019" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -999,7 +1000,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_blocked_users(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L756" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L776" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1027,7 +1028,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_friends_for_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1124" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1144" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1055,7 +1056,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_incoming_requests(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1177" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1197" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1083,7 +1084,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_outgoing_requests(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1222" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1242" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1111,7 +1112,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">create_request(requester_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L227" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1126,6 +1127,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
   {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()}
   | {:error,
      :cannot_friend_self
+     | :not_found
      | :blocked
      | :too_many_pending_requests
      | <a href="#t:accept_error/0">accept_error</a>()
@@ -1151,7 +1153,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">delete_block(friendship_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L810" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L830" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1180,7 +1182,7 @@ blocker lift their own block.</p>
       <h1 class="signature" translate="no">delete_friendship(friendship_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L893" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L913" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1210,7 +1212,7 @@ with <a href="#delete_block/1"><code class="inline">delete_block/1</code></a>.</
       <h1 class="signature" translate="no">friend_ids(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1264" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1284" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1239,7 +1241,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">friends?(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L419" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L430" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1267,7 +1269,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">get_by_pair(requester_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1253" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1273" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1353,7 +1355,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">list_all_blocks(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L769" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L789" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1383,7 +1385,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">list_all_friendships(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L839" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L859" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1414,7 +1416,7 @@ and are listed with <a href="#list_all_blocks/1"><code class="inline">list_all_b
       <h1 class="signature" translate="no">list_blocked_for_user(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L975" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L995" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1446,7 +1448,7 @@ and are listed with <a href="#list_all_blocks/1"><code class="inline">list_all_b
       <h1 class="signature" translate="no">list_blocked_users(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L738" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L758" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1479,7 +1481,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_friends_for_user(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1044" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1064" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1511,7 +1513,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_friends_with_friendship(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1092" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1112" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1543,7 +1545,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_incoming_requests(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1153" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1173" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1575,7 +1577,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_outgoing_requests(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1198" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1218" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1605,7 +1607,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">pair_key(a, b)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L969" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L989" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1633,7 +1635,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">reject_friend_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L491" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L502" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1664,7 +1666,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">remove_friend(user_id, friend_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L542" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L553" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1723,7 +1725,7 @@ a block placed since included.</p>
       <h1 class="signature" translate="no">unblock_friendship(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1014" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1034" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1752,7 +1754,7 @@ a block placed since included.</p>
       <h1 class="signature" translate="no">unblock_user(user, blocked_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L677" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L697" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1808,9 +1810,9 @@ a block placed since included.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1496">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1501">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1496">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1501">Hex Preview</a>
 
             </span>
 

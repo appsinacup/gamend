@@ -26,6 +26,12 @@ Every value.
 # `open`
 *macro* 
 
+# `taken`
+*macro* 
+
+Never stored: what a filing answers when the report's kind took it
+elsewhere (`c:Gamend.Reports.Kind.take/1`), so no row exists.
+
 ---
 
 *Consult [api-reference.md](api-reference.md) for complete listing*

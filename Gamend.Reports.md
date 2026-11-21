@@ -23,6 +23,12 @@ on committed rows, so a restart does not reset them). A signed-in player
 cannot file the same open report twice. Nothing about a sender is stored
 beyond what they typed and, when signed in, their user id.
 
+## Taken elsewhere
+
+A kind may take a report to a place of the host's own instead of the
+queue (`c:Gamend.Reports.Kind.take/1`): `create/2` then stores nothing and
+answers `{:ok, :taken}`.
+
 ## Hooks
 
   * `before_report_create/1` — pipeline: `{:ok, attrs}` to file it (changed
@@ -84,7 +90,8 @@ How many reports are open.
 # `create`
 
 ```elixir
-@spec create(map(), map()) :: {:ok, Gamend.Reports.Report.t()} | {:error, term()}
+@spec create(map(), map()) ::
+  {:ok, Gamend.Reports.Report.t() | :taken} | {:error, term()}
 ```
 
 File a report.
@@ -100,7 +107,8 @@ Errors: `:unknown_kind`, `:invalid_topic`,
 `:description_required`, `:too_many_attachments`, `:attachment_too_large`,
 `:attachment_type`, `:daily_limit`, `:user_daily_limit`,
 `:already_reported`, a kind's own `cast/2` reason, a hook's refusal, or a
-changeset.
+changeset. `{:ok, :taken}` when the kind took the report elsewhere
+(`c:Gamend.Reports.Kind.take/1`): nothing was stored.
 
 # `delete`
 

@@ -28,7 +28,8 @@ These do not count, because a name for them would say less than they do:
     `get_in/2`. Keys are the shape of a document, not a closed set of values
   * text: gettext, `Logger`, `raise`, `IO`, `Mix`, `System`, and any sigil
     other than a string `~w` or a template
-  * a LiveView event's name in `handle_event/3`, and HTTP header names
+  * a LiveView event's name in `handle_event/3` and in its `event/2`
+    declaration, and HTTP header names
   * an API error's code in `reply_error/3`, which has to be a literal:
     `mix gamend.api.lint` (R18) holds it to `GamendWeb.ErrorStatus`
   * a CSS class of the shared vocabulary (`"badge-error"`), and `"true"`

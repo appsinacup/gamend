@@ -100,7 +100,7 @@ it was accepted (or blocked) first.
 ```elixir
 @spec block_user(Gamend.Accounts.User.t(), user_id()) ::
   {:ok, Gamend.Friends.Friendship.t()}
-  | {:error, :cannot_block_self | Ecto.Changeset.t()}
+  | {:error, :cannot_block_self | :not_found | Ecto.Changeset.t()}
 ```
 
 Block an arbitrary user, with or without any prior friendship between them.
@@ -110,7 +110,8 @@ blocker, `requester_id` is the blocked user — so `list_blocked_for_user/2`
 stays correct. Any existing row between the pair (in either direction) is
 replaced, so blocking supersedes a pending request or an active friendship.
 
-Returns `{:ok, friendship}`, or `{:error, :cannot_block_self}`.
+Returns `{:ok, friendship}`, `{:error, :cannot_block_self}`, or
+`{:error, :not_found}` when no player has that id.
 
 # `blocked?`
 
@@ -209,6 +210,7 @@ Count outgoing pending friend requests for a user.
   {:ok, Gamend.Friends.Friendship.t()}
   | {:error,
      :cannot_friend_self
+     | :not_found
      | :blocked
      | :too_many_pending_requests
      | accept_error()

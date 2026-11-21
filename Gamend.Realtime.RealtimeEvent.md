@@ -12,6 +12,9 @@ The names of the server-to-client channel events core and the channels both spel
 # `account_banned`
 *macro* 
 
+# `account_unbanned`
+*macro* 
+
 # `all`
 
 ```elixir
@@ -19,6 +22,9 @@ The names of the server-to-client channel events core and the channels both spel
 ```
 
 Every value.
+
+# `answer`
+*macro* 
 
 # `chat_message_created`
 *macro* 
@@ -36,6 +42,21 @@ Every value.
 *macro* 
 
 # `disbanded`
+*macro* 
+
+# `friend_accepted`
+*macro* 
+
+# `friend_blocked`
+*macro* 
+
+# `friend_rejected`
+*macro* 
+
+# `friend_removed`
+*macro* 
+
+# `friend_unblocked`
 *macro* 
 
 # `friend_updated`
@@ -63,6 +84,12 @@ Every value.
 *macro* 
 
 # `host_changed`
+*macro* 
+
+# `ice`
+*macro* 
+
+# `incoming_request`
 *macro* 
 
 # `inventory_updated`
@@ -119,6 +146,12 @@ Every value.
 # `notification_created`
 *macro* 
 
+# `offer`
+*macro* 
+
+# `outgoing_request`
+*macro* 
+
 # `party_invite_accepted`
 *macro* 
 
@@ -149,6 +182,9 @@ Every value.
 # `ready_check_updated`
 *macro* 
 
+# `request_cancelled`
+*macro* 
+
 # `result_ended`
 *macro* 
 
@@ -156,6 +192,9 @@ Every value.
 *macro* 
 
 # `result_started`
+*macro* 
+
+# `room_closed`
 *macro* 
 
 # `state_changed`
@@ -189,6 +228,9 @@ Every value.
 *macro* 
 
 # `user_online`
+*macro* 
+
+# `user_rejoined`
 *macro* 
 
 # `user_updated`

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1496">
+    <meta name="project" content="gamend_core v1.1.1501">
 
 
-    <title>Gamend.Reports.Kind — gamend_core v1.1.1496</title>
+    <title>Gamend.Reports.Kind — gamend_core v1.1.1501</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-280E27A0.js"></script>
+    <script defer src="dist/sidebar_items-CBB0FCB9.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1496
+          v1.1.1501
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Reports.<wbr />Kind</span> <small>behaviour</small>
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1496)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1501)</small>
 
     </h1>
 
@@ -125,7 +125,16 @@ kind.</p><h2 id="module-cast-2" class="section-heading"><a href="#module-cast-2"
 them. <code class="inline">subject</code> is the snapshot shown in the queue — take it now, because
 what was reported may be renamed or removed by the time anyone reads it.
 <code class="inline">data</code> is the kind's extra fields, already trimmed and capped. An
-<code class="inline">{:error, reason}</code> is shown to the reporter as &quot;check what you entered&quot;.</p><h2 id="module-the-web-side" class="section-heading"><a href="#module-the-web-side" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">The web side</span></h2><p><a href="#c:ui/0"><code class="inline">ui/0</code></a> names the module that draws the kind on <code class="inline">/report</code> and in the admin
+<code class="inline">{:error, reason}</code> is shown to the reporter as &quot;check what you entered&quot;.</p><h2 id="module-take-1-optional" class="section-heading"><a href="#module-take-1-optional" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text"><code class="inline">take/1</code>, optional</span></h2><p>Some reports are not for the queue: the host already has a place where
+that kind of thing is worked (a word's translators, a support desk). A
+kind that knows answers <code class="inline">:taken</code> from <a href="#c:take/1"><code class="inline">take/1</code></a> and puts the report there
+itself; core then stores no row, raises no admin alert, keeps no image and
+answers <code class="inline">{:ok, :taken}</code> from <a href="Gamend.Reports.html#create/2"><code class="inline">Gamend.Reports.create/2</code></a>, which the reporter
+is told as a report received. <code class="inline">:file</code> files it as usual, <code class="inline">{:error, reason}</code>
+refuses it. It gets the attrs as they would be inserted (string keys:
+<code class="inline">kind</code>, <code class="inline">topic</code>, <code class="inline">subject_ref</code>, <code class="inline">subject</code>, <code class="inline">data</code>, <code class="inline">description</code>,
+<code class="inline">user_id</code>, …), after <code class="inline">before_report_create/1</code>. A kind without it files
+everything.</p><h2 id="module-the-web-side" class="section-heading"><a href="#module-the-web-side" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">The web side</span></h2><p><a href="#c:ui/0"><code class="inline">ui/0</code></a> names the module that draws the kind on <code class="inline">/report</code> and in the admin
 queue (<code class="inline">GamendWeb.Reports.KindUI</code>). A kind with no UI is API-only: a game
 client can file it, and nobody can from the website.</p>
     </section>
@@ -202,6 +211,16 @@ client can file it, and nobody can from the website.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#c:take/1" data-no-tooltip="" translate="no">take(attrs)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether the host takes this report elsewhere instead of the queue. See the module doc.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#c:topics/0" data-no-tooltip="" translate="no">topics()</a>
 
       </div>
@@ -244,7 +263,7 @@ client can file it, and nobody can from the website.</p>
       <h1 class="signature" translate="no">cast_result()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L38" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -285,7 +304,7 @@ client can file it, and nobody can from the website.</p>
       <h1 class="signature" translate="no">cast(params, context)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -316,7 +335,7 @@ client can file it, and nobody can from the website.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -344,7 +363,7 @@ client can file it, and nobody can from the website.</p>
       <h1 class="signature" translate="no">key()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L58" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -372,7 +391,7 @@ client can file it, and nobody can from the website.</p>
       <h1 class="signature" translate="no">max_attachments()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -390,6 +409,36 @@ client can file it, and nobody can from the website.</p>
 <p>How many images a report may carry (0 = none).</p>
   </section>
 </section>
+<section class="detail" id="c:take/1">
+
+  <div class="detail-header">
+    <a href="#c:take/1" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">take(attrs)</h1>
+
+        <span class="note">(optional)</span>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@callback</span> take(attrs :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: :file | :taken | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Whether the host takes this report elsewhere instead of the queue. See the module doc.</p>
+  </section>
+</section>
 <section class="detail" id="c:topics/0">
 
   <div class="detail-header">
@@ -400,7 +449,7 @@ client can file it, and nobody can from the website.</p>
       <h1 class="signature" translate="no">topics()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -430,7 +479,7 @@ client can file it, and nobody can from the website.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/kind.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -457,9 +506,9 @@ client can file it, and nobody can from the website.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1496">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1501">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1496">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1501">Hex Preview</a>
 
             </span>
 

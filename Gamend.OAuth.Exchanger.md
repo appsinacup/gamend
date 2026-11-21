@@ -43,7 +43,7 @@ Tests may replace the exchanger via application config for easier stubbing.
 # `exchange_google_code`
 
 ```elixir
-@spec exchange_google_code(String.t(), String.t(), String.t(), String.t(), keyword()) ::
+@spec exchange_google_code(String.t(), String.t(), String.t(), String.t()) ::
   {:ok, map()} | {:error, term()}
 ```
 

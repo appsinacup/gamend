@@ -37,7 +37,14 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           },
           starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
-          metadata: FreeForm.metadata()
+          metadata: FreeForm.metadata(),
+          user_metadata_keys: %Schema{
+            type: :array,
+            items: %Schema{type: :string},
+            description:
+              "What of each player's metadata the records carry (`user_metadata`): top-level " <>
+                "keys or dotted paths (`player.pass_level`). Public, as the records are"
+          }
         },
         required: [:slug, :title]
       }
@@ -78,7 +85,14 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           icon_url: %Schema{type: :string},
           starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
-          metadata: FreeForm.metadata()
+          metadata: FreeForm.metadata(),
+          user_metadata_keys: %Schema{
+            type: :array,
+            items: %Schema{type: :string},
+            description:
+              "What of each player's metadata the records carry (`user_metadata`): top-level " <>
+                "keys or dotted paths (`player.pass_level`). Public, as the records are"
+          }
         }
       }
     },

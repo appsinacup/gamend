@@ -210,6 +210,7 @@ are UTC unless the host sets `:quest_clock` to `:player`.
 | `sort_order` | enum | `asc` / `desc`, default `desc` |
 | `operator` | enum | `set` / `best` / `incr` / `decr`, default `best` |
 | `starts_at` / `ends_at` | utc_datetime | Optional window; null `ends_at` = open |
+| `user_metadata_keys` | string[] | Paths into `users.metadata` each row carries (`player.pass_level`); `[]` for none. JSON on SQLite |
 
 | leaderboard_records | Type | Notes |
 |---|---|---|

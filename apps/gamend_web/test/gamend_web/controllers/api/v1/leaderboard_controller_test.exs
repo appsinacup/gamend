@@ -186,6 +186,39 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       conn = get(conn, "/api/v1/leaderboards/00000000-0000-0000-0000-000000000000/records")
       assert json_response(conn, 404)["error"] == "not_found"
     end
+
+    test "a row carries the player's metadata at the board's keys, read with the row", %{
+      conn: conn,
+      leaderboard: lb,
+      users: users
+    } do
+      top = List.last(users)
+
+      {:ok, _user} =
+        Gamend.Accounts.update_user_metadata(top.id, fn metadata ->
+          Map.put(metadata, "player", %{"pass_level" => 7, "lang" => "es"})
+        end)
+
+      first = hd(json_response(get(conn, "/api/v1/leaderboards/#{lb.id}/records"), 200)["data"])
+      assert first["user_metadata"] == %{}
+
+      {:ok, lb} =
+        Leaderboards.update_leaderboard(lb, %{user_metadata_keys: ["player.pass_level"]})
+
+      assert json_response(get(conn, "/api/v1/leaderboards/#{lb.id}"), 200)["data"][
+               "user_metadata_keys"
+             ] == ["player.pass_level"]
+
+      [first, second | _rest] =
+        json_response(get(conn, "/api/v1/leaderboards/#{lb.id}/records"), 200)["data"]
+
+      assert first["user_metadata"] == %{"player" => %{"pass_level" => 7}}
+      assert second["user_metadata"] == %{}
+
+      {:ok, _record} = Leaderboards.submit_label_score(lb.id, "Team Blue", 10_000)
+      label = hd(json_response(get(conn, "/api/v1/leaderboards/#{lb.id}/records"), 200)["data"])
+      assert label["user_metadata"] == %{}
+    end
   end
 
   describe "GET /api/v1/leaderboards/:id/records/around/:user_id" do
@@ -381,20 +414,13 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       def title_class(_user, "Captain"), do: "title-3"
       def badge(%{username: "titled" <> _}), do: "Pro"
       def badge(_user), do: nil
-      def mark(%{username: "titled" <> _}), do: 7
-      def mark(_user), do: nil
     end
 
     setup do
       Application.put_env(:gamend_core, :leaderboard_action, {Host, :action})
       on_exit(fn -> Application.delete_env(:gamend_core, :leaderboard_action) end)
 
-      for {name, fun} <- [
-            user_title: :title,
-            user_title_class: :title_class,
-            user_badge: :badge,
-            user_mark: :mark
-          ] do
+      for {name, fun} <- [user_title: :title, user_title_class: :title_class, user_badge: :badge] do
         Application.put_env(:gamend_web, name, {Host, fun})
         on_exit(fn -> Application.delete_env(:gamend_web, name) end)
       end
@@ -419,7 +445,7 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert hd(reader["data"])["action"] == %{"label" => "Play", "path" => "/games"}
     end
 
-    test "a row carries its player's avatar, the host's title, badge and mark", %{
+    test "a row carries its player's avatar, the host's title and badge", %{
       conn: conn,
       leaderboard: lb
     } do
@@ -437,12 +463,10 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert first["title"] == "Captain"
       assert first["title_class"] == "title-3"
       assert first["badge"] == "Pro"
-      assert first["mark"] == 7
       assert String.starts_with?(first["avatar_url"], "/icons/")
       assert second["title"] == ""
       assert second["title_class"] == ""
       assert second["badge"] == ""
-      assert second["mark"] == 0
     end
 
     test "a search keeps the rows it names, at their rank", %{conn: conn, leaderboard: lb} do

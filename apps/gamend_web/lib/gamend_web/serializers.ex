@@ -223,6 +223,7 @@ defmodule GamendWeb.Serializers do
       all_time: Leaderboards.all_time?(lb),
       action: leaderboard_action(Leaderboards.host_action(lb.slug, reader)),
       metadata: lb.metadata || %{},
+      user_metadata_keys: lb.user_metadata_keys || [],
       inserted_at: lb.inserted_at,
       updated_at: lb.updated_at
     }

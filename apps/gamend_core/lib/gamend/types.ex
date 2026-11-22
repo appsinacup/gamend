@@ -135,6 +135,8 @@ defmodule Gamend.Types do
     * `:ends_at` - Optional end time (UTC)
     * `:metadata` - Arbitrary key-value data
     * `:hidden` - Left out of every public listing (default false)
+    * `:user_metadata_keys` - What of each player's `users.metadata` the rows
+      carry: top-level keys or dotted paths (`"player.pass_level"`). Public
 
   ## Example
 
@@ -161,7 +163,8 @@ defmodule Gamend.Types do
           optional(:starts_at) => DateTime.t(),
           optional(:ends_at) => DateTime.t(),
           optional(:metadata) => map(),
-          optional(:hidden) => boolean()
+          optional(:hidden) => boolean(),
+          optional(:user_metadata_keys) => [String.t()]
         }
 
   @typedoc """
@@ -177,6 +180,8 @@ defmodule Gamend.Types do
     * `:ends_at` - End time (UTC)
     * `:metadata` - Arbitrary key-value data
     * `:hidden` - Left out of every public listing (default false)
+    * `:user_metadata_keys` - What of each player's `users.metadata` the rows
+      carry: top-level keys or dotted paths (`"player.pass_level"`). Public
 
   ## Example
 
@@ -192,7 +197,8 @@ defmodule Gamend.Types do
           optional(:starts_at) => DateTime.t(),
           optional(:ends_at) => DateTime.t(),
           optional(:metadata) => map(),
-          optional(:hidden) => boolean()
+          optional(:hidden) => boolean(),
+          optional(:user_metadata_keys) => [String.t()]
         }
 
   # ---------------------------------------------------------------------------

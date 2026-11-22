@@ -143,6 +143,34 @@ for a rank, a search or a count at a million records. A new identity column
 on `users` needs those triggers made again (migration
 `LeaderboardRecordsGuest`).
 
+## The player's metadata on each row
+
+A record's `metadata` is the run's, written with the score: on a `:best`
+board it stays the best run's. What a row should show about its player now
+(a level, a rank) lives in the player's `users.metadata`, and a board names
+what of it its rows carry with `user_metadata_keys`: top-level keys or
+dotted paths into them.
+
+```elixir
+Gamend.Leaderboards.create_leaderboard(%{
+  slug: "weekly_score",
+  title: "Weekly High Scores",
+  user_metadata_keys: ["player.pass_level"]
+})
+```
+
+Each row then has `user_metadata`, the values at those paths read with the
+row, each in its place: `{"player": {"pass_level": 7}}`, and nothing else of
+`player`. A path the player has no value at is left out; a label's row, and
+a board that names none (the default), send `{}`. The board itself lists
+its keys (`user_metadata_keys`), so a client knows what to look for.
+
+Rows are public, so a key named here is world-readable: never name one that
+holds position, study or contact data. `payments` is refused. Set the keys
+on create or update, from a plugin, the admin API
+(`POST`/`PATCH /api/v1/admin/leaderboards`) or the admin page; a board takes
+at most `max_leaderboard_user_metadata_keys` (16).
+
 ## Icons
 
 Leaderboards carry an optional `icon_url` (admin form or API). When unset,

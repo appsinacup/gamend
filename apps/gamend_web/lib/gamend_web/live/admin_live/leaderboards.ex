@@ -296,6 +296,15 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                 label="Hidden (left out of the public leaderboards page and API list)"
               />
 
+              <.input
+                field={@form[:user_metadata_keys]}
+                id="leaderboard-user-metadata-keys"
+                name="leaderboard[user_metadata_keys_text]"
+                type="text"
+                value={Enum.join(List.wrap(@form[:user_metadata_keys].value), ", ")}
+                label="Player metadata on each row (optional, comma separated: rank, player.pass_level). Public"
+              />
+
               <div class="form-control">
                 <label class="label"><span class="label-text">Metadata (JSON)</span></label>
                 <textarea
@@ -591,7 +600,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
         description: source.description,
         sort_order: source.sort_order,
         operator: source.operator,
-        metadata: source.metadata
+        metadata: source.metadata,
+        user_metadata_keys: source.user_metadata_keys
       }
 
       changeset = Leaderboards.change_leaderboard(new_leaderboard)
@@ -631,7 +641,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
 
   def handle_event("save_leaderboard", %{"leaderboard" => params}, socket) do
     case decode_metadata(params) do
-      {:ok, params} -> save_leaderboard(socket, params)
+      {:ok, params} -> save_leaderboard(socket, split_user_metadata_keys(params))
       :error -> {:noreply, put_flash(socket, :error, "Metadata must be a JSON object")}
     end
   end
@@ -766,6 +776,16 @@ defmodule GamendWeb.AdminLive.Leaderboards do
   # ---------------------------------------------------------------------------
   # Helpers
   # ---------------------------------------------------------------------------
+
+  # The keys field is one line of text; the changeset takes the list.
+  defp split_user_metadata_keys(%{"user_metadata_keys_text" => text} = params)
+       when is_binary(text) do
+    params
+    |> Map.delete("user_metadata_keys_text")
+    |> Map.put("user_metadata_keys", String.split(text, ",", trim: true))
+  end
+
+  defp split_user_metadata_keys(params), do: params
 
   # Text that is not a JSON object is refused rather than saved as %{}, which
   # would wipe the metadata behind a success flash. Empty means no metadata.

@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-331 settings across 31 groups.
+332 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -285,6 +285,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_LIMITS_MAX_LEADERBOARD_DESCRIPTION` | integer | `1000` |  |
 | `GAMEND_LIMITS_MAX_LEADERBOARD_SLUG` | integer | `100` |  |
 | `GAMEND_LIMITS_MAX_LEADERBOARD_TITLE` | integer | `255` |  |
+| `GAMEND_LIMITS_MAX_LEADERBOARD_USER_METADATA_KEYS` | integer | `16` |  |
 | `GAMEND_LIMITS_MAX_LOBBY_PASSWORD` | integer | `128` |  |
 | `GAMEND_LIMITS_MAX_LOBBY_TITLE` | integer | `80` |  |
 | `GAMEND_LIMITS_MAX_LOBBY_USERS` | integer | `128` |  |

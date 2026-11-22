@@ -60,6 +60,13 @@ defmodule GamendWeb.Schemas.Leaderboard do
         required: [:label, :path]
       },
       metadata: FreeForm.metadata(),
+      user_metadata_keys: %Schema{
+        type: :array,
+        items: %Schema{type: :string},
+        description:
+          "What of each player's metadata the board's records carry in `user_metadata`: " <>
+            "top-level keys or dotted paths (`player.pass_level`). Empty for none"
+      },
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -77,6 +84,7 @@ defmodule GamendWeb.Schemas.Leaderboard do
       :all_time,
       :action,
       :metadata,
+      :user_metadata_keys,
       :inserted_at,
       :updated_at
     ],
@@ -94,6 +102,7 @@ defmodule GamendWeb.Schemas.Leaderboard do
       all_time: false,
       action: %{label: "Play", path: "/play"},
       metadata: %{},
+      user_metadata_keys: [],
       inserted_at: "2025-12-02T10:00:00Z",
       updated_at: "2025-12-02T10:00:00Z"
     }
@@ -148,13 +157,14 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
         type: :string,
         description: "The host's badge beside the name (Pro); empty for none"
       },
-      mark: %Schema{
-        type: :integer,
-        minimum: 0,
-        description:
-          "The number the host draws at the avatar's foot (a level, in a disc); 0 for none"
-      },
       metadata: FreeForm.metadata(description: "Per-record metadata"),
+      user_metadata:
+        FreeForm.metadata(
+          description:
+            "The player's metadata at the board's `user_metadata_keys`, each in its place " <>
+              ~S|(`player.pass_level` sends `{"player": {"pass_level": 7}}`), read with the row. | <>
+              "Empty for a label record and for a board that names none"
+        ),
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [
@@ -168,8 +178,8 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       :title,
       :title_class,
       :badge,
-      :mark,
       :metadata,
+      :user_metadata,
       :updated_at
     ],
     example: %{
@@ -183,8 +193,8 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       title: "",
       title_class: "",
       badge: "",
-      mark: 0,
       metadata: %{weapon: "sword"},
+      user_metadata: %{player: %{pass_level: 7}},
       updated_at: "2025-12-02T10:00:00Z"
     }
   })

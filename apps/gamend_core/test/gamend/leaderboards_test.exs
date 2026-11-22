@@ -514,4 +514,42 @@ defmodule Gamend.LeaderboardsTest do
       assert result["resolve_dup"].id == lb.id
     end
   end
+
+  describe "user_metadata_keys" do
+    test "trims, drops blanks and repeats, and refuses payments and empty segments" do
+      {:ok, lb} =
+        Leaderboards.create_leaderboard(%{
+          slug: "keyed",
+          title: "Keyed",
+          user_metadata_keys: [" rank ", "", "player.pass_level", "rank"]
+        })
+
+      assert lb.user_metadata_keys == ["rank", "player.pass_level"]
+
+      for bad <- [["payments"], ["payments.orders"], ["player..level"], [".rank"]] do
+        assert {:error, changeset} =
+                 Leaderboards.update_leaderboard(lb, %{user_metadata_keys: bad})
+
+        assert %{user_metadata_keys: [_]} = errors_on(changeset)
+      end
+    end
+
+    test "user_metadata/2 sends the values at the board's paths, each in its place" do
+      board = %Leaderboard{user_metadata_keys: ["rank", "player.pass_level", "gone.deeper"]}
+
+      user = %{
+        metadata: %{
+          "rank" => "Captain",
+          "player" => %{"pass_level" => 7, "lang" => "es"},
+          "payments" => %{"orders" => []}
+        }
+      }
+
+      assert Leaderboard.user_metadata(board, user) ==
+               %{"rank" => "Captain", "player" => %{"pass_level" => 7}}
+
+      assert Leaderboard.user_metadata(%Leaderboard{}, user) == %{}
+      assert Leaderboard.user_metadata(board, nil) == %{}
+    end
+  end
 end

@@ -188,6 +188,7 @@ defmodule Gamend.Limits do
   setting(:max_leaderboard_title, :integer, default: 255)
   setting(:max_leaderboard_description, :integer, default: 1_000)
   setting(:max_leaderboard_slug, :integer, default: 100)
+  setting(:max_leaderboard_user_metadata_keys, :integer, default: 16)
 
   section("Tournaments")
   setting(:max_tournament_title, :integer, default: 255)

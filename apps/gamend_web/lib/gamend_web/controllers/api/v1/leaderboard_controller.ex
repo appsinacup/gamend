@@ -4,6 +4,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   alias Gamend.Accounts.User
   alias Gamend.Leaderboards
+  alias Gamend.Leaderboards.Leaderboard
   alias GamendWeb.CoreComponents
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
@@ -298,7 +299,13 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
         total_count =
           Leaderboards.count_records(leaderboard.id, key: key, search: search, all_time: all_time)
 
-        reply_page(conn, Enum.map(records, &serialize_record/1), page, page_size, total_count)
+        reply_page(
+          conn,
+          Enum.map(records, &serialize_record(&1, leaderboard)),
+          page,
+          page_size,
+          total_count
+        )
     end
   end
 
@@ -359,7 +366,13 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
             key: key_param(params)
           )
 
-        reply_page(conn, Enum.map(records, &serialize_record/1), 1, limit, length(records))
+        reply_page(
+          conn,
+          Enum.map(records, &serialize_record(&1, leaderboard)),
+          1,
+          limit,
+          length(records)
+        )
     end
   end
 
@@ -405,7 +418,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
                key: key_param(params),
                all_time: all_time_param(params)
              ) do
-          {:ok, record} -> reply_data(conn, serialize_record(record))
+          {:ok, record} -> reply_data(conn, serialize_record(record, leaderboard))
           {:error, :not_found} -> reply_error(conn, :not_found, "record_not_found")
         end
     end
@@ -465,7 +478,13 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
           limit: limit
         )
 
-      reply_page(conn, Enum.map(records, &serialize_record/1), 1, limit, length(records))
+      reply_page(
+        conn,
+        Enum.map(records, &serialize_record(&1, leaderboard)),
+        1,
+        limit,
+        length(records)
+      )
     else
       :error -> reply_error(conn, :bad_request, "missing_param", "score must be an integer")
       nil -> not_found(conn)
@@ -555,12 +574,13 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   # has an All time tab (`all_time`, `Leaderboards.all_time?/1`).
   defp serialize_leaderboard(lb, reader), do: Serializers.serialize_leaderboard(lb, reader)
 
-  defp serialize_record(record) do
+  defp serialize_record(record, leaderboard) do
     base = %{
       rank: record.rank,
       hidden: record.hidden == true,
       score: record.score,
       metadata: record.metadata || %{},
+      user_metadata: Leaderboard.user_metadata(leaderboard, record.user),
       updated_at: record.updated_at
     }
 
@@ -585,9 +605,8 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   # `player_card/1` draws it: the avatar (`User.public_avatar_url/1`: an
   # uploaded picture or `/icons/<name>.svg?color=<color>`), the host's title
   # under the name and its class (`user_title/1`, `user_title_class/2`) and
-  # the host's badge (`user_badge/1`), and the number the host draws at the
-  # avatar's foot (`user_mark/1`, 0 for none). Empty for a label's row, and
-  # for a read that does not load the user.
+  # the host's badge (`user_badge/1`). Empty for a label's row, and for a
+  # read that does not load the user.
   defp player_fields(%{user: %User{} = user}) do
     title = CoreComponents.user_title_text(user)
 
@@ -595,13 +614,11 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
       avatar_url: User.public_avatar_url(user) || "",
       title: title || "",
       title_class: (title && CoreComponents.user_title_class(user, title)) || "",
-      badge: CoreComponents.user_badge_text(user) || "",
-      mark: CoreComponents.user_mark(user)
+      badge: CoreComponents.user_badge_text(user) || ""
     }
   end
 
-  defp player_fields(_record),
-    do: %{avatar_url: "", title: "", title_class: "", badge: "", mark: 0}
+  defp player_fields(_record), do: %{avatar_url: "", title: "", title_class: "", badge: ""}
 
   defp maybe_add_slug_filter(opts, nil), do: opts
   defp maybe_add_slug_filter(opts, ""), do: opts

@@ -1932,6 +1932,23 @@ defmodule GamendWeb.CoreComponents do
     end
   end
 
+  @doc """
+  The number a host draws at a user's avatar's foot (`:user_mark`, a
+  `{module, fun}` answering a whole number from 1): Polyglot Pirates' Pirate
+  Pass level. 0 where the host draws none.
+  """
+  def user_mark(nil), do: 0
+
+  def user_mark(user) do
+    with {module, fun} when is_atom(module) and is_atom(fun) <-
+           Application.get_env(:gamend_web, :user_mark),
+         mark when is_integer(mark) and mark > 0 <- apply(module, fun, [user]) do
+      mark
+    else
+      _ -> 0
+    end
+  end
+
   defp meta_path_title(user) do
     with [_ | _] = path <- Application.get_env(:gamend_web, :user_title_meta_path),
          %{} = metadata <- user_metadata(user),

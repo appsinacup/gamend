@@ -585,8 +585,9 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   # `player_card/1` draws it: the avatar (`User.public_avatar_url/1`: an
   # uploaded picture or `/icons/<name>.svg?color=<color>`), the host's title
   # under the name and its class (`user_title/1`, `user_title_class/2`) and
-  # the host's badge (`user_badge/1`). Empty for a label's row, and for a
-  # read that does not load the user.
+  # the host's badge (`user_badge/1`), and the number the host draws at the
+  # avatar's foot (`user_mark/1`, 0 for none). Empty for a label's row, and
+  # for a read that does not load the user.
   defp player_fields(%{user: %User{} = user}) do
     title = CoreComponents.user_title_text(user)
 
@@ -594,11 +595,13 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
       avatar_url: User.public_avatar_url(user) || "",
       title: title || "",
       title_class: (title && CoreComponents.user_title_class(user, title)) || "",
-      badge: CoreComponents.user_badge_text(user) || ""
+      badge: CoreComponents.user_badge_text(user) || "",
+      mark: CoreComponents.user_mark(user)
     }
   end
 
-  defp player_fields(_record), do: %{avatar_url: "", title: "", title_class: "", badge: ""}
+  defp player_fields(_record),
+    do: %{avatar_url: "", title: "", title_class: "", badge: "", mark: 0}
 
   defp maybe_add_slug_filter(opts, nil), do: opts
   defp maybe_add_slug_filter(opts, ""), do: opts

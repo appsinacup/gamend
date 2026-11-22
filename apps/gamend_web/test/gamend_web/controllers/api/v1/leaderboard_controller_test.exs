@@ -381,13 +381,20 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       def title_class(_user, "Captain"), do: "title-3"
       def badge(%{username: "titled" <> _}), do: "Pro"
       def badge(_user), do: nil
+      def mark(%{username: "titled" <> _}), do: 7
+      def mark(_user), do: nil
     end
 
     setup do
       Application.put_env(:gamend_core, :leaderboard_action, {Host, :action})
       on_exit(fn -> Application.delete_env(:gamend_core, :leaderboard_action) end)
 
-      for {name, fun} <- [user_title: :title, user_title_class: :title_class, user_badge: :badge] do
+      for {name, fun} <- [
+            user_title: :title,
+            user_title_class: :title_class,
+            user_badge: :badge,
+            user_mark: :mark
+          ] do
         Application.put_env(:gamend_web, name, {Host, fun})
         on_exit(fn -> Application.delete_env(:gamend_web, name) end)
       end
@@ -412,7 +419,7 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert hd(reader["data"])["action"] == %{"label" => "Play", "path" => "/games"}
     end
 
-    test "a row carries its player's avatar, the host's title and badge", %{
+    test "a row carries its player's avatar, the host's title, badge and mark", %{
       conn: conn,
       leaderboard: lb
     } do
@@ -430,10 +437,12 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert first["title"] == "Captain"
       assert first["title_class"] == "title-3"
       assert first["badge"] == "Pro"
+      assert first["mark"] == 7
       assert String.starts_with?(first["avatar_url"], "/icons/")
       assert second["title"] == ""
       assert second["title_class"] == ""
       assert second["badge"] == ""
+      assert second["mark"] == 0
     end
 
     test "a search keeps the rows it names, at their rank", %{conn: conn, leaderboard: lb} do

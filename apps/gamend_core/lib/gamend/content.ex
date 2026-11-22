@@ -729,9 +729,13 @@ defmodule Gamend.Content do
     end)
   end
 
-  # How a post's markdown is rendered, which is also how its picture is
-  # resolved: one set of options, so the card's URL is the body's.
-  defp blog_render_opts do
+  @doc """
+  How a post's markdown is rendered, which is also how its pictures resolve
+  (`Gamend.Content.Markdown.image_src/2`): one set of options, so the card's
+  URL is the body's.
+  """
+  @spec blog_render_opts() :: keyword()
+  def blog_render_opts do
     entry = Map.get(registered_paths(), "blog", %{})
     [collection: "blog", assets: Map.get(entry, :assets, :content)]
   end

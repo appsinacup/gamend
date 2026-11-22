@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1510">
+    <meta name="project" content="gamend_core v1.1.1511">
 
 
-    <title>Gamend.Accounts.ConfirmationMailer — gamend_core v1.1.1510</title>
+    <title>Gamend.Accounts.ConfirmationMailer — gamend_core v1.1.1511</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-600E9182.js"></script>
+    <script defer src="dist/sidebar_items-BF21CD81.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1510
+          v1.1.1511
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />ConfirmationMailer</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1510)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1511)</small>
 
     </h1>
 
@@ -147,7 +147,9 @@ is killed, so a hung relay costs one <code class="inline">mailers</code> slot, n
 
         <div class="summary-synopsis"><p>The job for <code class="inline">user</code>. <code class="inline">confirmation_url_fun</code> maps an encoded token to its URL
 and runs now, with a placeholder; <code class="inline">notifier</code> delivers. <code class="inline">opts</code> go to
-<code class="inline">Oban.Worker.new/2</code> (a resend passes <code class="inline">:unique</code>).</p></div>
+<code class="inline">Oban.Worker.new/2</code> (a resend passes <code class="inline">:unique</code>), but for <code class="inline">reset: true</code>:
+the code to set a new password, for an account confirmed or not
+(<code class="inline">Registration.request_password_reset/3</code>).</p></div>
 
     </div>
 
@@ -179,7 +181,7 @@ and runs now, with a placeholder; <code class="inline">notifier</code> delivers.
       <h1 class="signature" translate="no">new_for(user, confirmation_url_fun, notifier \\ UserNotifier, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/confirmation_mailer.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/confirmation_mailer.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -202,7 +204,9 @@ and runs now, with a placeholder; <code class="inline">notifier</code> delivers.
 
 <p>The job for <code class="inline">user</code>. <code class="inline">confirmation_url_fun</code> maps an encoded token to its URL
 and runs now, with a placeholder; <code class="inline">notifier</code> delivers. <code class="inline">opts</code> go to
-<code class="inline">Oban.Worker.new/2</code> (a resend passes <code class="inline">:unique</code>).</p>
+<code class="inline">Oban.Worker.new/2</code> (a resend passes <code class="inline">:unique</code>), but for <code class="inline">reset: true</code>:
+the code to set a new password, for an account confirmed or not
+(<code class="inline">Registration.request_password_reset/3</code>).</p>
   </section>
 </section>
 
@@ -214,9 +218,9 @@ and runs now, with a placeholder; <code class="inline">notifier</code> delivers.
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1510">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1511">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1510">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1511">Hex Preview</a>
 
             </span>
 

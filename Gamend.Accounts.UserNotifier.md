@@ -36,6 +36,11 @@ A notification the user chose to get by email
 in the `List-Unsubscribe` headers too (RFC 8058 one-click), so a mail
 client's own "Unsubscribe" button works without opening the site.
 
+# `deliver_reset_code`
+
+Deliver the six digits a game asks for to set a new password: a password
+forgotten, on a client with no page to open a link in.
+
 # `deliver_test_email`
 
 Send a simple test email to the given recipient address. Used by admin tools

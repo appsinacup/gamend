@@ -229,6 +229,19 @@ it, so a password chosen now could be someone else's, and it would sign them
 into the account once the address's owner confirmed it. The password is set
 after the inbox is proved: with the code, or in the settings the link opens.
 
+# `request_password_reset`
+
+```elixir
+@spec request_password_reset(String.t(), (String.t() -&gt; String.t()), module()) :: :ok
+```
+
+A password forgotten, for a game client (`POST /api/v1/password/reset`):
+the account at `email` is emailed six digits (`ConfirmationMailer` with
+`reset: true`) that `reset_password_by_code/3` takes with a new password.
+Always `:ok`, whether or not the address has an account, so it tells no
+one which addresses are registered; at most one email per account per
+minute goes out. Only the newest code works, as a confirmation's.
+
 # `resend_confirmation`
 
 ```elixir
@@ -242,6 +255,19 @@ newest code works; links already sent keep working until they expire.
 Always `:ok`, whether or not such an account exists, so it tells no one
 which addresses are registered. At most one email per account per minute
 is queued; the rest are dropped.
+
+# `reset_password_by_code`
+
+```elixir
+@spec reset_password_by_code(String.t(), String.t(), String.t()) ::
+  {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+  | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+```
+
+The code `request_password_reset/3` sent, and the account's new password:
+set, the account confirmed if it was not, and every earlier token of it
+revoked, as `confirm_user_by_code/3` does and with its answers but
+`:already_confirmed`, which a reset never is.
 
 # `upgrade_anonymous_user_and_deliver`
 

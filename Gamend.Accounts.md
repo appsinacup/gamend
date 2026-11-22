@@ -489,6 +489,8 @@ account first.
 
 Admin deletions and the retention sweeps call `delete_user/1` and never wait.
 
+# `request_password_reset`
+
 # `require_account_activation?`
 
 ```elixir
@@ -498,6 +500,8 @@ Admin deletions and the retention sweeps call `delete_user/1` and never wait.
 Whether new accounts require manual admin activation before they can log in.
 
 # `resend_confirmation`
+
+# `reset_password_by_code`
 
 # `revoke_all_tokens`
 

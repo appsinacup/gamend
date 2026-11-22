@@ -29,7 +29,9 @@ is killed, so a hung relay costs one `mailers` slot, never the database.
 
 The job for `user`. `confirmation_url_fun` maps an encoded token to its URL
 and runs now, with a placeholder; `notifier` delivers. `opts` go to
-`Oban.Worker.new/2` (a resend passes `:unique`).
+`Oban.Worker.new/2` (a resend passes `:unique`), but for `reset: true`:
+the code to set a new password, for an account confirmed or not
+(`Registration.request_password_reset/3`).
 
 ---
 

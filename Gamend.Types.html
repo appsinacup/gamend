@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1505">
+    <meta name="project" content="gamend_core v1.1.1509">
 
 
-    <title>Gamend.Types — gamend_core v1.1.1505</title>
+    <title>Gamend.Types — gamend_core v1.1.1509</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-A621412C.js"></script>
+    <script defer src="dist/sidebar_items-600E9182.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1505
+          v1.1.1509
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Types</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1505)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1509)</small>
 
     </h1>
 
@@ -277,7 +277,7 @@ hook pipeline.</p></div>
       <h1 class="signature" translate="no">group_create_attrs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L284" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L290" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -318,7 +318,7 @@ hook pipeline.</p></div>
       <h1 class="signature" translate="no">group_update_attrs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L312" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L318" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -355,7 +355,7 @@ hook pipeline.</p></div>
       <h1 class="signature" translate="no">leaderboard_create_attrs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L154" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -376,12 +376,14 @@ hook pipeline.</p></div>
   optional(:starts_at) =&gt; <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>(),
   optional(:ends_at) =&gt; <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>(),
   optional(:metadata) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(),
-  optional(:hidden) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()
+  optional(:hidden) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>(),
+  optional(:user_metadata_keys) =&gt; [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]
 }</pre>
 
       </div>
 
-<p>Attributes for creating a new leaderboard.</p><h2 id="t:leaderboard_create_attrs/0-fields" class="section-heading"><a href="#t:leaderboard_create_attrs/0-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">:slug</code> - Human-readable identifier (required, 1-100 chars, lowercase alphanumeric with underscores)</li><li><code class="inline">:title</code> - Display title (required, 1-255 chars)</li><li><code class="inline">:description</code> - Optional description</li><li><code class="inline">:sort_order</code> - <code class="inline">:desc</code> (higher is better) or <code class="inline">:asc</code> (lower is better). Default: <code class="inline">:desc</code></li><li><code class="inline">:operator</code> - How scores are combined:<ul><li><code class="inline">:set</code> - Always replace with new score</li><li><code class="inline">:best</code> - Only update if new score is better (default)</li><li><code class="inline">:incr</code> - Add to existing score</li><li><code class="inline">:decr</code> - Subtract from existing score</li></ul></li><li><code class="inline">:starts_at</code> - Optional start time (UTC)</li><li><code class="inline">:ends_at</code> - Optional end time (UTC)</li><li><code class="inline">:metadata</code> - Arbitrary key-value data</li><li><code class="inline">:hidden</code> - Left out of every public listing (default false)</li></ul><h2 id="t:leaderboard_create_attrs/0-example" class="section-heading"><a href="#t:leaderboard_create_attrs/0-example" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Example</span></h2><pre><code class="makeup elixir" translate="no"><span class="n">create_leaderboard</span><span class="p" data-group-id="group-1">(</span><span class="p" data-group-id="group-2">%{</span><span class="w">
+<p>Attributes for creating a new leaderboard.</p><h2 id="t:leaderboard_create_attrs/0-fields" class="section-heading"><a href="#t:leaderboard_create_attrs/0-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">:slug</code> - Human-readable identifier (required, 1-100 chars, lowercase alphanumeric with underscores)</li><li><code class="inline">:title</code> - Display title (required, 1-255 chars)</li><li><code class="inline">:description</code> - Optional description</li><li><code class="inline">:sort_order</code> - <code class="inline">:desc</code> (higher is better) or <code class="inline">:asc</code> (lower is better). Default: <code class="inline">:desc</code></li><li><code class="inline">:operator</code> - How scores are combined:<ul><li><code class="inline">:set</code> - Always replace with new score</li><li><code class="inline">:best</code> - Only update if new score is better (default)</li><li><code class="inline">:incr</code> - Add to existing score</li><li><code class="inline">:decr</code> - Subtract from existing score</li></ul></li><li><code class="inline">:starts_at</code> - Optional start time (UTC)</li><li><code class="inline">:ends_at</code> - Optional end time (UTC)</li><li><code class="inline">:metadata</code> - Arbitrary key-value data</li><li><code class="inline">:hidden</code> - Left out of every public listing (default false)</li><li><code class="inline">:user_metadata_keys</code> - What of each player's <code class="inline">users.metadata</code> the rows
+carry: top-level keys or dotted paths (<code class="inline">&quot;player.pass_level&quot;</code>). Public</li></ul><h2 id="t:leaderboard_create_attrs/0-example" class="section-heading"><a href="#t:leaderboard_create_attrs/0-example" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Example</span></h2><pre><code class="makeup elixir" translate="no"><span class="n">create_leaderboard</span><span class="p" data-group-id="group-1">(</span><span class="p" data-group-id="group-2">%{</span><span class="w">
   </span><span class="ss">slug</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;weekly_kills&quot;</span><span class="p">,</span><span class="w">
   </span><span class="ss">title</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Weekly Kills&quot;</span><span class="p">,</span><span class="w">
   </span><span class="ss">sort_order</span><span class="p">:</span><span class="w"> </span><span class="ss">:desc</span><span class="p">,</span><span class="w">
@@ -401,7 +403,7 @@ When querying by slug, the active leaderboard is returned.</p>
       <h1 class="signature" translate="no">leaderboard_update_attrs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L189" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L194" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -418,12 +420,14 @@ When querying by slug, the active leaderboard is returned.</p>
   optional(:starts_at) =&gt; <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>(),
   optional(:ends_at) =&gt; <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>(),
   optional(:metadata) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(),
-  optional(:hidden) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()
+  optional(:hidden) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>(),
+  optional(:user_metadata_keys) =&gt; [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]
 }</pre>
 
       </div>
 
-<p>Attributes for updating an existing leaderboard.</p><p>Note: <code class="inline">slug</code>, <code class="inline">sort_order</code>, and <code class="inline">operator</code> cannot be changed after creation.</p><h2 id="t:leaderboard_update_attrs/0-fields" class="section-heading"><a href="#t:leaderboard_update_attrs/0-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">:title</code> - Display title (1-255 chars)</li><li><code class="inline">:description</code> - Description text</li><li><code class="inline">:starts_at</code> - Start time (UTC)</li><li><code class="inline">:ends_at</code> - End time (UTC)</li><li><code class="inline">:metadata</code> - Arbitrary key-value data</li><li><code class="inline">:hidden</code> - Left out of every public listing (default false)</li></ul><h2 id="t:leaderboard_update_attrs/0-example" class="section-heading"><a href="#t:leaderboard_update_attrs/0-example" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Example</span></h2><pre><code class="makeup elixir" translate="no"><span class="n">update_leaderboard</span><span class="p" data-group-id="group-1">(</span><span class="n">leaderboard</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-2">%{</span><span class="w">
+<p>Attributes for updating an existing leaderboard.</p><p>Note: <code class="inline">slug</code>, <code class="inline">sort_order</code>, and <code class="inline">operator</code> cannot be changed after creation.</p><h2 id="t:leaderboard_update_attrs/0-fields" class="section-heading"><a href="#t:leaderboard_update_attrs/0-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">:title</code> - Display title (1-255 chars)</li><li><code class="inline">:description</code> - Description text</li><li><code class="inline">:starts_at</code> - Start time (UTC)</li><li><code class="inline">:ends_at</code> - End time (UTC)</li><li><code class="inline">:metadata</code> - Arbitrary key-value data</li><li><code class="inline">:hidden</code> - Left out of every public listing (default false)</li><li><code class="inline">:user_metadata_keys</code> - What of each player's <code class="inline">users.metadata</code> the rows
+carry: top-level keys or dotted paths (<code class="inline">&quot;player.pass_level&quot;</code>). Public</li></ul><h2 id="t:leaderboard_update_attrs/0-example" class="section-heading"><a href="#t:leaderboard_update_attrs/0-example" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Example</span></h2><pre><code class="makeup elixir" translate="no"><span class="n">update_leaderboard</span><span class="p" data-group-id="group-1">(</span><span class="n">leaderboard</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-2">%{</span><span class="w">
   </span><span class="ss">title</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Updated Title&quot;</span><span class="p">,</span><span class="w">
   </span><span class="ss">ends_at</span><span class="p">:</span><span class="w"> </span><span class="ld">~U[2024-12-15 00:00:00Z]</span><span class="w">
 </span><span class="p" data-group-id="group-2">}</span><span class="p" data-group-id="group-1">)</span></code></pre>
@@ -439,7 +443,7 @@ When querying by slug, the active leaderboard is returned.</p>
       <h1 class="signature" translate="no">lobby_create_attrs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L232" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -508,7 +512,7 @@ When querying by slug, the active leaderboard is returned.</p>
       <h1 class="signature" translate="no">lobby_update_attrs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L248" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L254" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -546,7 +550,7 @@ When querying by slug, the active leaderboard is returned.</p>
       <h1 class="signature" translate="no">matchmaking_ticket()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L340" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/types.ex#L346" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -716,9 +720,9 @@ fields such as <code class="inline">&quot;google_id&quot;</code> or <code class=
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1505">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1509">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1505">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1509">Hex Preview</a>
 
             </span>
 

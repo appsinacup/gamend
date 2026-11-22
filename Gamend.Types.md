@@ -82,7 +82,8 @@ Attributes for updating an existing group.
   optional(:starts_at) =&gt; DateTime.t(),
   optional(:ends_at) =&gt; DateTime.t(),
   optional(:metadata) =&gt; map(),
-  optional(:hidden) =&gt; boolean()
+  optional(:hidden) =&gt; boolean(),
+  optional(:user_metadata_keys) =&gt; [String.t()]
 }
 ```
 
@@ -103,6 +104,8 @@ Attributes for creating a new leaderboard.
   * `:ends_at` - Optional end time (UTC)
   * `:metadata` - Arbitrary key-value data
   * `:hidden` - Left out of every public listing (default false)
+  * `:user_metadata_keys` - What of each player's `users.metadata` the rows
+    carry: top-level keys or dotted paths (`"player.pass_level"`). Public
 
 ## Example
 
@@ -126,7 +129,8 @@ When querying by slug, the active leaderboard is returned.
   optional(:starts_at) =&gt; DateTime.t(),
   optional(:ends_at) =&gt; DateTime.t(),
   optional(:metadata) =&gt; map(),
-  optional(:hidden) =&gt; boolean()
+  optional(:hidden) =&gt; boolean(),
+  optional(:user_metadata_keys) =&gt; [String.t()]
 }
 ```
 
@@ -142,6 +146,8 @@ Note: `slug`, `sort_order`, and `operator` cannot be changed after creation.
   * `:ends_at` - End time (UTC)
   * `:metadata` - Arbitrary key-value data
   * `:hidden` - Left out of every public listing (default false)
+  * `:user_metadata_keys` - What of each player's `users.metadata` the rows
+    carry: top-level keys or dotted paths (`"player.pass_level"`). Public
 
 ## Example
 

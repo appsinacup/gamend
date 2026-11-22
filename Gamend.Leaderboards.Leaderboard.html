@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1505">
+    <meta name="project" content="gamend_core v1.1.1509">
 
 
-    <title>Gamend.Leaderboards.Leaderboard — gamend_core v1.1.1505</title>
+    <title>Gamend.Leaderboards.Leaderboard — gamend_core v1.1.1509</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-A621412C.js"></script>
+    <script defer src="dist/sidebar_items-600E9182.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1505
+          v1.1.1509
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Leaderboards.<wbr />Leaderboard</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1505)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1509)</small>
 
     </h1>
 
@@ -120,7 +120,12 @@ across multiple leaderboard instances (seasons). Use the slug to always target t
 currently active leaderboard, or use the integer <code class="inline">id</code> for a specific instance.</p><h2 id="module-hidden" class="section-heading"><a href="#module-hidden" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Hidden</span></h2><p>A hidden board is ranked and read like any other — by id, by slug, its
 records — but no public listing shows it (the leaderboards page, the API
 index). A host that shows a board on its own pages hides it.</p><h2 id="module-icon" class="section-heading"><a href="#module-icon" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Icon</span></h2><p><code class="inline">icon_url</code> is optional; when nil, clients show their default leaderboard
-icon (the web UI uses <code class="inline">GamendWeb.Icons.default(:leaderboard)</code>).</p><h2 id="module-sort-order" class="section-heading"><a href="#module-sort-order" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Sort Order</span></h2><ul><li><code class="inline">:desc</code> — Higher scores rank first (default)</li><li><code class="inline">:asc</code> — Lower scores rank first (e.g., fastest time)</li></ul><h2 id="module-operators" class="section-heading"><a href="#module-operators" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Operators</span></h2><ul><li><code class="inline">:set</code> — Always replace with new score</li><li><code class="inline">:best</code> — Only update if new score is better (default)</li><li><code class="inline">:incr</code> — Add to existing score</li><li><code class="inline">:decr</code> — Subtract from existing score</li></ul>
+icon (the web UI uses <code class="inline">GamendWeb.Icons.default(:leaderboard)</code>).</p><h2 id="module-user-metadata-keys" class="section-heading"><a href="#module-user-metadata-keys" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">User metadata keys</span></h2><p><code class="inline">user_metadata_keys</code> names what of each player's <code class="inline">users.metadata</code> the
+board's rows carry, read when the row is (<a href="#user_metadata/2"><code class="inline">user_metadata/2</code></a>): a top-level
+key (<code class="inline">&quot;rank&quot;</code>) or a dotted path into it (<code class="inline">&quot;player.pass_level&quot;</code>), so one
+value goes out and the rest of its map stays private. The rows are
+public, so a key named here is world-readable. Empty, the default, sends
+none; <code class="inline">payments</code> is never sent.</p><h2 id="module-sort-order" class="section-heading"><a href="#module-sort-order" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Sort Order</span></h2><ul><li><code class="inline">:desc</code> — Higher scores rank first (default)</li><li><code class="inline">:asc</code> — Lower scores rank first (e.g., fastest time)</li></ul><h2 id="module-operators" class="section-heading"><a href="#module-operators" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Operators</span></h2><ul><li><code class="inline">:set</code> — Always replace with new score</li><li><code class="inline">:best</code> — Only update if new score is better (default)</li><li><code class="inline">:incr</code> — Add to existing score</li><li><code class="inline">:decr</code> — Subtract from existing score</li></ul>
     </section>
 
 </div>
@@ -208,6 +213,19 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#user_metadata/2" data-no-tooltip="" translate="no">user_metadata(leaderboard, arg2)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>What of <code class="inline">user</code>'s metadata the board's rows carry: the values at its
+<code class="inline">user_metadata_keys</code>, each in its place (<code class="inline">&quot;player.pass_level&quot;</code> answers
+<code class="inline">%{&quot;player&quot; =&gt; %{&quot;pass_level&quot; =&gt; 7}}</code>). A path the user has no value at
+is left out. <code class="inline">%{}</code> for a board that names none, or no user.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -232,7 +250,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">operator()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -260,7 +278,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">sort_order()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L36" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L44" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -288,7 +306,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L35" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L43" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -314,7 +332,8 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
   sort_order: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   starts_at: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   title: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
-  updated_at: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()
+  updated_at: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
+  user_metadata_keys: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()
 }</pre>
 
       </div>
@@ -345,7 +364,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">active?(leaderboard)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L95" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L180" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -367,7 +386,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">changeset(leaderboard, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -389,7 +408,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">ended?(lb)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L188" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -411,7 +430,7 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
       <h1 class="signature" translate="no">update_changeset(leaderboard, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -424,6 +443,37 @@ Does not allow changing slug, sort_order, or operator after creation.</p></div>
 Does not allow changing slug, sort_order, or operator after creation.</p>
   </section>
 </section>
+<section class="detail" id="user_metadata/2">
+
+  <div class="detail-header">
+    <a href="#user_metadata/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">user_metadata(leaderboard, arg2)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards/leaderboard.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> user_metadata(<a href="#t:t/0">t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>What of <code class="inline">user</code>'s metadata the board's rows carry: the values at its
+<code class="inline">user_metadata_keys</code>, each in its place (<code class="inline">&quot;player.pass_level&quot;</code> answers
+<code class="inline">%{&quot;player&quot; =&gt; %{&quot;pass_level&quot; =&gt; 7}}</code>). A path the user has no value at
+is left out. <code class="inline">%{}</code> for a board that names none, or no user.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -433,9 +483,9 @@ Does not allow changing slug, sort_order, or operator after creation.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1505">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1509">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1505">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1509">Hex Preview</a>
 
             </span>
 

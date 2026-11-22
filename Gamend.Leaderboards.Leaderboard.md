@@ -20,6 +20,14 @@ index). A host that shows a board on its own pages hides it.
 `icon_url` is optional; when nil, clients show their default leaderboard
 icon (the web UI uses `GamendWeb.Icons.default(:leaderboard)`).
 
+## User metadata keys
+`user_metadata_keys` names what of each player's `users.metadata` the
+board's rows carry, read when the row is (`user_metadata/2`): a top-level
+key (`"rank"`) or a dotted path into it (`"player.pass_level"`), so one
+value goes out and the rest of its map stays private. The rows are
+public, so a key named here is world-readable. Empty, the default, sends
+none; `payments` is never sent.
+
 ## Sort Order
 - `:desc` — Higher scores rank first (default)
 - `:asc` — Lower scores rank first (e.g., fastest time)
@@ -60,7 +68,8 @@ icon (the web UI uses `GamendWeb.Icons.default(:leaderboard)`).
   sort_order: term(),
   starts_at: term(),
   title: term(),
-  updated_at: term()
+  updated_at: term(),
+  user_metadata_keys: term()
 }
 ```
 
@@ -80,6 +89,17 @@ Returns true if the leaderboard has ended.
 
 Changeset for updating an existing leaderboard.
 Does not allow changing slug, sort_order, or operator after creation.
+
+# `user_metadata`
+
+```elixir
+@spec user_metadata(t(), term()) :: map()
+```
+
+What of `user`'s metadata the board's rows carry: the values at its
+`user_metadata_keys`, each in its place (`"player.pass_level"` answers
+`%{"player" => %{"pass_level" => 7}}`). A path the user has no value at
+is left out. `%{}` for a board that names none, or no user.
 
 ---
 

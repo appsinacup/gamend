@@ -2241,6 +2241,26 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    A password forgotten, for a game client (`POST /api/v1/password/reset`):
+    the account at `email` is emailed six digits (`ConfirmationMailer` with
+    `reset: true`) that `reset_password_by_code/3` takes with a new password.
+    Always `:ok`, whether or not the address has an account, so it tells no
+    one which addresses are registered; at most one email per account per
+    minute goes out. Only the newest code works, as a confirmation's.
+    
+  """
+  @spec request_password_reset(String.t(), (String.t() -> String.t()), module()) :: :ok
+  def request_password_reset(_email, _url_fun, _notifier \\ nil) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.Accounts.request_password_reset/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Whether new accounts require manual admin activation before they can log in.
     
   """
@@ -2273,6 +2293,28 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.resend_confirmation/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The code `request_password_reset/3` sent, and the account's new password:
+    set, the account confirmed if it was not, and every earlier token of it
+    revoked, as `confirm_user_by_code/3` does and with its answers but
+    `:already_confirmed`, which a reset never is.
+    
+  """
+  @spec reset_password_by_code(String.t(), String.t(), String.t()) ::
+          {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+  def reset_password_by_code(_email, _code, _password) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
+
+      _ ->
+        raise "Gamend.Accounts.reset_password_by_code/3 is a stub - only available at runtime on Gamend"
     end
   end
 

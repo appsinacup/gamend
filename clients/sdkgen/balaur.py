@@ -15,7 +15,7 @@ hand-written `clients/balaur_template/`, copied over the top.
 
 An operation that answers a session the template opens is not emitted:
 `client::login_device`, `login_email`, `login_google`, `login_apple`,
-`login_steam`, `confirm_registration` and the refresh inside `core::rest` are
+`login_steam`, `confirm_registration`, `reset_password` and the refresh inside `core::rest` are
 the one way to sign in, and each keeps the session the calls after it carry.
 `oauth_session_status` stays: `auth::sign_in` polls it for a provider's page.
 """
@@ -43,7 +43,7 @@ TAKEN = {
 # `oauth_api_callback` is `login_steam`: a provider's code is bound to the
 # server's own redirect, which redeems it, so a Steam ticket is all a game holds.
 SIGN_IN = {
-    "login", "device_login", "refresh_token", "confirm_registration",
+    "login", "device_login", "refresh_token", "confirm_registration", "reset_password",
     "oauth_google_id_token", "oauth_callback_api_apple_ios", "oauth_api_callback",
 }
 

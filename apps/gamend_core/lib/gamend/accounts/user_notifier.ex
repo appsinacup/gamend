@@ -201,6 +201,28 @@ defmodule Gamend.Accounts.UserNotifier do
     """)
   end
 
+  @doc """
+  Deliver the six digits a game asks for to set a new password: a password
+  forgotten, on a client with no page to open a link in.
+  """
+  def deliver_reset_code(user, code) do
+    deliver(user.email, "Your code to set a new password", """
+
+    ==============================
+
+    Hi #{user.email},
+
+    Enter this code in the game, where you also choose your new password:
+
+    #{code}
+
+    If you didn't ask for a new password, please ignore this: your password
+    stays as it is.
+
+    ==============================
+    """)
+  end
+
   defp code_instructions(nil), do: ""
 
   defp code_instructions(code) do

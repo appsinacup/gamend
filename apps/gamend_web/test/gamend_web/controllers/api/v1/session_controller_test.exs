@@ -561,6 +561,69 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
     end
   end
 
+  describe "POST /api/v1/password/reset" do
+    # Sends the queued reset email; answers its six digits.
+    defp reset_code(email) do
+      assert %{success: _} = Oban.drain_queue(queue: :mailers)
+      assert_received {:email, %Swoosh.Email{to: [{_, ^email}], text_body: body}}
+      [_, code] = Regex.run(~r/^\s*(\d{6})\s*$/m, body)
+      code
+    end
+
+    defp reset(email, code, password) do
+      post(build_conn(), "/api/v1/password/reset/confirm", %{
+        email: email,
+        code: code,
+        password: password
+      })
+    end
+
+    test "a forgotten password: the code emailed sets a new one and signs in", %{user: user} do
+      asked = post(build_conn(), "/api/v1/password/reset", %{email: user.email})
+      assert json_response(asked, 200) == %{"ok" => true}
+      code = reset_code(user.email)
+
+      assert %{"data" => %{"access_token" => _, "user_id" => user_id}} =
+               json_response(reset(user.email, code, "a brand new password"), 200)
+
+      assert user_id == user.id
+
+      login =
+        post(build_conn(), "/api/v1/login", %{email: user.email, password: "a brand new password"})
+
+      assert json_response(login, 200)["data"]["user_id"] == user.id
+
+      # Spent.
+      assert json_response(reset(user.email, code, "another new password"), 401)["error"] ==
+               "invalid_code"
+    end
+
+    test "answers the same for an address with no account, and sends nothing" do
+      asked = post(build_conn(), "/api/v1/password/reset", %{email: "nobody@example.com"})
+
+      assert json_response(asked, 200) == %{"ok" => true}
+      refute_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
+    end
+
+    test "a wrong code is 401 invalid_code, and the password stays", %{user: user} do
+      assert json_response(
+               post(build_conn(), "/api/v1/password/reset", %{email: user.email}),
+               200
+             )
+
+      code = reset_code(user.email)
+      wrong = if code == "123456", do: "654321", else: "123456"
+
+      assert json_response(reset(user.email, wrong, "a brand new password"), 401)["error"] ==
+               "invalid_code"
+
+      login =
+        post(build_conn(), "/api/v1/login", %{email: user.email, password: "a brand new password"})
+
+      assert json_response(login, 401)
+    end
+  end
+
   describe "DELETE /api/v1/logout" do
     test "returns 200 with empty object", %{conn: conn} do
       conn = delete(conn, "/api/v1/logout")

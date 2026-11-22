@@ -201,6 +201,18 @@ pub async fn confirm_registration(email: str, code: str, password: str) -> any {
     reply
 }
 
+/// A password forgotten: set a new one with the six-digit code
+/// `authentication::request_password_reset` emailed, and open the session,
+/// answered as `confirm_registration` is. A refusal's `error` says why:
+/// `invalid_code` (wrong, spent or expired), `account_locked` (too many
+/// wrong codes; the code is void, so ask for a new one), or
+/// `validation_failed` (the password).
+pub async fn reset_password(email: str, code: str, password: str) -> any {
+    let body: any = { core::EMAIL: email, CODE: code, PASSWORD: password };
+    let reply = await signed("/api/v1/password/reset/confirm", body, email);
+    reply
+}
+
 /// Open the realtime socket, on a node of its own under `node`, and answer
 /// the id the other socket calls take. `task::wait` on it resumes with the
 /// `open` event once the session's own `user:<id>` topic is joined, so hooks

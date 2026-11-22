@@ -61,6 +61,14 @@ newest works; it answers `{"ok": true}` whatever the address, and sends at
 most one email per account a minute. Codes and links last
 `GAMEND_AUTH_CONFIRM_EMAIL_DAYS`.
 
+A password forgotten, in a game: `POST /api/v1/password/reset` (`email`)
+emails six digits, and `POST /api/v1/password/reset/confirm` (`email`,
+`code`, `password`) sets the new password and answers a session, as login
+does. The first answers `{"ok": true}` whatever the address and sends at
+most one email per account a minute; the second answers as
+`register/confirm` does, but never `409`, and confirms an account that was
+not. It shares the code, its lockout and its lifetime with confirmation.
+
 A taken email or username is `409`, and a plugin that refuses the sign-up is
 `403 registration_refused`. The first account on a server is the admin. The
 browser form confirms it as it is created and signs it in, since a fresh

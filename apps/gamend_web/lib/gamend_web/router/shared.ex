@@ -425,6 +425,7 @@ defmodule GamendWeb.Router.Shared do
         get "/health", HealthController, :index
         get "/time", TimeController, :show
         post "/register/resend", SessionController, :resend_confirmation
+        post "/password/reset", SessionController, :request_password_reset
         delete "/logout", SessionController, :delete
         post "/payments/webhooks/stripe", PaymentWebhookController, :stripe
         post "/payments/webhooks/google", PaymentWebhookController, :google
@@ -437,6 +438,7 @@ defmodule GamendWeb.Router.Shared do
         post "/login", SessionController, :create
         post "/register", SessionController, :register
         post "/register/confirm", SessionController, :confirm_registration
+        post "/password/reset/confirm", SessionController, :reset_password
         post "/login/device", SessionController, :create_device
         post "/refresh", SessionController, :refresh
       end

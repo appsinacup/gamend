@@ -306,6 +306,116 @@ defmodule GamendWeb.Api.V1.SessionController do
     reply_error(conn, :bad_request, "missing_param", "email is required")
   end
 
+  operation(:request_password_reset,
+    operation_id: "request_password_reset",
+    summary: "Email a code to set a new password",
+    description:
+      "A password forgotten, in a game: queue an email with six digits that " <>
+        "`reset_password` takes with the new password. Only the newest code works. Always " <>
+        "answers `{\"ok\": true}`, whether or not the address has an account, so it tells " <>
+        "no one which addresses are registered; at most one email per account per minute " <>
+        "goes out.",
+    request_body: {
+      "Address",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          email: %Schema{type: :string, format: :email, description: "The account's address"}
+        },
+        required: [:email],
+        example: %{email: "user@example.com"}
+      }
+    },
+    responses: [
+      ok: {"Queued, if there was anything to send", "application/json", OkResponse},
+      bad_request: Schemas.error("Email missing (missing_param)")
+    ]
+  )
+
+  def request_password_reset(conn, %{"email" => email}) when is_binary(email) do
+    :ok = Accounts.request_password_reset(email, &confirm_url/1, notifier())
+    reply_ok(conn)
+  end
+
+  def request_password_reset(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email is required")
+  end
+
+  operation(:reset_password,
+    operation_id: "reset_password",
+    summary: "Set a new password with the emailed code",
+    description:
+      "The six digits `request_password_reset` emailed and the account's new password: " <>
+        "set, and signed in, answering a session as `login` does. An account not yet " <>
+        "confirmed is confirmed by it, since the code proves the inbox. Spaces and a dash " <>
+        "in the code are ignored. A wrong, spent or expired code and an address with no " <>
+        "account both answer `401 invalid_code`; wrong codes count toward the address's " <>
+        "sign-in lockout, shared with passwords, and the one that locks it answers " <>
+        "`429 account_locked` and voids the code. The password is checked before the code, " <>
+        "so a refused one (`422`) costs no attempt. Every earlier token of the account is " <>
+        "revoked.",
+    request_body: {
+      "Reset code",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          email: %Schema{type: :string, format: :email, description: "The account's address"},
+          code: %Schema{type: :string, description: "The six digits from the email"},
+          password: %Schema{
+            type: :string,
+            format: :password,
+            description: "The account's password from now on"
+          }
+        },
+        required: [:email, :code, :password],
+        example: %{email: "user@example.com", code: "042137", password: "securepassword123"}
+      }
+    },
+    responses: [
+      ok: {"Password set and signed in", "application/json", SessionResponse},
+      bad_request: Schemas.error("Email, code or password missing (missing_param)"),
+      unauthorized: Schemas.error("Wrong, spent or expired code (invalid_code)"),
+      forbidden: Schemas.error("The account awaits activation or is scheduled for deletion"),
+      unprocessable_entity: Schemas.error("The password is refused"),
+      too_many_requests:
+        Schemas.error("Too many wrong codes or passwords for this address (account_locked)")
+    ]
+  )
+
+  def reset_password(conn, %{"email" => email, "code" => code, "password" => password})
+      when is_binary(email) and is_binary(code) and is_binary(password) do
+    case Accounts.reset_password_by_code(email, code, password) do
+      {:ok, {user, expired_tokens}} ->
+        GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
+
+        case Tokens.refusal(user) do
+          nil -> issue_tokens(conn, user)
+          {status, error_code, message} -> reply_error(conn, status, error_code, message)
+        end
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        unprocessable(conn, changeset)
+
+      {:error, {:locked, seconds}} ->
+        conn
+        |> put_resp_header("retry-after", Integer.to_string(seconds))
+        |> reply_error(
+          :too_many_requests,
+          "account_locked",
+          "Too many wrong attempts. Try again later with a new code."
+        )
+
+      {:error, :invalid_code} ->
+        reply_error(conn, :unauthorized, "invalid_code", "Wrong or expired code")
+    end
+  end
+
+  def reset_password(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email, code and password are required")
+  end
+
   defp confirm_url(token), do: url(~p"/users/confirm/#{token}")
 
   # The notifier the browser sign-up reads, so both paths send one email.

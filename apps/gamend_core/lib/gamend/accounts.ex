@@ -129,6 +129,13 @@ defmodule Gamend.Accounts do
   @doc delegate_to: {Registration, :confirm_user_by_code, 3}
   defdelegate confirm_user_by_code(email, code, password), to: Registration
 
+  @doc delegate_to: {Registration, :request_password_reset, 3}
+  defdelegate request_password_reset(email, url_fun, notifier \\ Gamend.Accounts.UserNotifier),
+    to: Registration
+
+  @doc delegate_to: {Registration, :reset_password_by_code, 3}
+  defdelegate reset_password_by_code(email, code, password), to: Registration
+
   @doc delegate_to: {Registration, :resend_confirmation, 3}
   defdelegate resend_confirmation(
                 email,

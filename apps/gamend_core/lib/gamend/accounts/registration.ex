@@ -546,12 +546,58 @@ defmodule Gamend.Accounts.Registration do
     end
   end
 
-  defp redeem_code(email, code, attrs) do
+  @doc """
+  A password forgotten, for a game client (`POST /api/v1/password/reset`):
+  the account at `email` is emailed six digits (`ConfirmationMailer` with
+  `reset: true`) that `reset_password_by_code/3` takes with a new password.
+  Always `:ok`, whether or not the address has an account, so it tells no
+  one which addresses are registered; at most one email per account per
+  minute goes out. Only the newest code works, as a confirmation's.
+  """
+  @spec request_password_reset(String.t(), (String.t() -> String.t()), module()) :: :ok
+  def request_password_reset(email, url_fun, notifier \\ Gamend.Accounts.UserNotifier)
+      when is_binary(email) and is_function(url_fun, 1) do
+    with %User{email: address} = user when is_binary(address) <- Accounts.get_user_by_email(email) do
+      user
+      |> ConfirmationMailer.new_for(url_fun, notifier,
+        reset: true,
+        unique: [period: 60, keys: [:user_id]]
+      )
+      |> Oban.insert!()
+    end
+
+    :ok
+  end
+
+  @doc """
+  The code `request_password_reset/3` sent, and the account's new password:
+  set, the account confirmed if it was not, and every earlier token of it
+  revoked, as `confirm_user_by_code/3` does and with its answers but
+  `:already_confirmed`, which a reset never is.
+  """
+  @spec reset_password_by_code(String.t(), String.t(), String.t()) ::
+          {:ok, {User.t(), [UserToken.t()]}}
+          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+  def reset_password_by_code(email, code, password)
+      when is_binary(email) and is_binary(code) and is_binary(password) do
+    attrs = %{"password" => password}
+    checked = User.password_changeset(%User{}, attrs, hash_password: false)
+
+    with {:password, true} <- {:password, checked.valid?},
+         :ok <- LoginLockouts.check(email) do
+      redeem_code(email, String.replace(code, ~r/[\s-]/u, ""), attrs, :reset)
+    else
+      {:password, false} -> {:error, %{checked | action: :validate}}
+      {:locked, seconds} -> {:error, {:locked, seconds}}
+    end
+  end
+
+  defp redeem_code(email, code, attrs, purpose \\ :confirm) do
     with %User{} = user <- user_by_email_uncached(email),
          true <- Repo.exists?(UserToken.verify_confirm_code_query(user, code)) do
       LoginLockouts.clear(email)
 
-      if user.confirmed_at && user.hashed_password do
+      if purpose == :confirm && user.confirmed_at && user.hashed_password do
         Repo.delete_all(
           where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
         )

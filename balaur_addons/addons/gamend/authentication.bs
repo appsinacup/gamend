@@ -122,6 +122,16 @@ pub async fn register(params: any) -> any {
     reply
 }
 
+/// Email a code to set a new password
+/// `POST /api/v1/password/reset`
+pub async fn request_password_reset(params: any) -> any {
+    if !core::given(params, "email") {
+        return core::missing("gamend::authentication::request_password_reset", "email");
+    }
+    let reply = await core::rest("POST", "/api/v1/password/reset", params);
+    reply
+}
+
 /// Send the confirmation email again
 /// `POST /api/v1/register/resend`
 pub async fn resend_confirmation(params: any) -> any {

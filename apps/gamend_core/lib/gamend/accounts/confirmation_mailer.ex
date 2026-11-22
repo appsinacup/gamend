@@ -24,11 +24,14 @@ defmodule Gamend.Accounts.ConfirmationMailer do
   # router is at hand; the job swaps in the real one. URL-safe, so a verified
   # route passes it through unencoded.
   @token "__gamend_confirm_token__"
+  @reset "reset"
 
   @doc """
   The job for `user`. `confirmation_url_fun` maps an encoded token to its URL
   and runs now, with a placeholder; `notifier` delivers. `opts` go to
-  `Oban.Worker.new/2` (a resend passes `:unique`).
+  `Oban.Worker.new/2` (a resend passes `:unique`), but for `reset: true`:
+  the code to set a new password, for an account confirmed or not
+  (`Registration.request_password_reset/3`).
   """
   @spec new_for(User.t(), (String.t() -> String.t()), module(), keyword()) :: Ecto.Changeset.t()
   def new_for(%User{id: id}, confirmation_url_fun, notifier \\ UserNotifier, opts \\ [])
@@ -39,13 +42,30 @@ defmodule Gamend.Accounts.ConfirmationMailer do
       raise ArgumentError, "confirmation URL #{inspect(url)} dropped its token"
     end
 
-    new(%{"user_id" => id, "url" => url, "notifier" => Atom.to_string(notifier)}, opts)
+    {reset, opts} = Keyword.pop(opts, :reset, false)
+    args = %{"user_id" => id, "url" => url, "notifier" => Atom.to_string(notifier)}
+    new(if(reset, do: Map.put(args, @reset, true), else: args), opts)
   end
 
   @impl Oban.Worker
   def timeout(_job), do: :timer.seconds(60)
 
   @impl Oban.Worker
+  def perform(%Oban.Job{args: %{@reset => true, "user_id" => user_id, "notifier" => notifier}}) do
+    case Repo.get(User, user_id) do
+      %User{email: email} = user when is_binary(email) ->
+        {_encoded, code} = Registration.insert_confirmation_tokens(user)
+
+        case String.to_existing_atom(notifier).deliver_reset_code(user, code) do
+          {:ok, _} -> :ok
+          {:error, reason} -> {:error, reason}
+        end
+
+      _gone ->
+        :ok
+    end
+  end
+
   def perform(%Oban.Job{args: %{"user_id" => user_id, "url" => url, "notifier" => notifier}}) do
     # Straight from the table, not the user cache: a stale cached copy could
     # still read unconfirmed.

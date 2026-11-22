@@ -512,7 +512,7 @@ func _schedule_token_refresh() -> void:
 func _verify_login_result(method_name: String, data):
 	# Not "register": registering answers the new account, never a session.
 	# Its code does ("confirm_registration").
-	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token", "confirm_registration"]:
+	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token", "confirm_registration", "reset_password"]:
 		# Every answer is {data: ...}; a polled OAuth sign-in carries its tokens
 		# one level further in, under data.session (null until it completes).
 		var inner = data.bzz_normalize().get("data")
@@ -1171,6 +1171,26 @@ func authenticate_resend_confirmation(email: String) -> GamendResult:
 	var resend_request := GamendResendConfirmationRequest.new()
 	resend_request.email = email
 	return await _call_api(AuthenticationApi.new(_config), "resend_confirmation", [resend_request])
+
+## A password forgotten: email six digits to the account at `email`, which
+## `authenticate_reset_password` takes with the new password. Succeeds whether
+## or not the address has an account.
+func authenticate_request_password_reset(email: String) -> GamendResult:
+	var reset_request := GamendRequestPasswordResetRequest.new()
+	reset_request.email = email
+	return await _call_api(AuthenticationApi.new(_config), "request_password_reset", [reset_request])
+
+## Set a new password with the code `authenticate_request_password_reset`
+## emailed, and sign in: the session is kept, as a login's. Errors:
+## `invalid_code` (wrong, spent or expired), `account_locked` (too many wrong
+## codes; the code is void, ask for a new one), `validation_failed` (the
+## password is refused; that costs no attempt).
+func authenticate_reset_password(email: String, code: String, password: String) -> GamendResult:
+	var reset_request := GamendResetPasswordRequest.new()
+	reset_request.email = email
+	reset_request.code = code
+	reset_request.password = password
+	return await _call_api(AuthenticationApi.new(_config), "reset_password", [reset_request])
 
 ### FRIENDS
 

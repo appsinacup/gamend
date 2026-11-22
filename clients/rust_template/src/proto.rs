@@ -516,7 +516,12 @@ const MAPPINGS: &[(&str, &str, &str, bool)] = &[
     ),
     ("user", "match_found", "MatchmakingFound", true),
     ("user", "ticket_queued", "MatchmakingTicketQueued", true),
-    ("user", "ticket_cancelled", "MatchmakingTicketCancelled", true),
+    (
+        "user",
+        "ticket_cancelled",
+        "MatchmakingTicketCancelled",
+        true,
+    ),
     ("*", "result_started", "PlayResult", true),
     ("*", "result_ended", "PlayResult", true),
     ("*", "result_event", "PlayResultEventPushed", true),

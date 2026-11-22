@@ -103,7 +103,9 @@ module.exports = plugin(
        names its hover fill with `hover:bg-*`. A card with a button of its own
        beside it (the X on a recent card) sits in a `group/card` parent, so
        the card stays up while the X is under the pointer. Hover only where a
-       pointer hovers, the rise only where motion is welcome. */
+       pointer hovers, the rise only where motion is welcome. A `nudge` card
+       never rises (2026-11-22): it moves already, and its rise under the
+       running ring read as the cards around it jumping. */
     addUtilities({
       ".card-hover": {
         "transition-property": "color, background-color, border-color, box-shadow, translate",
@@ -115,7 +117,7 @@ module.exports = plugin(
           }
         },
         "@media (hover: hover) and (prefers-reduced-motion: no-preference)": {
-          "&:hover, :where(.group\\/card):hover > &": {
+          "&:not(.nudge):hover, :where(.group\\/card):hover > &:not(.nudge)": {
             "@apply -translate-y-0.5": {}
           }
         },

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1502">
+    <meta name="project" content="gamend_core v1.1.1504">
 
 
-    <title>Gamend.Content — gamend_core v1.1.1502</title>
+    <title>Gamend.Content — gamend_core v1.1.1504</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-CBB0FCB9.js"></script>
+    <script defer src="dist/sidebar_items-A621412C.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1502
+          v1.1.1504
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Content</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1502)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1504)</small>
 
     </h1>
 
@@ -189,6 +189,18 @@ Either may be <code class="inline">nil</code>.</p></div>
 
         <div class="summary-synopsis"><p>Groups blog posts by <code class="inline">{year, month}</code> (newest first).
 Returns a list of <code class="inline">{year, [{month, [posts]}]}</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#blog_render_opts/0" data-no-tooltip="" translate="no">blog_render_opts()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How a post's markdown is rendered, which is also how its pictures resolve
+(<a href="Gamend.Content.Markdown.html#image_src/2"><code class="inline">Gamend.Content.Markdown.image_src/2</code></a>): one set of options, so the card's
+URL is the body's.</p></div>
 
     </div>
 
@@ -462,7 +474,7 @@ not configured or the file doesn't exist.</p></div>
       <h1 class="signature" translate="no">apply_changelog_pills(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1226" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1230" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -526,7 +538,7 @@ is attempted, and for any other kind of file.</p>
       <h1 class="signature" translate="no">blog_neighbours(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L780" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L784" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -555,7 +567,7 @@ Either may be <code class="inline">nil</code>.</p>
       <h1 class="signature" translate="no">blog_post_html(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L797" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L801" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -583,7 +595,7 @@ Either may be <code class="inline">nil</code>.</p>
       <h1 class="signature" translate="no">blog_posts_grouped()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L827" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L831" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -600,6 +612,36 @@ Either may be <code class="inline">nil</code>.</p>
 
 <p>Groups blog posts by <code class="inline">{year, month}</code> (newest first).
 Returns a list of <code class="inline">{year, [{month, [posts]}]}</code>.</p>
+  </section>
+</section>
+<section class="detail" id="blog_render_opts/0">
+
+  <div class="detail-header">
+    <a href="#blog_render_opts/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">blog_render_opts()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L738" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> blog_render_opts() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()</pre>
+
+      </div>
+
+<p>How a post's markdown is rendered, which is also how its pictures resolve
+(<a href="Gamend.Content.Markdown.html#image_src/2"><code class="inline">Gamend.Content.Markdown.image_src/2</code></a>): one set of options, so the card's
+URL is the body's.</p>
   </section>
 </section>
 <section class="detail" id="changelog_html/0">
@@ -907,7 +949,7 @@ lists as lists.</p>
       <h1 class="signature" translate="no">get_blog_post(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L771" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L775" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1201,7 +1243,7 @@ than on every request. An empty result is not cached.</p>
       <h1 class="signature" translate="no">pill(class_suffix, label)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1250" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1254" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1275,7 +1317,7 @@ a picture on the page itself (in the body, or a post's cover) and
       <h1 class="signature" translate="no">relabel_pills(html, tags)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1268" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1272" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1368,9 +1410,9 @@ not configured or the file doesn't exist.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1502">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1504">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1502">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1504">Hex Preview</a>
 
             </span>
 

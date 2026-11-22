@@ -70,6 +70,16 @@ Renders a blog post's markdown to HTML, or `nil`.
 Groups blog posts by `{year, month}` (newest first).
 Returns a list of `{year, [{month, [posts]}]}`.
 
+# `blog_render_opts`
+
+```elixir
+@spec blog_render_opts() :: keyword()
+```
+
+How a post's markdown is rendered, which is also how its pictures resolve
+(`Gamend.Content.Markdown.image_src/2`): one set of options, so the card's
+URL is the body's.
+
 # `changelog_html`
 
 ```elixir

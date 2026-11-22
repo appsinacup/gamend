@@ -350,6 +350,7 @@ Gamend.UrlScheme.md
 Gamend.md
 Mix.Tasks.Demo.Seed.md
 Mix.Tasks.Gamend.Api.Lint.md
+Mix.Tasks.Gamend.Blog.Discussions.md
 Mix.Tasks.Gamend.Content.Extract.md
 Mix.Tasks.Gamend.Content.MigrateMetadata.md
 Mix.Tasks.Gamend.Gen.Dockerfile.md

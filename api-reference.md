@@ -1,4 +1,4 @@
-# gamend_core v1.1.1502 - API Reference
+# gamend_core v1.1.1504 - API Reference
 
 ## Modules
 
@@ -690,6 +690,8 @@ and booleans keep `null`, where absence is semantic.
 - [mix demo.seed](Mix.Tasks.Demo.Seed.md): Fills the database with demo data. See `Gamend.DemoSeed` for the sets and
 options; a release runs the same code as `gamend demo.seed`.
 - [mix gamend.api.lint](Mix.Tasks.Gamend.Api.Lint.md): Enforces the naming and serialization conventions mechanically.
+- [mix gamend.blog.discussions](Mix.Tasks.Gamend.Blog.Discussions.md): Mirrors the blog into a repository's GitHub Discussions, one discussion per
+post, through the `gh` CLI and its login.
 - [mix gamend.content.extract](Mix.Tasks.Gamend.Content.Extract.md): Writes `content.pot` from the titles and descriptions stored on quests,
 leaderboards and tournaments, and the names a quest gives its item rewards
 (`metadata["reward_names"]`).

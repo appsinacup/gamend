@@ -493,25 +493,32 @@ defmodule GamendWeb.ReportLive do
             <div :if={@kind.max_attachments() > 0} class="space-y-2">
               <p class="font-semibold">{gettext("Screenshot (optional)")}</p>
               <.live_file_input upload={@uploads.attachments} class="hidden" />
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                class="hidden"
-                id={"report-pick-#{@form_key}"}
-                data-report-pick
-              />
-              <label
-                for={"report-pick-#{@form_key}"}
-                data-report-drop
-                class="flex cursor-pointer flex-col items-center gap-1 rounded-box border border-dashed border-base-content/30 p-5 text-center text-sm text-muted hover:border-base-content/60"
-              >
-                <.icon name="hero-photo-solid" class="size-6" />
-                <span>{gettext("Choose, drop or paste an image")}</span>
-                <span class="text-xs">
-                  {ngettext("Up to %{count} image", "Up to %{count} images", @kind.max_attachments())}
-                </span>
-              </label>
+              <%!-- A plain input, not the upload's drop target: the hook
+                    shrinks each image before it is uploaded. --%>
+              <.file_drop class="rounded-box">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  class="peer sr-only"
+                  id={"report-pick-#{@form_key}"}
+                  data-report-pick
+                />
+                <label
+                  for={"report-pick-#{@form_key}"}
+                  class="flex cursor-pointer flex-col items-center gap-1 rounded-box border border-dashed border-base-content/30 p-5 text-center text-sm text-muted hover:border-base-content/60 peer-focus-visible:outline-2 peer-focus-visible:outline-primary"
+                >
+                  <.icon name="hero-photo-solid" class="size-6" />
+                  <span>{gettext("Choose, drop or paste an image")}</span>
+                  <span class="text-xs">
+                    {ngettext(
+                      "Up to %{count} image",
+                      "Up to %{count} images",
+                      @kind.max_attachments()
+                    )}
+                  </span>
+                </label>
+              </.file_drop>
               <div :if={@uploads.attachments.entries != []} class="flex flex-wrap gap-3">
                 <div :for={entry <- @uploads.attachments.entries} class="relative">
                   <.live_img_preview entry={entry} class="h-24 rounded-box border border-base-300" />

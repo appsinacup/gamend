@@ -40,6 +40,7 @@ import {startUnsavedChanges} from "./unsaved_changes"
 import {startAnonymousSession} from "./anonymous_session"
 import {startLiveNav, startPressPrefetch} from "./live_nav"
 import {startBackLink} from "./back_link"
+import {startFileDrop} from "./file_drop"
 import {ReportForm, ReportPagePath, startLastPage} from "./report_form"
 import topbar from "../vendor/topbar"
 
@@ -605,6 +606,7 @@ nativeScrollRestoreOnReload()
 // Back returns to the page the reader came from, when that was a click
 // inside the site; else its link, the page's trail (`back_link.js`).
 startBackLink()
+startFileDrop()
 
 loadExtraHooks().then((extraHooks) => {
   const liveSocket = createLiveSocket(extraHooks)

@@ -89,9 +89,9 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
                 {gettext("Link an email or a sign-in provider to set a custom avatar.")}
               </p>
               <div :if={@can_upload_avatar} class="min-w-0 space-y-2">
-                <.live_file_input
+                <.file_drop
                   upload={@uploads.avatar}
-                  class="file-input file-input-sm file-input-bordered w-full max-w-xs"
+                  input_class="file-input file-input-sm file-input-bordered w-full max-w-xs"
                 />
                 <%!-- The native file input clears its label on re-render, so
                       the file shows here. --%>

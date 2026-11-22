@@ -353,6 +353,26 @@
   white-space: normal;
 }
 
+/* ─── A file field's drop zone ───
+   `FileDropComponents.file_drop/1` goes around every file field: a file
+   dragged over it rings it in the primary colour, so the reader sees where
+   it lands. LiveView marks its own drop targets `phx-drop-target-active`,
+   `file_drop.js` a plain input's zone `data-file-drop-active`. At rest the
+   zone draws nothing: the field inside is the control. */
+.file-drop {
+  border-radius: var(--radius-field);
+  outline: 2px dashed transparent;
+  outline-offset: 3px;
+  transition: outline-color 120ms ease, background-color 120ms ease;
+}
+.file-drop:is(.phx-drop-target-active, [data-file-drop-active]) {
+  outline-color: var(--color-primary);
+  background-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
+}
+.file-drop:is(.phx-drop-target-active, [data-file-drop-active]) .file-input {
+  border-color: var(--color-primary);
+}
+
 /* ─── A relative time ───
    "3 days ago" holds its exact moment: on hover as its title, and a tap swaps
    it in (`local_time.js`). Inside a link or a control the tap is that

@@ -175,6 +175,8 @@ defmodule GamendWeb do
       import GamendWeb.IconPickerComponents
       import GamendWeb.MarkdownComponents
       import GamendWeb.RewardComponents
+      # A file field that takes a dropped file as well as a picked one
+      import GamendWeb.FileDropComponents
       # The admin console's heading, icon and card
       import GamendWeb.AdminComponents
       # Dynamic SVG loader component (runtime hero icons)

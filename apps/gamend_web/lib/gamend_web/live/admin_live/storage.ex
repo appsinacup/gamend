@@ -213,9 +213,9 @@ defmodule GamendWeb.AdminLive.Storage do
               phx-debounce="200"
               class="input input-sm input-bordered w-96 font-mono"
             />
-            <.live_file_input
+            <.file_drop
               upload={@uploads.object}
-              class="file-input file-input-sm file-input-bordered"
+              input_class="file-input file-input-sm file-input-bordered"
             />
             <button
               type="submit"

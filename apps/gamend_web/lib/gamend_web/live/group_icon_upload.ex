@@ -208,9 +208,9 @@ defmodule GamendWeb.GroupIconUpload do
         />
       <% end %>
       <div class="min-w-0 space-y-2">
-        <.live_file_input
+        <.file_drop
           upload={@uploads.group_icon}
-          class="file-input file-input-sm file-input-bordered w-full max-w-xs"
+          input_class="file-input file-input-sm file-input-bordered w-full max-w-xs"
         />
         <div :for={entry <- @uploads.group_icon.entries} class="flex items-center gap-2 text-xs">
           <span class="truncate max-w-[10rem]">{entry.client_name}</span>

@@ -1,10 +1,11 @@
 // The browser half of `/report` (`GamendWeb.ReportLive`).
 //
-// `ReportForm` sends the screen size, and takes images from the file picker, a
-// drop or a paste, shrinks each one and hands it to the LiveView upload. The
-// shrink is not only for size: drawing a photo onto a canvas and writing it out
-// again leaves its EXIF behind, location included. The server checks the bytes
-// either way, so a browser that cannot draw an image sends it as it is.
+// `ReportForm` sends the screen size, and takes images from the file picker
+// (a drop on it is a pick: `file_drop.js`) or a paste, shrinks each one and
+// hands it to the LiveView upload. The shrink is not only for size: drawing
+// a photo onto a canvas and writing it out again leaves its EXIF behind,
+// location included. The server checks the bytes either way, so a browser
+// that cannot draw an image sends it as it is.
 //
 // `ReportPagePath` fills the page field with the full URL of the page the
 // reader came from, which `startLastPage` keeps in sessionStorage as they move
@@ -69,20 +70,12 @@ export const ReportForm = {
       screen: `${window.screen.width}×${window.screen.height}@${window.devicePixelRatio || 1}x`,
     })
 
-    // Delegated: the picker and the drop zone are re-rendered with the form.
+    // Delegated: the picker is re-rendered with the form.
     this.onChange = (event) => {
       if (!event.target.matches || !event.target.matches("[data-report-pick]")) return
       const files = event.target.files
       this.add(files)
       event.target.value = ""
-    }
-    this.onDragOver = (event) => {
-      if (event.target.closest && event.target.closest("[data-report-drop]")) event.preventDefault()
-    }
-    this.onDrop = (event) => {
-      if (!event.target.closest || !event.target.closest("[data-report-drop]")) return
-      event.preventDefault()
-      this.add(event.dataTransfer && event.dataTransfer.files)
     }
     this.onPaste = (event) => {
       const items = Array.from((event.clipboardData && event.clipboardData.items) || [])
@@ -95,8 +88,6 @@ export const ReportForm = {
     }
 
     this.el.addEventListener("change", this.onChange)
-    this.el.addEventListener("dragover", this.onDragOver)
-    this.el.addEventListener("drop", this.onDrop)
     window.addEventListener("paste", this.onPaste)
   },
 

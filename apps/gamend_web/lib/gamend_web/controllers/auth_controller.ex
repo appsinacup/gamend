@@ -885,7 +885,8 @@ defmodule GamendWeb.AuthController do
       ok: {"Signed in", "application/json", Schemas.SessionResponse},
       bad_request: Schemas.error("Missing code, or Apple refused it"),
       forbidden: Schemas.error("Account awaiting activation, or scheduled for deletion"),
-      unprocessable_entity: Schemas.error("The account could not be created")
+      unprocessable_entity: Schemas.error("The account could not be created"),
+      service_unavailable: Schemas.error("Apple sign-in not configured")
     ]
   )
 

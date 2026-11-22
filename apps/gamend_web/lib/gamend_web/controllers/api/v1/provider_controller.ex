@@ -141,7 +141,8 @@ defmodule GamendWeb.Api.V1.ProviderController do
       unauthorized: Schemas.error("Not authenticated"),
       not_found: Schemas.error("Apple sign-in disabled"),
       conflict: Schemas.error("Linked to another account"),
-      unprocessable_entity: Schemas.error("Validation failed")
+      unprocessable_entity: Schemas.error("Validation failed"),
+      service_unavailable: Schemas.error("Apple sign-in not configured")
     ]
   )
 

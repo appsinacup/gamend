@@ -240,6 +240,15 @@ defmodule GamendWeb.Auth.OAuthExchange do
     )
   end
 
+  def reply_refused(conn, :missing_apple_client_id) do
+    reply_error(
+      conn,
+      :service_unavailable,
+      "apple_not_configured",
+      "Missing GAMEND_OAUTH_APPLE_CLIENT_ID (web) or GAMEND_OAUTH_APPLE_IOS_CLIENT_ID (iOS)"
+    )
+  end
+
   def reply_refused(conn, reason) when reason in [:invalid_audience, :invalid_issuer, :expired],
     do: reply_error(conn, :bad_request, "invalid_token", Atom.to_string(reason))
 
@@ -420,16 +429,22 @@ defmodule GamendWeb.Auth.OAuthExchange do
     )
   end
 
+  # No client id for this kind of client is the server's gap, not the
+  # request's: answered 503 `apple_not_configured` (`reply_refused/2`).
   defp exchange_provider_code(AuthProvider.apple(), code, client_type)
        when client_type in [:web, :ios] do
-    client_id = if client_type == :ios, do: apple_ios_client_id(), else: apple_web_client_id()
+    case apple_client_id(client_type) do
+      nil ->
+        {:error, :missing_apple_client_id}
 
-    exchanger().exchange_apple_code(
-      code,
-      client_id,
-      apple_client_secret(client_id),
-      redirect_uri(AuthProvider.apple())
-    )
+      client_id ->
+        exchanger().exchange_apple_code(
+          code,
+          client_id,
+          apple_client_secret(client_id),
+          redirect_uri(AuthProvider.apple())
+        )
+    end
   end
 
   defp exchange_provider_code(_provider, _code, _client_type), do: {:error, :unsupported_provider}
@@ -441,13 +456,8 @@ defmodule GamendWeb.Auth.OAuthExchange do
 
   defp setting(key), do: Gamend.Settings.get(Gamend.OAuth.Providers, key)
 
-  defp apple_web_client_id do
-    setting(:apple_client_id) || raise "GAMEND_OAUTH_APPLE_CLIENT_ID is not set"
-  end
-
-  defp apple_ios_client_id do
-    setting(:apple_ios_client_id) || raise "GAMEND_OAUTH_APPLE_IOS_CLIENT_ID is not set"
-  end
+  defp apple_client_id(:ios), do: setting(:apple_ios_client_id)
+  defp apple_client_id(:web), do: setting(:apple_client_id)
 
   # Without the log this surfaces only as Apple's opaque `invalid_client`: a
   # nil secret and a genuinely rejected one look identical from the outside.

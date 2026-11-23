@@ -21,6 +21,7 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
   @core_tabs [
     %{id: "overview", label: "Overview", path: "/admin/analytics"},
     %{id: "features", label: "Features", path: "/admin/analytics/features"},
+    %{id: "time", label: "Time", path: "/admin/analytics/time"},
     %{id: "explore", label: "Explore", path: "/admin/analytics/explore"},
     %{id: "people", label: "People", path: "/admin/analytics/people"},
     %{id: "counters", label: "Counters", path: "/admin/analytics/counters"},
@@ -158,6 +159,16 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
   @doc "A rate in 0..1 as a percent, `nil` as a dash."
   @spec pct(number() | nil) :: String.t()
   def pct(rate), do: GamendWeb.Charts.format(rate, :percent)
+
+  @doc "`part` of `total` as a rate, nil when there is no total."
+  @spec part_of(number(), number()) :: float() | nil
+  def part_of(_part, 0), do: nil
+  def part_of(part, total), do: part / total
+
+  @doc "`part` of `total` as a bar's width in percent, 0 when there is no total."
+  @spec part_width(number(), number()) :: number()
+  def part_width(_part, 0), do: 0
+  def part_width(part, total), do: Float.round(part / total * 100, 1)
 
   @doc "A count with thousands separators, `nil` as a dash."
   @spec num(number() | nil) :: String.t()

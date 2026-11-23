@@ -102,7 +102,8 @@ defmodule Gamend.Analytics.Catalog do
           activation: %{label: String.t(), events: [String.t()]} | nil,
           funnel: [%{label: String.t(), source: funnel_source()}],
           trial_keys: [String.t()],
-          bands: %{atom() => band()}
+          bands: %{atom() => band()},
+          time: map()
         }
 
   @callback groups() :: [map()]
@@ -120,6 +121,9 @@ defmodule Gamend.Analytics.Catalog do
     d7: {0.05, 0.12},
     d30: {0.02, 0.06}
   }
+
+  @default_idle_seconds 300
+  @default_span_seconds 7_200
 
   @default_funnel [
     %{label: "Accounts made", source: :new_accounts},
@@ -182,6 +186,14 @@ defmodule Gamend.Analytics.Catalog do
     * `trial_keys` — the entitlement keys that are a free trial. Default none.
     * `bands` — per rate (`:stickiness`, `:d1`, `:d7`, `:d30`), `{fair, good}`;
       the host's replace core's one by one.
+    * `time` — how the Time tab reads the rows (`Gamend.Analytics.TimeSpent`):
+      `idle_seconds` (300: a longer gap between two moments is time away),
+      `spans` (`[{first, last}]` event names: the time from the first to the
+      last counts, up to `span_seconds`, 7,200), `results` (the area a
+      play's moments are filed under, its kind the detail; `"plays"`),
+      `dim` (`{field, [event names]}`: those events' area is that field's
+      value), `areas` (`%{raw => area}`: a group or field value filed under
+      another area) and `labels` (`%{area => label}`; else the group's).
   """
   @spec overview() :: overview()
   def overview do
@@ -202,8 +214,38 @@ defmodule Gamend.Analytics.Catalog do
         |> Map.get(:funnel, @default_funnel)
         |> Enum.map(&%{label: to_string(&1.label), source: &1.source}),
       trial_keys: host |> Map.get(:trial_keys, []) |> Enum.map(&to_string/1),
-      bands: Map.merge(@default_bands, Map.get(host, :bands, %{}))
+      bands: Map.merge(@default_bands, Map.get(host, :bands, %{})),
+      time: time(Map.get(host, :time, %{}))
     }
+  end
+
+  # The time-spent settings (`Gamend.Analytics.TimeSpent`) over the
+  # defaults. Event names are written into its SQL, so they are checked.
+  defp time(host) do
+    host = Map.new(host)
+    {dim_key, dim_names} = Map.get(host, :dim, {"", []})
+
+    %{
+      idle_seconds: Map.get(host, :idle_seconds, @default_idle_seconds),
+      span_seconds: Map.get(host, :span_seconds, @default_span_seconds),
+      # literal-ok: the default area a play is filed under, a label as it stands
+      results: to_string(Map.get(host, :results, "plays")),
+      dim: {to_string(dim_key), Enum.map(dim_names, &to_string/1)},
+      spans:
+        host
+        |> Map.get(:spans, [])
+        |> Enum.map(fn {first, last} -> {sql_name!(first), sql_name!(last)} end),
+      areas: Map.new(Map.get(host, :areas, %{}), fn {k, v} -> {to_string(k), to_string(v)} end),
+      labels: Map.new(Map.get(host, :labels, %{}), fn {k, v} -> {to_string(k), to_string(v)} end)
+    }
+  end
+
+  defp sql_name!(name) do
+    name = to_string(name)
+
+    if Regex.match?(~r/^[A-Za-z0-9_.:-]+$/, name),
+      do: name,
+      else: raise(ArgumentError, "analytics time span: not an event name: #{inspect(name)}")
   end
 
   @doc "One name's entry: the declared one, else one derived from the name."

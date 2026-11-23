@@ -55,7 +55,8 @@ defmodule GamendWeb.AdminPagesRenderTest do
     {"/admin/analytics/explore", "Explore"},
     {"/admin/analytics/people", "People"},
     {"/admin/analytics/counters", "Counters"},
-    {"/admin/analytics/economy", "Economy"}
+    {"/admin/analytics/economy", "Economy"},
+    {"/admin/analytics/time", "Time"}
   ]
 
   defp create_admin(_context) do

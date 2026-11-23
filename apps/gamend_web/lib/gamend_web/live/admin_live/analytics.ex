@@ -211,11 +211,11 @@ defmodule GamendWeb.AdminLive.Analytics do
                 <div class="h-2 rounded-full bg-base-200">
                   <div
                     class="h-2 rounded-full bg-primary/80"
-                    style={"width: #{share_width(bucket.users, @active_total)}%"}
+                    style={"width: #{part_width(bucket.users, @active_total)}%"}
                   />
                 </div>
                 <span class="text-right tabular-nums text-muted">
-                  {num(bucket.users)} · {pct(share(bucket.users, @active_total))}
+                  {num(bucket.users)} · {pct(part_of(bucket.users, @active_total))}
                 </span>
               </div>
             </div>
@@ -472,12 +472,6 @@ defmodule GamendWeb.AdminLive.Analytics do
     # time-ok: a UTC calendar day, named as one in the note
     ", from #{Date.to_iso8601(day)} (the first day whose visits all count)"
   end
-
-  defp share(_part, 0), do: nil
-  defp share(part, total), do: part / total
-
-  defp share_width(_part, 0), do: 0
-  defp share_width(part, total), do: Float.round(part / total * 100, 1)
 
   # A cohort cell's shade: the theme's primary, stronger as the share grows
   # (a third retained is the darkest), so the grid reads at a glance.

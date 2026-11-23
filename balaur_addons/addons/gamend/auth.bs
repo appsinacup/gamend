@@ -10,6 +10,8 @@ const COMPLETED: str = "completed";
 const PENDING: str = "pending";
 const EXPIRES_IN: str = "expires_in";
 const EXPIRES_AT: str = "expires_at";
+// Frames within which a platform with no sign-in sheet says so.
+const PAGE_ANSWERS_WITHIN: int = 3;
 
 /// A signed-in session: who, the token pair, and when the access token
 /// stops working, in seconds since 1970; nil when it is not known.
@@ -59,8 +61,8 @@ pub async fn providers() -> any {
     data_of(core::body(reply))
 }
 
-/// Sign in with a provider: open its page, then wait for the server to say
-/// the session resolved. Signs in with the tokens it carries, keeps them for
+/// Sign in with a provider: open its page (`open_page`), then wait for the
+/// server to say the session resolved. Signs in with the tokens it carries, keeps them for
 /// the next run, and answers them; nil when the player gave up, the provider
 /// refused, or the wait ran out. Always a sign-in, even for a player signed
 /// in already: `link` adds a provider to their account instead.
@@ -91,7 +93,8 @@ pub async fn link(provider: str) -> bool {
 }
 
 /// Start a sign-in, or a link with `linking`, open the page it answers, and
-/// ask until the player is done there. The completed status, or nil.
+/// ask until the player is done there. The completed status, or nil, and
+/// the sheet shut either way; nil at once when the player shuts it.
 async fn provider_page(provider: str, linking: bool) -> any {
     let started: any = nil;
     if linking {
@@ -108,11 +111,34 @@ async fn provider_page(provider: str, linking: bool) -> any {
         return nil;
     }
     let session = opened["session_id"].text();
-    engine::open_url(opened["authorization_url"].text());
+    await open_page(opened["authorization_url"].text());
+    let now = await page_finished(provider, session, linking);
+    platform::close_web_sign_in();
+    now
+}
+
+/// Show a provider's page in the system's sign-in sheet over the game
+/// (`platform::web_sign_in`), or in the browser where there is none: an
+/// `unsupported` answer lands within a few frames, a sheet's only once shut.
+async fn open_page(url: str) {
+    platform::web_sign_in(url);
+    await task::frames(PAGE_ANSWERS_WITHIN);
+    if platform::web_sign_in_state() == platform::EVENT_UNSUPPORTED {
+        engine::open_url(url);
+    }
+}
+
+/// Ask the server until the player is done at `provider`: the completed
+/// status, or nil when it failed, timed out or the player shut the sheet.
+async fn page_finished(provider: str, session: str, linking: bool) -> any {
     let waited = 0.0;
     while waited < SIGN_IN_TIMEOUT {
         await task::seconds(ASK_EVERY);
         waited += ASK_EVERY;
+        if page_shut() {
+            log::info("gamend: {provider} page shut");
+            return nil;
+        }
         let reply: any = nil;
         if linking {
             reply = await authentication::link_session_status(session);
@@ -137,6 +163,12 @@ async fn provider_page(provider: str, linking: bool) -> any {
     }
     log::warn("gamend: {provider} timed out");
     nil
+}
+
+/// Whether the player shut the sign-in sheet, or it could not be shown.
+fn page_shut() -> bool {
+    let state = platform::web_sign_in_state();
+    state == platform::EVENT_CANCELLED || state == platform::EVENT_ERROR
 }
 
 /// A session the server just made expires `expires_in` seconds from now.

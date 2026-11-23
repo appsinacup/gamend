@@ -624,6 +624,76 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
     end
   end
 
+  describe "POST /api/v1/login/code" do
+    defp login_code(email) do
+      assert %{success: _} = Oban.drain_queue(queue: :mailers)
+      assert_received {:email, %Swoosh.Email{to: [{_, ^email}], text_body: body}}
+      [_, code] = Regex.run(~r/^\s*(\d{6})\s*$/m, body)
+      code
+    end
+
+    defp code_login(email, code) do
+      post(build_conn(), "/api/v1/login/code/confirm", %{email: email, code: code})
+    end
+
+    test "the code emailed signs in, once, and the password stays", %{user: user} do
+      asked = post(build_conn(), "/api/v1/login/code", %{email: user.email})
+      assert json_response(asked, 200) == %{"ok" => true}
+      code = login_code(user.email)
+
+      assert %{"data" => %{"access_token" => _, "user_id" => user_id}} =
+               json_response(
+                 code_login(
+                   user.email,
+                   " #{String.slice(code, 0, 3)}-#{String.slice(code, 3, 3)}"
+                 ),
+                 200
+               )
+
+      assert user_id == user.id
+
+      login =
+        post(build_conn(), "/api/v1/login", %{email: user.email, password: @valid_password})
+
+      assert json_response(login, 200)["data"]["user_id"] == user.id
+      assert json_response(code_login(user.email, code), 401)["error"] == "invalid_code"
+    end
+
+    test "an account not yet confirmed is confirmed by its code" do
+      user = Gamend.AccountsFixtures.unconfirmed_user_fixture()
+      assert json_response(post(build_conn(), "/api/v1/login/code", %{email: user.email}), 200)
+      code = login_code(user.email)
+
+      assert json_response(code_login(user.email, code), 200)["data"]["user_id"] == user.id
+      assert Gamend.Accounts.get_user!(user.id).confirmed_at
+    end
+
+    test "answers the same for an address with no account, and sends nothing" do
+      asked = post(build_conn(), "/api/v1/login/code", %{email: "nobody@example.com"})
+
+      assert json_response(asked, 200) == %{"ok" => true}
+      refute_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
+    end
+
+    test "a wrong code is 401 invalid_code", %{user: user} do
+      assert json_response(post(build_conn(), "/api/v1/login/code", %{email: user.email}), 200)
+      code = login_code(user.email)
+      wrong = if code == "123456", do: "654321", else: "123456"
+
+      assert json_response(code_login(user.email, wrong), 401)["error"] == "invalid_code"
+    end
+
+    test "missing params are 422 validation_failed", %{user: user} do
+      assert json_response(post(build_conn(), "/api/v1/login/code", %{}), 422)["error"] ==
+               "validation_failed"
+
+      assert json_response(
+               post(build_conn(), "/api/v1/login/code/confirm", %{email: user.email}),
+               422
+             )["error"] == "validation_failed"
+    end
+  end
+
   describe "DELETE /api/v1/logout" do
     test "returns 200 with empty object", %{conn: conn} do
       conn = delete(conn, "/api/v1/logout")

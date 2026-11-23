@@ -122,6 +122,16 @@ pub async fn register(params: any) -> any {
     reply
 }
 
+/// Email a code to log in
+/// `POST /api/v1/login/code`
+pub async fn request_login_code(params: any) -> any {
+    if !core::given(params, "email") {
+        return core::missing("gamend::authentication::request_login_code", "email");
+    }
+    let reply = await core::rest("POST", "/api/v1/login/code", params);
+    reply
+}
+
 /// Email a code to set a new password
 /// `POST /api/v1/password/reset`
 pub async fn request_password_reset(params: any) -> any {

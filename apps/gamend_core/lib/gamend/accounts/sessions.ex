@@ -83,16 +83,11 @@ defmodule Gamend.Accounts.Sessions do
 
     case Repo.one(query) do
       {%User{confirmed_at: nil} = user, _token} ->
-        handle_unconfirmed_login(user)
+        confirm_and_log_in(user)
 
       {user, token} ->
         Repo.delete!(token)
-
-        Gamend.Async.run(fn ->
-          Gamend.Hooks.internal_call(:after_user_logged_in, [user])
-          Gamend.Quests.report_event(user.id, ReportedEvent.login())
-        end)
-
+        logged_in(user)
         {:ok, {user, []}}
 
       nil ->
@@ -100,27 +95,35 @@ defmodule Gamend.Accounts.Sessions do
     end
   end
 
-  # Dropping the password is what makes confirming safe (case 3 above); a
-  # user without one is unchanged by it.
-  defp handle_unconfirmed_login(user) do
+  @doc """
+  An account not yet confirmed, signed in by proof of its inbox (a magic
+  link, or the emailed code of `Gamend.Accounts.login_user_by_code/2`):
+  confirmed, its password dropped and every token revoked. Dropping the
+  password is what makes confirming safe (case 3 of
+  `login_user_by_magic_link/1`); a user without one is unchanged by it.
+  """
+  @spec confirm_and_log_in(User.t()) ::
+          {:ok, {User.t(), [UserToken.t()]}} | {:error, Ecto.Changeset.t() | term()}
+  def confirm_and_log_in(user) do
     result =
       user
       |> User.confirm_changeset()
       |> Ecto.Changeset.put_change(:hashed_password, nil)
       |> Accounts.update_user_and_delete_all_tokens()
 
-    case result do
-      {:ok, {user, _tokens}} = ok ->
-        Gamend.Async.run(fn ->
-          Gamend.Hooks.internal_call(:after_user_logged_in, [user])
-          Gamend.Quests.report_event(user.id, ReportedEvent.login())
-        end)
+    with {:ok, {user, _tokens}} <- result, do: logged_in(user)
+    result
+  end
 
-        ok
+  @doc "What a sign-in sets off, off the request: the hook and the quest event."
+  @spec logged_in(User.t()) :: :ok
+  def logged_in(user) do
+    Gamend.Async.run(fn ->
+      Gamend.Hooks.internal_call(:after_user_logged_in, [user])
+      Gamend.Quests.report_event(user.id, ReportedEvent.login())
+    end)
 
-      other ->
-        other
-    end
+    :ok
   end
 
   @doc ~S"""

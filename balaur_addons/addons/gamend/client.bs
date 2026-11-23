@@ -213,6 +213,17 @@ pub async fn reset_password(email: str, code: str, password: str) -> any {
     reply
 }
 
+/// The magic link of a game: open the session with the six-digit code
+/// `authentication::request_login_code` emailed, answered as
+/// `confirm_registration` is. A refusal's `error` says why: `invalid_code`
+/// (wrong, spent or expired) or `account_locked` (too many wrong codes; the
+/// code is void, so ask for a new one).
+pub async fn login_with_code(email: str, code: str) -> any {
+    let body: any = { core::EMAIL: email, CODE: code };
+    let reply = await signed("/api/v1/login/code/confirm", body, email);
+    reply
+}
+
 /// Open the realtime socket, on a node of its own under `node`, and answer
 /// the id the other socket calls take. `task::wait` on it resumes with the
 /// `open` event once the session's own `user:<id>` topic is joined, so hooks

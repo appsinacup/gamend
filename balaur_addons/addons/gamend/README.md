@@ -18,7 +18,7 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-282 operations in 45 modules, and 100 realtime events, 15 socket commands.
+283 operations in 45 modules, and 100 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -291,6 +291,7 @@ Authentication.
 | `oauth_request(provider)` | `GET /api/v1/auth/{provider}` | Start a provider sign-in |
 | `oauth_session_status(session_id)` | `GET /api/v1/auth/session/{session_id}` | Poll a provider sign-in |
 | `register(params)` | `POST /api/v1/register` | Register |
+| `request_login_code(params)` | `POST /api/v1/login/code` | Email a code to log in |
 | `request_password_reset(params)` | `POST /api/v1/password/reset` | Email a code to set a new password |
 | `resend_confirmation(params)` | `POST /api/v1/register/resend` | Send the confirmation email again |
 | `unlink_device()` | `DELETE /api/v1/me/device` | Unlink device ID |

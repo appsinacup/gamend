@@ -12,6 +12,7 @@ defmodule Gamend.Accounts.Registration do
   require Logger
   alias Gamend.Accounts.ConfirmationMailer
   alias Gamend.Accounts.LoginLockouts
+  alias Gamend.Accounts.Sessions
   alias Gamend.Accounts.User
   alias Gamend.Accounts.UsernameGenerator
   alias Gamend.Accounts.UserNotifier
@@ -560,13 +561,56 @@ defmodule Gamend.Accounts.Registration do
     with %User{email: address} = user when is_binary(address) <- Accounts.get_user_by_email(email) do
       user
       |> ConfirmationMailer.new_for(url_fun, notifier,
-        reset: true,
+        code: :reset,
         unique: [period: 60, keys: [:user_id]]
       )
       |> Oban.insert!()
     end
 
     :ok
+  end
+
+  @doc """
+  The magic link of a game client, which has no page to open a link in
+  (`POST /api/v1/login/code`): the account at `email` is emailed six digits
+  that `login_user_by_code/2` signs in with. Answers as
+  `request_password_reset/3` does: always `:ok`, at most one email per
+  account per minute, only the newest code works.
+  """
+  @spec request_login_code(String.t(), (String.t() -> String.t()), module()) :: :ok
+  def request_login_code(email, url_fun, notifier \\ Gamend.Accounts.UserNotifier)
+      when is_binary(email) and is_function(url_fun, 1) do
+    with %User{email: address} = user when is_binary(address) <- Accounts.get_user_by_email(email) do
+      user
+      |> ConfirmationMailer.new_for(url_fun, notifier,
+        code: :login,
+        unique: [period: 60, keys: [:user_id]]
+      )
+      |> Oban.insert!()
+    end
+
+    :ok
+  end
+
+  @doc """
+  The code `request_login_code/2` sent: signed in, as the magic link signs in
+  (`Gamend.Accounts.login_user_by_magic_link/1`). A confirmed account keeps
+  its password and sessions; one not yet confirmed is confirmed, its password
+  dropped and every earlier token revoked, for the reasons that function
+  gives. The answers are `reset_password_by_code/3`'s but the changeset: a
+  wrong code counts toward the address's sign-in lockout.
+
+  Every code the server emails proves the same thing, that the caller reads
+  the inbox, so the code of a confirmation or a reset signs in too.
+  """
+  @spec login_user_by_code(String.t(), String.t()) ::
+          {:ok, {User.t(), [UserToken.t()]}}
+          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+  def login_user_by_code(email, code) when is_binary(email) and is_binary(code) do
+    case LoginLockouts.check(email) do
+      :ok -> redeem_code(email, String.replace(code, ~r/[\s-]/u, ""), %{}, :login)
+      {:locked, seconds} -> {:error, {:locked, seconds}}
+    end
   end
 
   @doc """
@@ -597,26 +641,37 @@ defmodule Gamend.Accounts.Registration do
          true <- Repo.exists?(UserToken.verify_confirm_code_query(user, code)) do
       LoginLockouts.clear(email)
 
-      if purpose == :confirm && user.confirmed_at && user.hashed_password do
-        Repo.delete_all(
-          where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
-        )
+      cond do
+        purpose == :login && user.confirmed_at ->
+          spend_codes(user)
+          Sessions.logged_in(user)
+          {:ok, {user, []}}
 
-        {:error, :already_confirmed}
-      else
-        # Hashed here, before `update_user_and_delete_all_tokens/1` opens its
-        # transaction: the hash is the slow part.
-        user
-        |> User.password_changeset(attrs)
-        |> Ecto.Changeset.put_change(
-          :confirmed_at,
-          user.confirmed_at || DateTime.utc_now(:second)
-        )
-        |> Accounts.update_user_and_delete_all_tokens()
+        purpose == :login ->
+          Sessions.confirm_and_log_in(user)
+
+        purpose == :confirm && user.confirmed_at && user.hashed_password ->
+          spend_codes(user)
+          {:error, :already_confirmed}
+
+        true ->
+          # Hashed here, before `update_user_and_delete_all_tokens/1` opens its
+          # transaction: the hash is the slow part.
+          user
+          |> User.password_changeset(attrs)
+          |> Ecto.Changeset.put_change(
+            :confirmed_at,
+            user.confirmed_at || DateTime.utc_now(:second)
+          )
+          |> Accounts.update_user_and_delete_all_tokens()
       end
     else
       _ -> code_failure(email)
     end
+  end
+
+  defp spend_codes(user) do
+    Repo.delete_all(where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code()))
   end
 
   # Straight from the table, as `ConfirmationMailer` reads: this write sets a
@@ -635,11 +690,7 @@ defmodule Gamend.Accounts.Registration do
         {:error, :invalid_code}
 
       {:locked, seconds} ->
-        with %User{} = user <- user_by_email_uncached(email) do
-          Repo.delete_all(
-            where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
-          )
-        end
+        with %User{} = user <- user_by_email_uncached(email), do: spend_codes(user)
 
         {:error, {:locked, seconds}}
     end

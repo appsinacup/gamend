@@ -512,7 +512,7 @@ func _schedule_token_refresh() -> void:
 func _verify_login_result(method_name: String, data):
 	# Not "register": registering answers the new account, never a session.
 	# Its code does ("confirm_registration").
-	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token", "confirm_registration", "reset_password"]:
+	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token", "confirm_registration", "reset_password", "login_with_code"]:
 		# Every answer is {data: ...}; a polled OAuth sign-in carries its tokens
 		# one level further in, under data.session (null until it completes).
 		var inner = data.bzz_normalize().get("data")
@@ -1191,6 +1191,23 @@ func authenticate_reset_password(email: String, code: String, password: String) 
 	reset_request.code = code
 	reset_request.password = password
 	return await _call_api(AuthenticationApi.new(_config), "reset_password", [reset_request])
+
+## The magic link of a game: email six digits to the account at `email`,
+## which `authenticate_login_with_code` signs in with. Succeeds whether or not
+## the address has an account.
+func authenticate_request_login_code(email: String) -> GamendResult:
+	var code_request := GamendRequestLoginCodeRequest.new()
+	code_request.email = email
+	return await _call_api(AuthenticationApi.new(_config), "request_login_code", [code_request])
+
+## Sign in with the code `authenticate_request_login_code` emailed: the session
+## is kept, as a login's. Errors: `invalid_code` (wrong, spent or expired),
+## `account_locked` (too many wrong codes; the code is void, ask for a new one).
+func authenticate_login_with_code(email: String, code: String) -> GamendResult:
+	var code_request := GamendLoginWithCodeRequest.new()
+	code_request.email = email
+	code_request.code = code
+	return await _call_api(AuthenticationApi.new(_config), "login_with_code", [code_request])
 
 ### FRIENDS
 

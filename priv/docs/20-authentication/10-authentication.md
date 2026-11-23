@@ -69,6 +69,14 @@ most one email per account a minute; the second answers as
 `register/confirm` does, but never `409`, and confirms an account that was
 not. It shares the code, its lockout and its lifetime with confirmation.
 
+The magic link, in a game: `POST /api/v1/login/code` (`email`) emails six
+digits, and `POST /api/v1/login/code/confirm` (`email`, `code`) signs in and
+answers a session, as login does. It answers as the reset does. A confirmed
+account keeps its password and sessions; one not yet confirmed is confirmed
+by it, its password dropped and every earlier session ended, as the site's
+magic link does. Any code the server emailed the address signs in: each
+proves the same inbox.
+
 A taken email or username is `409`, and a plugin that refuses the sign-up is
 `403 registration_refused`. The first account on a server is the admin. The
 browser form confirms it as it is created and signs it in, since a fresh

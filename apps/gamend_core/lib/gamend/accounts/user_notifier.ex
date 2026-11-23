@@ -223,6 +223,28 @@ defmodule Gamend.Accounts.UserNotifier do
     """)
   end
 
+  @doc """
+  Deliver the six digits a game signs in with: the magic link of a client
+  with no page to open a link in.
+  """
+  def deliver_login_code(user, code) do
+    deliver(user.email, "Your code to log in", """
+
+    ==============================
+
+    Hi #{user.email},
+
+    Enter this code in the game to log in:
+
+    #{code}
+
+    If you didn't ask to log in, please ignore this: no one can log in
+    without the code.
+
+    ==============================
+    """)
+  end
+
   defp code_instructions(nil), do: ""
 
   defp code_instructions(code) do

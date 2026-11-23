@@ -1870,6 +1870,33 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    The code `request_login_code/2` sent: signed in, as the magic link signs in
+    (`Gamend.Accounts.login_user_by_magic_link/1`). A confirmed account keeps
+    its password and sessions; one not yet confirmed is confirmed, its password
+    dropped and every earlier token revoked, for the reasons that function
+    gives. The answers are `reset_password_by_code/3`'s but the changeset: a
+    wrong code counts toward the address's sign-in lockout.
+    
+    Every code the server emails proves the same thing, that the caller reads
+    the inbox, so the code of a confirmation or a reset signs in too.
+    
+  """
+  @spec login_user_by_code(String.t(), String.t()) ::
+          {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+  def login_user_by_code(_email, _code) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
+
+      _ ->
+        raise "Gamend.Accounts.login_user_by_code/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Logs the user in by magic link.
     
     There are three cases to consider:
@@ -2237,6 +2264,25 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.request_deletion/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The magic link of a game client, which has no page to open a link in
+    (`POST /api/v1/login/code`): the account at `email` is emailed six digits
+    that `login_user_by_code/2` signs in with. Answers as
+    `request_password_reset/3` does: always `:ok`, at most one email per
+    account per minute, only the newest code works.
+    
+  """
+  @spec request_login_code(String.t(), (String.t() -> String.t()), module()) :: :ok
+  def request_login_code(_email, _url_fun, _notifier \\ nil) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.Accounts.request_login_code/3 is a stub - only available at runtime on Gamend"
     end
   end
 

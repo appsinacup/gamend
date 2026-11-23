@@ -386,7 +386,96 @@ defmodule GamendWeb.Api.V1.SessionController do
 
   def reset_password(conn, %{"email" => email, "code" => code, "password" => password})
       when is_binary(email) and is_binary(code) and is_binary(password) do
-    case Accounts.reset_password_by_code(email, code, password) do
+    email |> Accounts.reset_password_by_code(code, password) |> code_signed_in(conn)
+  end
+
+  def reset_password(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email, code and password are required")
+  end
+
+  operation(:request_login_code,
+    operation_id: "request_login_code",
+    summary: "Email a code to log in",
+    description:
+      "The magic link of a game, which has no page to open a link in: queue an email " <>
+        "with six digits that `login_with_code` signs in with. Only the newest code works. " <>
+        "Always answers `{\"ok\": true}`, whether or not the address has an account, so it " <>
+        "tells no one which addresses are registered; at most one email per account per " <>
+        "minute goes out.",
+    request_body: {
+      "Address",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          email: %Schema{type: :string, format: :email, description: "The account's address"}
+        },
+        required: [:email],
+        example: %{email: "user@example.com"}
+      }
+    },
+    responses: [
+      ok: {"Queued, if there was anything to send", "application/json", OkResponse},
+      bad_request: Schemas.error("Email missing (missing_param)")
+    ]
+  )
+
+  def request_login_code(conn, %{"email" => email}) when is_binary(email) do
+    :ok = Accounts.request_login_code(email, &confirm_url/1, notifier())
+    reply_ok(conn)
+  end
+
+  def request_login_code(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email is required")
+  end
+
+  operation(:login_with_code,
+    operation_id: "login_with_code",
+    summary: "Log in with the emailed code",
+    description:
+      "The six digits `request_login_code` emailed: signed in, answering a session as " <>
+        "`login` does, as the magic link signs in on the site. A confirmed account keeps " <>
+        "its password and sessions; one not yet confirmed is confirmed, its password " <>
+        "dropped and every earlier token revoked. Any code the server emailed the address " <>
+        "signs in. Spaces and a dash in the code are ignored. A wrong, spent or expired " <>
+        "code and an address with no account both answer `401 invalid_code`; wrong codes " <>
+        "count toward the address's sign-in lockout, shared with passwords, and the one " <>
+        "that locks it answers `429 account_locked` and voids the code.",
+    request_body: {
+      "Login code",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          email: %Schema{type: :string, format: :email, description: "The account's address"},
+          code: %Schema{type: :string, description: "The six digits from the email"}
+        },
+        required: [:email, :code],
+        example: %{email: "user@example.com", code: "042137"}
+      }
+    },
+    responses: [
+      ok: {"Signed in", "application/json", SessionResponse},
+      bad_request: Schemas.error("Email or code missing (missing_param)"),
+      unauthorized: Schemas.error("Wrong, spent or expired code (invalid_code)"),
+      forbidden: Schemas.error("The account awaits activation or is scheduled for deletion"),
+      too_many_requests:
+        Schemas.error("Too many wrong codes or passwords for this address (account_locked)")
+    ]
+  )
+
+  def login_with_code(conn, %{"email" => email, "code" => code})
+      when is_binary(email) and is_binary(code) do
+    email |> Accounts.login_user_by_code(code) |> code_signed_in(conn)
+  end
+
+  def login_with_code(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email and code are required")
+  end
+
+  # An emailed code redeemed: the session, or why not.
+  defp code_signed_in(result, conn) do
+    case result do
       {:ok, {user, expired_tokens}} ->
         GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
 
@@ -410,10 +499,6 @@ defmodule GamendWeb.Api.V1.SessionController do
       {:error, :invalid_code} ->
         reply_error(conn, :unauthorized, "invalid_code", "Wrong or expired code")
     end
-  end
-
-  def reset_password(conn, _params) do
-    reply_error(conn, :bad_request, "missing_param", "email, code and password are required")
   end
 
   defp confirm_url(token), do: url(~p"/users/confirm/#{token}")

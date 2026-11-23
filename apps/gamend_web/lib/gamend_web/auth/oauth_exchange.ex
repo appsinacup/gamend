@@ -249,6 +249,17 @@ defmodule GamendWeb.Auth.OAuthExchange do
     )
   end
 
+  # The ticket path needs the app id the browser's OpenID one does without,
+  # so a server that has only the key answers here, not with an opaque 400.
+  def reply_refused(conn, :steam_not_configured) do
+    reply_error(
+      conn,
+      :service_unavailable,
+      "steam_not_configured",
+      "Missing GAMEND_OAUTH_STEAM_API_KEY or GAMEND_OAUTH_STEAM_APP_ID"
+    )
+  end
+
   def reply_refused(conn, reason) when reason in [:invalid_audience, :invalid_issuer, :expired],
     do: reply_error(conn, :bad_request, "invalid_token", Atom.to_string(reason))
 

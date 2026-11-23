@@ -470,7 +470,7 @@ defmodule Gamend.OAuth.Exchanger do
     appid = Gamend.Settings.get(Gamend.OAuth.Providers, :steam_app_id)
 
     if is_nil(api_key) or api_key == "" or is_nil(appid) or appid == "" do
-      {:error, :missing_config}
+      {:error, :steam_not_configured}
     else
       url = "https://api.steampowered.com/ISteamUserAuth/AuthenticateUserTicket/v1/"
       params = %{key: api_key, appid: appid, ticket: ticket}

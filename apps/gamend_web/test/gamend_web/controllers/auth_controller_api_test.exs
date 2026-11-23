@@ -162,6 +162,17 @@ defmodule GamendWeb.AuthControllerApiTest do
       end)
     end
 
+    test "POST /api/v1/auth/steam/callback with no app id says the server is not set up", %{
+      conn: conn
+    } do
+      SettingsHelpers.put(:gamend_core, Gamend.OAuth.Providers, :steam_app_id, nil)
+      Application.put_env(:gamend_web, :oauth_exchanger, Gamend.OAuth.Exchanger)
+
+      conn = post(conn, "/api/v1/auth/steam/callback", %{code: "a_ticket"})
+
+      assert json_response(conn, 503)["error"] == "steam_not_configured"
+    end
+
     test "POST /api/v1/auth/steam/callback with code (ticket) returns tokens", %{conn: conn} do
       # For API flows code is treated as the Steam auth ticket
       defmodule MockExchangerSteamTicketOk do

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1511">
+    <meta name="project" content="gamend_core v1.1.1512">
 
 
-    <title>Gamend.Accounts.Registration — gamend_core v1.1.1511</title>
+    <title>Gamend.Accounts.Registration — gamend_core v1.1.1512</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-BF21CD81.js"></script>
+    <script defer src="dist/sidebar_items-9BDE935E.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1511
+          v1.1.1512
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Registration</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1511)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1512)</small>
 
     </h1>
 
@@ -228,6 +228,21 @@ email confirms nothing and spends nothing.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#login_user_by_code/2" data-no-tooltip="" translate="no">login_user_by_code(email, code)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The code <a href="#request_login_code/2"><code class="inline">request_login_code/2</code></a> sent: signed in, as the magic link signs in
+(<a href="Gamend.Accounts.html#login_user_by_magic_link/1"><code class="inline">Gamend.Accounts.login_user_by_magic_link/1</code></a>). A confirmed account keeps
+its password and sessions; one not yet confirmed is confirmed, its password
+dropped and every earlier token revoked, for the reasons that function
+gives. The answers are <a href="#reset_password_by_code/3"><code class="inline">reset_password_by_code/3</code></a>'s but the changeset: a
+wrong code counts toward the address's sign-in lockout.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#notify_existing_account/4" data-no-tooltip="" translate="no">notify_existing_account(email, confirmation_url_fun, login_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</a>
 
       </div>
@@ -269,6 +284,20 @@ like everyone else (<a href="#confirm_user_by_code/3"><code class="inline">confi
       </div>
 
         <div class="summary-synopsis"><p>Register a user and queue its confirmation email.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#request_login_code/3" data-no-tooltip="" translate="no">request_login_code(email, url_fun, notifier \\ Gamend.Accounts.UserNotifier)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The magic link of a game client, which has no page to open a link in
+(<code class="inline">POST /api/v1/login/code</code>): the account at <code class="inline">email</code> is emailed six digits
+that <a href="#login_user_by_code/2"><code class="inline">login_user_by_code/2</code></a> signs in with. Answers as
+<a href="#request_password_reset/3"><code class="inline">request_password_reset/3</code></a> does: always <code class="inline">:ok</code>, at most one email per
+account per minute, only the newest code works.</p></div>
 
     </div>
 
@@ -351,7 +380,7 @@ email signs in to it on any device and confirms the address.</p></div>
       <h1 class="signature" translate="no">change_user_registration(user, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L746" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L797" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -379,7 +408,7 @@ email signs in to it on any device and confirms the address.</p></div>
       <h1 class="signature" translate="no">change_user_registration_for_validation(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L765" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L816" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -415,7 +444,7 @@ a stub for a function carrying two default arguments.</p>
       <h1 class="signature" translate="no">confirm_user(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L393" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L394" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -445,7 +474,7 @@ a stub for a function carrying two default arguments.</p>
       <h1 class="signature" translate="no">confirm_user_by_code(email, code, password)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L534" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L535" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -496,7 +525,7 @@ does, and returns them so the caller can disconnect the sessions.</p>
       <h1 class="signature" translate="no">confirm_user_by_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L438" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L439" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -533,7 +562,7 @@ the link on a computer instead (<a href="#confirm_user_by_code/3"><code class="i
       <h1 class="signature" translate="no">deliver_user_confirmation_instructions(user, confirmation_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L771" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L822" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -563,7 +592,7 @@ the link on a computer instead (<a href="#confirm_user_by_code/3"><code class="i
       <h1 class="signature" translate="no">drop_email_taken(changeset)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L684" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L735" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -591,7 +620,7 @@ the link on a computer instead (<a href="#confirm_user_by_code/3"><code class="i
       <h1 class="signature" translate="no">email_taken?(changeset)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L680" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L731" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -621,7 +650,7 @@ owner hears by email (<a href="#notify_existing_account/4"><code class="inline">
       <h1 class="signature" translate="no">get_user_by_confirm_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L415" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L416" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -643,6 +672,42 @@ shows the account, and confirming waits for its button
 email confirms nothing and spends nothing.</p>
   </section>
 </section>
+<section class="detail" id="login_user_by_code/2">
+
+  <div class="detail-header">
+    <a href="#login_user_by_code/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">login_user_by_code(email, code)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L609" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> login_user_by_code(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, {<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), [<a href="Gamend.Accounts.UserToken.html#t:t/0">Gamend.Accounts.UserToken.t</a>()]}}
+  | {:error, :invalid_code | {:locked, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()} | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+
+      </div>
+
+<p>The code <a href="#request_login_code/2"><code class="inline">request_login_code/2</code></a> sent: signed in, as the magic link signs in
+(<a href="Gamend.Accounts.html#login_user_by_magic_link/1"><code class="inline">Gamend.Accounts.login_user_by_magic_link/1</code></a>). A confirmed account keeps
+its password and sessions; one not yet confirmed is confirmed, its password
+dropped and every earlier token revoked, for the reasons that function
+gives. The answers are <a href="#reset_password_by_code/3"><code class="inline">reset_password_by_code/3</code></a>'s but the changeset: a
+wrong code counts toward the address's sign-in lockout.</p><p>Every code the server emails proves the same thing, that the caller reads
+the inbox, so the code of a confirmation or a reset signs in too.</p>
+  </section>
+</section>
 <section class="detail" id="notify_existing_account/4">
 
     <span id="notify_existing_account/3"></span>
@@ -655,7 +720,7 @@ email confirms nothing and spends nothing.</p>
       <h1 class="signature" translate="no">notify_existing_account(email, confirmation_url_fun, login_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L705" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L756" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -692,7 +757,7 @@ background, so the sign-up answers as soon as it does for a free address.</p>
       <h1 class="signature" translate="no">register_unconfirmed_user_and_deliver(attrs, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L162" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L163" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -728,7 +793,7 @@ like everyone else (<a href="#confirm_user_by_code/3"><code class="inline">confi
       <h1 class="signature" translate="no">register_user(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L89" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -763,7 +828,7 @@ like everyone else (<a href="#confirm_user_by_code/3"><code class="inline">confi
       <h1 class="signature" translate="no">register_user_and_deliver(attrs, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L141" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -794,6 +859,40 @@ into the account once the address's owner confirmed it. The password is set
 after the inbox is proved: with the code, or in the settings the link opens.</p>
   </section>
 </section>
+<section class="detail" id="request_login_code/3">
+
+    <span id="request_login_code/2"></span>
+
+  <div class="detail-header">
+    <a href="#request_login_code/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">request_login_code(email, url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L581" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> request_login_code(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), (<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() -&gt; <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">module</a>()) :: :ok</pre>
+
+      </div>
+
+<p>The magic link of a game client, which has no page to open a link in
+(<code class="inline">POST /api/v1/login/code</code>): the account at <code class="inline">email</code> is emailed six digits
+that <a href="#login_user_by_code/2"><code class="inline">login_user_by_code/2</code></a> signs in with. Answers as
+<a href="#request_password_reset/3"><code class="inline">request_password_reset/3</code></a> does: always <code class="inline">:ok</code>, at most one email per
+account per minute, only the newest code works.</p>
+  </section>
+</section>
 <section class="detail" id="request_password_reset/3">
 
     <span id="request_password_reset/2"></span>
@@ -806,7 +905,7 @@ after the inbox is proved: with the code, or in the settings the link opens.</p>
       <h1 class="signature" translate="no">request_password_reset(email, url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L558" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L559" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -841,7 +940,7 @@ minute goes out. Only the newest code works, as a confirmation's.</p>
       <h1 class="signature" translate="no">resend_confirmation(email, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L658" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L709" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -873,7 +972,7 @@ is queued; the rest are dropped.</p>
       <h1 class="signature" translate="no">reset_password_by_code(email, code, password)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L581" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L625" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -908,7 +1007,7 @@ revoked, as <a href="#confirm_user_by_code/3"><code class="inline">confirm_user_
       <h1 class="signature" translate="no">upgrade_anonymous_user_and_deliver(user, attrs, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L185" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L186" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -943,9 +1042,9 @@ email signs in to it on any device and confirms the address.</p><p><code class="
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1511">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1512">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1511">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1512">Hex Preview</a>
 
             </span>
 

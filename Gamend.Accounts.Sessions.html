@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1511">
+    <meta name="project" content="gamend_core v1.1.1512">
 
 
-    <title>Gamend.Accounts.Sessions — gamend_core v1.1.1511</title>
+    <title>Gamend.Accounts.Sessions — gamend_core v1.1.1512</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-BF21CD81.js"></script>
+    <script defer src="dist/sidebar_items-9BDE935E.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1511
+          v1.1.1512
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Sessions</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1511)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1512)</small>
 
     </h1>
 
@@ -133,6 +133,20 @@ to the writes that trigger it.</p>
   <h3>
     <a href="#functions">Functions</a>
   </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#confirm_and_log_in/1" data-no-tooltip="" translate="no">confirm_and_log_in(user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>An account not yet confirmed, signed in by proof of its inbox (a magic
+link, or the emailed code of <a href="Gamend.Accounts.html#login_user_by_code/2"><code class="inline">Gamend.Accounts.login_user_by_code/2</code></a>):
+confirmed, its password dropped and every token revoked. Dropping the
+password is what makes confirming safe (case 3 of
+<a href="#login_user_by_magic_link/1"><code class="inline">login_user_by_magic_link/1</code></a>); a user without one is unchanged by it.</p></div>
+
+    </div>
 
     <div class="summary-row">
       <div class="summary-signature">
@@ -216,6 +230,16 @@ to the writes that trigger it.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#logged_in/1" data-no-tooltip="" translate="no">logged_in(user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>What a sign-in sets off, off the request: the hook and the quest event.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#login_user_by_magic_link/1" data-no-tooltip="" translate="no">login_user_by_magic_link(token)</a>
 
       </div>
@@ -259,6 +283,40 @@ to the writes that trigger it.</p>
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="confirm_and_log_in/1">
+
+  <div class="detail-header">
+    <a href="#confirm_and_log_in/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">confirm_and_log_in(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L107" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> confirm_and_log_in(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+  {:ok, {<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), [<a href="Gamend.Accounts.UserToken.html#t:t/0">Gamend.Accounts.UserToken.t</a>()]}}
+  | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>An account not yet confirmed, signed in by proof of its inbox (a magic
+link, or the emailed code of <a href="Gamend.Accounts.html#login_user_by_code/2"><code class="inline">Gamend.Accounts.login_user_by_code/2</code></a>):
+confirmed, its password dropped and every token revoked. Dropping the
+password is what makes confirming safe (case 3 of
+<a href="#login_user_by_magic_link/1"><code class="inline">login_user_by_magic_link/1</code></a>); a user without one is unchanged by it.</p>
+  </section>
+</section>
 <section class="detail" id="count_user_tokens/1">
 
   <div class="detail-header">
@@ -269,7 +327,7 @@ to the writes that trigger it.</p>
       <h1 class="signature" translate="no">count_user_tokens(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L232" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L235" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -297,7 +355,7 @@ to the writes that trigger it.</p>
       <h1 class="signature" translate="no">delete_user_session_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L164" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -325,7 +383,7 @@ to the writes that trigger it.</p>
       <h1 class="signature" translate="no">deliver_login_instructions(user, magic_link_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L153" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L156" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -354,7 +412,7 @@ to the writes that trigger it.</p>
       <h1 class="signature" translate="no">deliver_user_update_email_instructions(user, current_email, update_email_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -474,7 +532,7 @@ to the writes that trigger it.</p>
       <h1 class="signature" translate="no">list_user_tokens(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L218" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -490,6 +548,34 @@ to the writes that trigger it.</p>
       </div>
 
 <p>Lists tokens for a given user, optionally filtered by context.</p>
+  </section>
+</section>
+<section class="detail" id="logged_in/1">
+
+  <div class="detail-header">
+    <a href="#logged_in/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">logged_in(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> logged_in(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>What a sign-in sets off, off the request: the hook and the quest event.</p>
   </section>
 </section>
 <section class="detail" id="login_user_by_magic_link/1">
@@ -543,7 +629,7 @@ confirmation email's link removes it the same way
       <h1 class="signature" translate="no">revoke_all_user_sessions(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L254" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L257" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -571,7 +657,7 @@ confirmation email's link removes it the same way
       <h1 class="signature" translate="no">session_tokens(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L242" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/sessions.ex#L245" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -599,9 +685,9 @@ confirmation email's link removes it the same way
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1511">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1512">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1511">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1512">Hex Preview</a>
 
             </span>
 

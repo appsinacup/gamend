@@ -8,6 +8,20 @@ Split out of `Gamend.Accounts`, which still exposes every function here under
 the same name. Revoking *every* token on a credential change stays there, next
 to the writes that trigger it.
 
+# `confirm_and_log_in`
+
+```elixir
+@spec confirm_and_log_in(Gamend.Accounts.User.t()) ::
+  {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+  | {:error, Ecto.Changeset.t() | term()}
+```
+
+An account not yet confirmed, signed in by proof of its inbox (a magic
+link, or the emailed code of `Gamend.Accounts.login_user_by_code/2`):
+confirmed, its password dropped and every token revoked. Dropping the
+password is what makes confirming safe (case 3 of
+`login_user_by_magic_link/1`); a user without one is unchanged by it.
+
 # `count_user_tokens`
 
 ```elixir
@@ -84,6 +98,14 @@ If the token is valid `{user, token_inserted_at}` is returned, otherwise `nil` i
 ```
 
 Lists tokens for a given user, optionally filtered by context.
+
+# `logged_in`
+
+```elixir
+@spec logged_in(Gamend.Accounts.User.t()) :: :ok
+```
+
+What a sign-in sets off, off the request: the hook and the quest event.
 
 # `login_user_by_magic_link`
 

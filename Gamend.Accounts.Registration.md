@@ -150,6 +150,24 @@ shows the account, and confirming waits for its button
 (`confirm_user_by_token/1`), so a mail scanner that opens every link in an
 email confirms nothing and spends nothing.
 
+# `login_user_by_code`
+
+```elixir
+@spec login_user_by_code(String.t(), String.t()) ::
+  {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+  | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+```
+
+The code `request_login_code/2` sent: signed in, as the magic link signs in
+(`Gamend.Accounts.login_user_by_magic_link/1`). A confirmed account keeps
+its password and sessions; one not yet confirmed is confirmed, its password
+dropped and every earlier token revoked, for the reasons that function
+gives. The answers are `reset_password_by_code/3`'s but the changeset: a
+wrong code counts toward the address's sign-in lockout.
+
+Every code the server emails proves the same thing, that the caller reads
+the inbox, so the code of a confirmation or a reset signs in too.
+
 # `notify_existing_account`
 
 ```elixir
@@ -228,6 +246,18 @@ No password is taken. Whoever registers an address has not shown they own
 it, so a password chosen now could be someone else's, and it would sign them
 into the account once the address's owner confirmed it. The password is set
 after the inbox is proved: with the code, or in the settings the link opens.
+
+# `request_login_code`
+
+```elixir
+@spec request_login_code(String.t(), (String.t() -&gt; String.t()), module()) :: :ok
+```
+
+The magic link of a game client, which has no page to open a link in
+(`POST /api/v1/login/code`): the account at `email` is emailed six digits
+that `login_user_by_code/2` signs in with. Answers as
+`request_password_reset/3` does: always `:ok`, at most one email per
+account per minute, only the newest code works.
 
 # `request_password_reset`
 

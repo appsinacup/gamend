@@ -25,6 +25,11 @@ Sent by `Gamend.Accounts.InactivityNotifier` ahead of the retention
 sweep; signing in resets the clock, so the action the mail asks for is just
 "log in".
 
+# `deliver_login_code`
+
+Deliver the six digits a game signs in with: the magic link of a client
+with no page to open a link in.
+
 # `deliver_login_instructions`
 
 Deliver instructions to log in with a magic link.

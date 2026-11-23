@@ -448,6 +448,8 @@ Accepts a user ID and clears both the primary and all index caches.
 
 # `list_user_tokens`
 
+# `login_user_by_code`
+
 # `login_user_by_magic_link`
 
 # `merge_metadata`
@@ -488,6 +490,8 @@ their LiveViews. `{:error, :not_found}` when another delete took the
 account first.
 
 Admin deletions and the retention sweeps call `delete_user/1` and never wait.
+
+# `request_login_code`
 
 # `request_password_reset`
 

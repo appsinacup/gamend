@@ -42,6 +42,7 @@ Gamend.Analytics.Event.md
 Gamend.Analytics.Explore.md
 Gamend.Analytics.Segment.md
 Gamend.Analytics.SegmentName.md
+Gamend.Analytics.TimeSpent.md
 Gamend.Analytics.md
 Gamend.ApiConventions.md
 Gamend.Apple.md

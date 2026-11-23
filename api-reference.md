@@ -1,4 +1,4 @@
-# gamend_core v1.1.1512 - API Reference
+# gamend_core v1.1.1513 - API Reference
 
 ## Modules
 
@@ -42,6 +42,8 @@ A visitor with no account is in none of them: the daily counters count
 them, no row does.
 - [Gamend.Analytics.SegmentName](Gamend.Analytics.SegmentName.md): The analytics segments that are not everyone.
 
+- [Gamend.Analytics.TimeSpent](Gamend.Analytics.TimeSpent.md): How long accounts spend in the game, worked out from what is already
+stored: nothing is collected for it.
 - [Gamend.ApiConventions](Gamend.ApiConventions.md): Mechanical checks for the conventions in `docs/specs/api-conventions.md`.
 - [Gamend.Bans](Gamend.Bans.md): Bans: an IP address, an account or a chat sender kept out for a while, or
 for good.

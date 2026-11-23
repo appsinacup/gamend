@@ -125,7 +125,8 @@ given an entitlement key in it, or the payers in it.
   activation: %{label: String.t(), events: [String.t()]} | nil,
   funnel: [%{label: String.t(), source: funnel_source()}],
   trial_keys: [String.t()],
-  bands: %{required(atom()) =&gt; band()}
+  bands: %{required(atom()) =&gt; band()},
+  time: map()
 }
 ```
 
@@ -228,6 +229,14 @@ What the Overview needs to know about this game, the host's
   * `trial_keys` — the entitlement keys that are a free trial. Default none.
   * `bands` — per rate (`:stickiness`, `:d1`, `:d7`, `:d30`), `{fair, good}`;
     the host's replace core's one by one.
+  * `time` — how the Time tab reads the rows (`Gamend.Analytics.TimeSpent`):
+    `idle_seconds` (300: a longer gap between two moments is time away),
+    `spans` (`[{first, last}]` event names: the time from the first to the
+    last counts, up to `span_seconds`, 7,200), `results` (the area a
+    play's moments are filed under, its kind the detail; `"plays"`),
+    `dim` (`{field, [event names]}`: those events' area is that field's
+    value), `areas` (`%{raw => area}`: a group or field value filed under
+    another area) and `labels` (`%{area => label}`; else the group's).
 
 # `tabs`
 

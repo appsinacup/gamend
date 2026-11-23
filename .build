@@ -43,6 +43,7 @@ Gamend.Analytics.Event.html
 Gamend.Analytics.Explore.html
 Gamend.Analytics.Segment.html
 Gamend.Analytics.SegmentName.html
+Gamend.Analytics.TimeSpent.html
 Gamend.Analytics.html
 Gamend.ApiConventions.html
 Gamend.Apple.html
@@ -376,8 +377,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-68C53D77.js
-dist/sidebar_items-9BDE935E.js
+dist/search_data-B33F4083.js
+dist/sidebar_items-984C21EC.js
 index.html
 readme.html
 search.html

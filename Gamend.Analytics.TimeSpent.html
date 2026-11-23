@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.5">
+    <meta name="project" content="gamend_core v1.1.1513">
+
+
+    <title>Gamend.Analytics.TimeSpent — gamend_core v1.1.1513</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-LBCGAQQV.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1513
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />Analytics.<wbr />TimeSpent</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1513)</small>
+
+    </h1>
+
+<a href="Gamend.Analytics.TimeSpent.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/time_spent.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>How long accounts spend in the game, worked out from what is already
+stored: nothing is collected for it.</p><p>Every row an account leaves is a moment it was there: its analytics
+events (<code class="inline">analytics_events</code>, an account's only), the start of each play
+(<code class="inline">results.started_at</code>) and each thing that happened in one
+(<code class="inline">result_events</code>, <code class="inline">started_at + elapsed_ms</code>). Sorted per account, the
+time from one moment to the next is time spent when it is at most
+<code class="inline">idle_seconds</code> (default 5 minutes); a longer gap is the account away, and
+counts nothing. A declared span (<code class="inline">spans</code>: a test started and finished,
+with nothing stored in between) counts up to <code class="inline">span_seconds</code> (default 2
+hours) from its start to its end.</p><p>Each gap is filed under where the account was at its start: the AREA of
+the earlier moment, and its DETAIL where there is one:</p><ul><li>a play's moment: the area <code class="inline">results</code> (default <code class="inline">&quot;plays&quot;</code>), the detail
+the play's <code class="inline">kind</code> (a game);</li><li>an event named in <code class="inline">dim</code>'s list: the value of that field (<code class="inline">&quot;section&quot;</code>
+of a page view), passed through <code class="inline">areas</code>;</li><li>any other event: its catalogue group (<a href="Gamend.Analytics.Catalog.html"><code class="inline">Gamend.Analytics.Catalog</code></a>),
+passed through <code class="inline">areas</code>.</li></ul><p>So the numbers are a floor: the time after an account's last moment of a
+visit (reading the last page, the end of a round) is not counted, and a
+visitor with no account leaves no rows, so is in none of it. Days are
+UTC days, as DAU is. The host says how its rows read in its catalogue's
+<code class="inline">overview/0</code>, under <code class="inline">time</code> (<code class="inline">Catalog.overview/0</code>).</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-types summary">
+  <h3>
+    <a href="#types">Types</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:account_day/0" data-no-tooltip="" translate="no">account_day()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>One account on one UTC day: seconds in all and per <code class="inline">{area, detail}</code>.</p></div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#account_days/3" data-no-tooltip="" translate="no">account_days(from, to, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Every account with time on a UTC day in <code class="inline">from..to</code> (inclusive), one
+<a href="#t:account_day/0"><code class="inline">account_day/0</code></a> each. Options: <code class="inline">segment:</code> (<a href="Gamend.Analytics.html#segments/0"><code class="inline">Gamend.Analytics.segments/0</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#report/3" data-no-tooltip="" translate="no">report(days, today \\ Date.utc_today(), opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The time spent over the last <code class="inline">days</code> UTC days ending on <code class="inline">today</code> (today
+partial), for the admin Analytics Time tab</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h2>
+
+    <div class="types-list">
+<section class="detail" id="t:account_day/0">
+
+  <div class="detail-header">
+    <a href="#t:account_day/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">account_day()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/time_spent.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> account_day() :: %{
+  day: <a href="https://elixir.hexdocs.pm/Date.html#t:t/0">Date.t</a>(),
+  user_id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  seconds: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">float</a>(),
+  by: %{required({<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">float</a>()}
+}</pre>
+
+      </div>
+
+<p>One account on one UTC day: seconds in all and per <code class="inline">{area, detail}</code>.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="account_days/3">
+
+    <span id="account_days/2"></span>
+
+  <div class="detail-header">
+    <a href="#account_days/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">account_days(from, to, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/time_spent.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> account_days(<a href="https://elixir.hexdocs.pm/Date.html#t:t/0">Date.t</a>(), <a href="https://elixir.hexdocs.pm/Date.html#t:t/0">Date.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="#t:account_day/0">account_day</a>()]</pre>
+
+      </div>
+
+<p>Every account with time on a UTC day in <code class="inline">from..to</code> (inclusive), one
+<a href="#t:account_day/0"><code class="inline">account_day/0</code></a> each. Options: <code class="inline">segment:</code> (<a href="Gamend.Analytics.html#segments/0"><code class="inline">Gamend.Analytics.segments/0</code></a>).</p>
+  </section>
+</section>
+<section class="detail" id="report/3">
+
+    <span id="report/1"></span>
+
+    <span id="report/2"></span>
+
+  <div class="detail-header">
+    <a href="#report/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">report(days, today \\ Date.utc_today(), opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/time_spent.ex#L138" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> report(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>(), <a href="https://elixir.hexdocs.pm/Date.html#t:t/0">Date.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>The time spent over the last <code class="inline">days</code> UTC days ending on <code class="inline">today</code> (today
+partial), for the admin Analytics Time tab:</p><ul><li><code class="inline">seconds</code>, <code class="inline">people</code> (accounts with any time), <code class="inline">account_days</code>,
+<code class="inline">per_day_avg</code> / <code class="inline">per_day_median</code> (seconds per account on a day it
+came), <code class="inline">per_person</code> (seconds per account over the window);</li><li><code class="inline">series</code>: per day <code class="inline">%{day, people, seconds, avg, median}</code>;</li><li><code class="inline">buckets</code>: account-days by how long, <code class="inline">%{label, count}</code>;</li><li><code class="inline">areas</code>: <code class="inline">%{id, label, people, account_days, seconds, avg, share}</code>,
+<code class="inline">avg</code> per account-day that used the area, most time first;</li><li><code class="inline">details</code>: the same per <code class="inline">{area, detail}</code> where there is a detail.</li></ul><p>Options: <code class="inline">segment:</code>.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1513">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1513">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.5) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

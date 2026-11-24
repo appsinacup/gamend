@@ -33,6 +33,8 @@ defmodule GamendWeb.AdminLive.AnalyticsTime do
     {:noreply,
      socket
      |> assign(:segment, Segment.parse(params["segment"]))
+     |> assign(:trait, Segment.parse_trait(params["trait"]))
+     |> assign(:traits, Analytics.trait_options())
      |> assign(:days, int_param(params, UrlParam.days(), @windows, 30))
      |> load()}
   end
@@ -41,18 +43,23 @@ defmodule GamendWeb.AdminLive.AnalyticsTime do
   @impl true
   def handle_event("refresh", _params, socket), do: {:noreply, load(socket, true)}
 
+  event("trait", trait: :string)
+
+  def handle_event("trait", params, socket),
+    do: {:noreply, push_patch(socket, to: here(socket.assigns, %{"trait" => params["trait"]}))}
+
   # Shared by the HTTP render and the socket's for half a minute, as the
   # overview's (`GamendWeb.AdminLive.Analytics`); Refresh computes again.
   defp load(socket, fresh? \\ false) do
-    %{segment: segment, days: days} = socket.assigns
+    %{segment: segment, trait: trait, days: days} = socket.assigns
     today = Date.utc_today()
-    key = {:admin_analytics_time, segment, days, today}
+    key = {:admin_analytics_time, segment, trait, days, today}
     if fresh?, do: Gamend.Cache.delete(key)
 
     report =
       Gamend.Cache.cached(key, [ttl: :timer.seconds(30)], fn ->
         _ = Analytics.flush()
-        TimeSpent.report(days, today, segment: segment)
+        TimeSpent.report(days, today, segment: Segment.with_trait(segment, trait))
       end)
 
     socket
@@ -63,7 +70,11 @@ defmodule GamendWeb.AdminLive.AnalyticsTime do
   defp here(assigns, changes) do
     params =
       Map.merge(
-        %{"segment" => Atom.to_string(assigns.segment), "days" => assigns.days},
+        %{
+          "segment" => Atom.to_string(assigns.segment),
+          "trait" => Segment.trait_param(assigns.trait),
+          "days" => assigns.days
+        },
         changes
       )
 
@@ -96,6 +107,7 @@ defmodule GamendWeb.AdminLive.AnalyticsTime do
               selected={@segment}
               to={&here(assigns, %{"segment" => Atom.to_string(&1)})}
             />
+            <.trait_picker traits={@traits} selected={@trait} />
             <.switch
               label="Window"
               options={[{7, "7 days"}, {30, "30 days"}, {90, "90 days"}]}

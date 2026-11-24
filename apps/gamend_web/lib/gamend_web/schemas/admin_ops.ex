@@ -235,16 +235,20 @@ defmodule GamendWeb.Schemas.AnalyticsSummary do
       dau: %Schema{type: :integer, description: "Seen today so far (UTC)"},
       wau: %Schema{type: :integer},
       mau: %Schema{type: :integer},
-      dau_7d_avg: %Schema{
+      dau_avg: %Schema{
         type: :number,
         format: :float,
-        description: "Average DAU of the 7 full days before today"
+        description: "Average DAU of the 30 full days before today"
+      },
+      stickiness_mau: %Schema{
+        type: :integer,
+        description: "Accounts seen in the 30 full days before today"
       },
       stickiness: %Schema{
         type: :number,
         format: :float,
         nullable: true,
-        description: "dau_7d_avg ÷ mau"
+        description: "dau_avg ÷ stickiness_mau"
       },
       new_users_7d: %Schema{type: :integer},
       new_users_30d: %Schema{type: :integer},
@@ -269,7 +273,8 @@ defmodule GamendWeb.Schemas.AnalyticsSummary do
       :dau,
       :wau,
       :mau,
-      :dau_7d_avg,
+      :dau_avg,
+      :stickiness_mau,
       :stickiness,
       :new_users_7d,
       :new_users_30d,

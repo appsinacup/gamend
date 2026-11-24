@@ -24,25 +24,35 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    {:noreply, socket |> assign(:segment, Segment.parse(params["segment"])) |> load()}
+    {:noreply,
+     socket
+     |> assign(:segment, Segment.parse(params["segment"]))
+     |> assign(:trait, Segment.parse_trait(params["trait"]))
+     |> assign(:traits, Analytics.trait_options())
+     |> load()}
   end
 
   event("refresh")
   @impl true
   def handle_event("refresh", _params, socket), do: {:noreply, load(socket, true)}
 
+  event("trait", trait: :string)
+
+  def handle_event("trait", params, socket),
+    do: {:noreply, push_patch(socket, to: here(socket.assigns, %{"trait" => params["trait"]}))}
+
   # Shared by the HTTP render and the socket's for half a minute, as the
   # overview's (`GamendWeb.AdminLive.Analytics`); Refresh computes again.
   defp load(socket, fresh? \\ false) do
-    segment = socket.assigns.segment
+    %{segment: segment, trait: trait} = socket.assigns
     today = Date.utc_today()
-    key = {:admin_analytics_features, segment, today}
+    key = {:admin_analytics_features, segment, trait, today}
     if fresh?, do: Gamend.Cache.delete(key)
 
     summary =
       Gamend.Cache.cached(key, [ttl: :timer.seconds(30)], fn ->
         _ = Analytics.flush()
-        Analytics.feature_summary(today, segment: segment)
+        Analytics.feature_summary(today, segment: Segment.with_trait(segment, trait))
       end)
 
     by_name = Map.new(summary, &{&1.name, &1})
@@ -58,11 +68,18 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
     assign(socket, :groups, groups)
   end
 
-  defp here(segment),
-    do:
-      link_to("/admin/analytics/features", %{"segment" => segment}, %{
-        "segment" => FilterValue.everything()
-      })
+  defp here(%{} = assigns, changes) do
+    params =
+      Map.merge(
+        %{
+          "segment" => Atom.to_string(assigns.segment),
+          "trait" => Segment.trait_param(assigns.trait)
+        },
+        changes
+      )
+
+    link_to("/admin/analytics/features", params, %{"segment" => FilterValue.everything()})
+  end
 
   defp explore(name, segment),
     do:
@@ -84,8 +101,9 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
               label="Segment"
               options={for s <- Segment.all(), do: {s, Segment.label(s)}}
               selected={@segment}
-              to={&here(Atom.to_string(&1))}
+              to={&here(assigns, %{"segment" => Atom.to_string(&1)})}
             />
+            <.trait_picker traits={@traits} selected={@trait} />
             <button phx-click="refresh" class="btn btn-ghost btn-sm">
               <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
             </button>

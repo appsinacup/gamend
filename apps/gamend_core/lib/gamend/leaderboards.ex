@@ -36,14 +36,17 @@ defmodule Gamend.Leaderboards do
 
   ## All time
 
-  A `:best` board with seasons (`all_time?/1`: a start or an end date) has
-  an all-time ranking too: every season of its slug read as one, each
-  player's (or label's) best row of them, ranked. `all_time: true` on
+  A `:best` or `:incr` board with seasons (`all_time?/1`: a start or an end
+  date) has an all-time ranking too: every season of its slug read as one,
+  ranked. A `:best` board's is each player's (or label's) best row of them;
+  an `:incr` board's, which counts, is the sum of them (a month of km, all
+  time the km of every month). `all_time: true` on
   `list_records/2`, `count_records/2`, `get_user_record/3` and
   `list_keys/2` reads it, per key, from any season of the slug.
 
   Those rows are kept on a hidden board of their own, `<slug>__all_time`:
-  a submit to a season raises it the way a `:best` submit does, an edited
+  a submit to a season raises it the way a `:best` submit does (an `:incr`
+  season's owner row is summed again), an edited
   or deleted season row reads its owner's best again, and a deleted season
   refills it. So All time reads like any board, indexed and cached, however
   many seasons and players there are. Computing it from the seasons on
@@ -1089,14 +1092,18 @@ defmodule Gamend.Leaderboards do
   # ---------------------------------------------------------------------------
 
   @all_time_suffix "__all_time"
+  # The operators whose seasons read as one all time: `:best` the best row of
+  # them, `:incr` their sum.
+  @all_time_operators [:best, :incr]
 
   @doc """
-  Whether a board has an all-time ranking: a `:best` board with seasons (a
-  start or an end date). *All time* above.
+  Whether a board has an all-time ranking: a `:best` or `:incr` board with
+  seasons (a start or an end date). *All time* above.
   """
   @spec all_time?(Leaderboard.t()) :: boolean()
-  def all_time?(%Leaderboard{operator: :best, starts_at: starts_at, ends_at: ends_at}),
-    do: not is_nil(starts_at) or not is_nil(ends_at)
+  def all_time?(%Leaderboard{operator: operator, starts_at: starts_at, ends_at: ends_at})
+      when operator in @all_time_operators,
+      do: not is_nil(starts_at) or not is_nil(ends_at)
 
   def all_time?(_leaderboard), do: false
 
@@ -1129,7 +1136,7 @@ defmodule Gamend.Leaderboards do
 
   defp newest_season(slug) do
     from(lb in Leaderboard,
-      where: lb.slug == ^slug and lb.operator == :best,
+      where: lb.slug == ^slug and lb.operator in ^@all_time_operators,
       where: not is_nil(lb.starts_at) or not is_nil(lb.ends_at),
       order_by: [desc: lb.inserted_at],
       limit: 1
@@ -1209,9 +1216,10 @@ defmodule Gamend.Leaderboards do
   end
 
   # Makes the all-time board when there is none, then fills it from scratch:
-  # each owner's best row of every season per key, at the time they first
-  # appeared (a `:best` board keeps a row's first insert time when it rises).
-  # Runs inside `with_all_time_lock/2`.
+  # each owner's best row of every season per key (an `:incr` slug's sum of
+  # them, with its newest row's metadata), at the time they first appeared (a
+  # `:best` board keeps a row's first insert time when it rises). Runs inside
+  # `with_all_time_lock/2`.
   defp fill_all_time(%Leaderboard{slug: slug, sort_order: sort_order} = season) do
     board =
       find_all_time_board(slug) ||
@@ -1231,18 +1239,25 @@ defmodule Gamend.Leaderboards do
     now = DateTime.utc_now(:second)
     Repo.delete_all(from(r in Record, where: r.leaderboard_id == ^board.id), timeout: :infinity)
 
+    # The row each owner's all-time row is read from: their best, or for a
+    # counting slug their newest (its metadata), the score their seasons' sum.
+    pick = if season.operator == :incr, do: [desc: :updated_at], else: record_order(sort_order)
+
     best =
       from(r in in_seasons(season, :all),
         select: %{
           id: r.id,
           n: over(row_number(), :best),
-          first_at: over(min(r.inserted_at), :owner)
+          first_at: over(min(r.inserted_at), :owner),
+          total: over(sum(r.score), :owner)
         },
         windows: [
           owner: [partition_by: [r.key, r.user_id, r.label]],
-          best: [partition_by: [r.key, r.user_id, r.label], order_by: ^record_order(sort_order)]
+          best: [partition_by: [r.key, r.user_id, r.label], order_by: ^pick]
         ]
       )
+
+    summed? = season.operator == :incr
 
     rows =
       from(r in Record,
@@ -1253,14 +1268,17 @@ defmodule Gamend.Leaderboards do
           label: r.label,
           key: r.key,
           score: r.score,
+          total: b.total,
           metadata: r.metadata,
           inserted_at: b.first_at
         }
       )
       |> Repo.stream(max_rows: 2_000, timeout: :infinity)
-      |> Stream.map(
-        &Map.merge(&1, %{id: UUIDv7.generate(), leaderboard_id: board.id, updated_at: now})
-      )
+      |> Stream.map(fn row ->
+        {total, row} = Map.pop(row, :total)
+        row = if summed?, do: %{row | score: to_integer(total)}, else: row
+        Map.merge(row, %{id: UUIDv7.generate(), leaderboard_id: board.id, updated_at: now})
+      end)
       |> Stream.chunk_every(2_000)
       |> Enum.reduce(0, fn chunk, total ->
         {inserted, _} = Repo.insert_all(Record, chunk, timeout: :infinity)
@@ -1286,6 +1304,9 @@ defmodule Gamend.Leaderboards do
   # From the season row as it is now, under the owner's row lock: an edit
   # that lowered the season row after this submit read it, and read the
   # all-time row again, was otherwise raised over by the score it replaced.
+  #
+  # A counting (`:incr`) season's row adds up: its owner's all-time row is
+  # their seasons' sum again (`rewrite_all_time_row/3`), under the same lock.
   defp keep_all_time(%Leaderboard{} = season, %Record{} = record) do
     with true <- all_time?(season),
          %Leaderboard{} = board <- all_time_board(season) do
@@ -1294,6 +1315,7 @@ defmodule Gamend.Leaderboards do
           case Repo.get(Record, record.id) do
             # Deleted since: the delete reads the all-time row again.
             nil -> {:ok, :gone}
+            current when season.operator == :incr -> summed(season, board, current)
             current -> raise_all_time_row(board, current)
           end
         end)
@@ -1313,6 +1335,11 @@ defmodule Gamend.Leaderboards do
     end
 
     :ok
+  end
+
+  defp summed(season, board, record) do
+    _ = rewrite_all_time_row(season, board, record)
+    {:ok, :summed}
   end
 
   defp raise_all_time_row(board, %Record{user_id: user_id} = row) when is_binary(user_id),
@@ -1364,7 +1391,7 @@ defmodule Gamend.Leaderboards do
 
     held = from(r in in_key(board.id, record.key), where: ^owner) |> Repo.one()
     rows = from(r in in_seasons(season, record.key), where: ^owner)
-    best = from(r in rows, order_by: ^record_order(season.sort_order), limit: 1) |> Repo.one()
+    best = all_time_row(season, rows)
 
     case {held, best} do
       {nil, nil} ->
@@ -1397,6 +1424,23 @@ defmodule Gamend.Leaderboards do
         |> Repo.insert!()
     end
   end
+
+  # The season row an owner's all-time row is: their best, or for a counting
+  # slug their newest, scored with their seasons' sum.
+  defp all_time_row(%Leaderboard{operator: :incr}, rows) do
+    case from(r in rows, order_by: [desc: :updated_at], limit: 1) |> Repo.one() do
+      nil -> nil
+      newest -> %{newest | score: to_integer(Repo.one(from(r in rows, select: sum(r.score))))}
+    end
+  end
+
+  defp all_time_row(season, rows),
+    do: from(r in rows, order_by: ^record_order(season.sort_order), limit: 1) |> Repo.one()
+
+  # `sum/1` is a Decimal on Postgres and an integer on SQLite.
+  defp to_integer(nil), do: 0
+  defp to_integer(%Decimal{} = n), do: Decimal.to_integer(n)
+  defp to_integer(n) when is_integer(n), do: n
 
   defp refresh_all_time_of(%Record{leaderboard_id: leaderboard_id} = record) do
     case get_leaderboard(leaderboard_id) do

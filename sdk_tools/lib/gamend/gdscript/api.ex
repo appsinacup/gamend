@@ -145,6 +145,7 @@ defmodule Gamend.GDScript.API do
       "snapshot" => [0],
       "summary" => [0, 1, 2],
       "track" => [1, 2, 3],
+      "trait_options" => [0, 1, 2],
       "wau" => [0, 1, 2],
       "weekly_cohorts" => [0, 1, 2]
     },

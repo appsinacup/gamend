@@ -36,14 +36,17 @@ defmodule Gamend.Leaderboards do
 
   ## All time
 
-  A `:best` board with seasons (`all_time?/1`: a start or an end date) has
-  an all-time ranking too: every season of its slug read as one, each
-  player's (or label's) best row of them, ranked. `all_time: true` on
+  A `:best` or `:incr` board with seasons (`all_time?/1`: a start or an end
+  date) has an all-time ranking too: every season of its slug read as one,
+  ranked. A `:best` board's is each player's (or label's) best row of them;
+  an `:incr` board's, which counts, is the sum of them (a month of km, all
+  time the km of every month). `all_time: true` on
   `list_records/2`, `count_records/2`, `get_user_record/3` and
   `list_keys/2` reads it, per key, from any season of the slug.
 
   Those rows are kept on a hidden board of their own, `<slug>__all_time`:
-  a submit to a season raises it the way a `:best` submit does, an edited
+  a submit to a season raises it the way a `:best` submit does (an `:incr`
+  season's owner row is summed again), an edited
   or deleted season row reads its owner's best again, and a deleted season
   refills it. So All time reads like any board, indexed and cached, however
   many seasons and players there are. Computing it from the seasons on
@@ -81,8 +84,8 @@ defmodule Gamend.Leaderboards do
   """
 
   @doc ~S"""
-    Whether a board has an all-time ranking: a `:best` board with seasons (a
-    start or an end date). *All time* above.
+    Whether a board has an all-time ranking: a `:best` or `:incr` board with
+    seasons (a start or an end date). *All time* above.
     
   """
   @spec all_time?(Gamend.Leaderboards.Leaderboard.t()) :: boolean()

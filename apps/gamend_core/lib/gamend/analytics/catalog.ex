@@ -85,13 +85,16 @@ defmodule Gamend.Analytics.Catalog do
   @typedoc """
   A funnel step's count: a counter's (or several counters') total over the
   window, the accounts made in it, those of them registered now, the people
-  given an entitlement key in it, or the payers in it.
+  given an entitlement key in it, those of them who paid after it
+  (`:entitlement_paid`, the step after an `:entitlement` one, so its share
+  is a trial's conversion), or the payers in it (whatever came before).
   """
   @type funnel_source ::
           {:counter, String.t() | [String.t()]}
           | :new_accounts
           | :registered
           | {:entitlement, String.t() | [String.t()]}
+          | {:entitlement_paid, String.t() | [String.t()]}
           | :payers
 
   @typedoc "A rate's bands: low under the first, fair up to the second, good from it."
@@ -102,6 +105,7 @@ defmodule Gamend.Analytics.Catalog do
           activation: %{label: String.t(), events: [String.t()]} | nil,
           funnel: [%{label: String.t(), source: funnel_source()}],
           trial_keys: [String.t()],
+          traits: [%{field: String.t(), label: String.t()}],
           bands: %{atom() => band()},
           time: map()
         }
@@ -193,6 +197,9 @@ defmodule Gamend.Analytics.Catalog do
     * `funnel` — the steps, in order (`t:funnel_source/0`). Default:
       accounts made, registered, paid.
     * `trial_keys` — the entitlement keys that are a free trial. Default none.
+    * `traits` — `[%{field, label}]`: the event fields the Overview, Time and
+      Features tabs filter accounts by (`Gamend.Analytics.Segment.with_trait/2`:
+      "Device: phone"), in the order they are listed. Default none.
     * `bands` — per rate (`:stickiness`, `:d1`, `:d7`, `:d30`), `{fair, good}`;
       the host's replace core's one by one.
     * `time` — how the Time tab reads the rows (`Gamend.Analytics.TimeSpent`):
@@ -223,6 +230,10 @@ defmodule Gamend.Analytics.Catalog do
         |> Map.get(:funnel, @default_funnel)
         |> Enum.map(&%{label: to_string(&1.label), source: &1.source}),
       trial_keys: host |> Map.get(:trial_keys, []) |> Enum.map(&to_string/1),
+      traits:
+        host
+        |> Map.get(:traits, [])
+        |> Enum.map(&%{field: to_string(&1.field), label: to_string(&1.label)}),
       bands: Map.merge(@default_bands, Map.get(host, :bands, %{})),
       time: time(Map.get(host, :time, %{}))
     }

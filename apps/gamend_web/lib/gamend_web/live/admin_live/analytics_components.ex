@@ -17,6 +17,7 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
   import GamendWeb.CoreComponents, only: [eyebrow: 1, panel: 1]
 
   alias Gamend.Analytics.Catalog
+  alias Gamend.Analytics.Segment
 
   @core_tabs [
     %{id: "overview", label: "Overview", path: "/admin/analytics"},
@@ -57,6 +58,35 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
       </nav>
       <p :if={@note} class="text-sm text-muted">{@note}</p>
     </div>
+    """
+  end
+
+  attr :traits, :list, required: true, doc: "`Gamend.Analytics.trait_options/2`'s"
+  attr :selected, :any, default: nil, doc: "the trait picked (`{field, value}`), nil for everyone"
+
+  @doc """
+  The trait the page's accounts are narrowed to (`Segment.with_trait/2`):
+  a select, "Everyone" or "Device: phone", that sends `trait` (the page
+  patches itself to `?trait=device:phone`). Nothing with no trait declared.
+  """
+  def trait_picker(assigns) do
+    assigns = assign(assigns, :picked, Segment.trait_param(assigns.selected))
+
+    ~H"""
+    <form :if={@traits != []} phx-change="trait" class="contents">
+      <select name="trait" class="select select-sm w-auto" aria-label="Trait">
+        <option value="" selected={is_nil(@picked)}>Everyone</option>
+        <optgroup :for={trait <- @traits} label={trait.label}>
+          <option
+            :for={value <- trait.values}
+            value={"#{trait.field}:#{value}"}
+            selected={@picked == "#{trait.field}:#{value}"}
+          >
+            {trait.label}: {value}
+          </option>
+        </optgroup>
+      </select>
+    </form>
     """
   end
 

@@ -32,6 +32,8 @@ defmodule GamendWeb.AdminLive.Analytics do
     {:noreply,
      socket
      |> assign(:segment, Segment.parse(params["segment"]))
+     |> assign(:trait, Segment.parse_trait(params["trait"]))
+     |> assign(:traits, Analytics.trait_options())
      |> assign(:days, int_param(params, UrlParam.days(), @windows, 30))
      |> load()}
   end
@@ -40,20 +42,25 @@ defmodule GamendWeb.AdminLive.Analytics do
   @impl true
   def handle_event("refresh", _params, socket), do: {:noreply, load(socket, true)}
 
+  event("trait", trait: :string)
+
+  def handle_event("trait", params, socket),
+    do: {:noreply, push_patch(socket, to: here(socket.assigns, %{"trait" => params["trait"]}))}
+
   # A view renders twice (the HTTP page, then the socket), and at a million
   # players one computation takes seconds, so the two share it for half a
   # minute. Refresh computes again.
   defp load(socket, fresh? \\ false) do
-    %{segment: segment, days: days} = socket.assigns
+    %{segment: segment, trait: trait, days: days} = socket.assigns
     today = Date.utc_today()
-    key = {:admin_analytics_overview, segment, days, today}
+    key = {:admin_analytics_overview, segment, trait, days, today}
     if fresh?, do: Gamend.Cache.delete(key)
 
     data =
       Gamend.Cache.cached(key, [ttl: :timer.seconds(30)], fn ->
         # Gathered for up to a flush window; a reader wants now.
         _ = Analytics.flush()
-        opts = [segment: segment]
+        opts = [segment: Segment.with_trait(segment, trait)]
 
         %{
           summary: Analytics.summary(today, opts),
@@ -78,7 +85,11 @@ defmodule GamendWeb.AdminLive.Analytics do
   defp here(assigns, changes) do
     params =
       Map.merge(
-        %{"segment" => Atom.to_string(assigns.segment), "days" => assigns.days},
+        %{
+          "segment" => Atom.to_string(assigns.segment),
+          "trait" => Segment.trait_param(assigns.trait),
+          "days" => assigns.days
+        },
         changes
       )
 
@@ -101,6 +112,7 @@ defmodule GamendWeb.AdminLive.Analytics do
               selected={@segment}
               to={&here(assigns, %{"segment" => Atom.to_string(&1)})}
             />
+            <.trait_picker traits={@traits} selected={@trait} />
             <.switch
               label="Window"
               options={[{30, "30 days"}, {90, "90 days"}]}
@@ -136,7 +148,7 @@ defmodule GamendWeb.AdminLive.Analytics do
             id="stat-stickiness"
             title="Stickiness"
             value={pct(@summary.stickiness)}
-            desc={"avg DAU #{num(Float.round(@summary.dau_7d_avg * 1.0, 1))} ÷ MAU"}
+            desc={"avg DAU #{num(Float.round(@summary.dau_avg * 1.0, 1))} ÷ MAU #{num(@summary.stickiness_mau)}, 30 full days"}
             band={band(@summary.stickiness, @overview.bands[:stickiness])}
             hint={hint(@meanings, "Stickiness")}
           />
@@ -175,7 +187,7 @@ defmodule GamendWeb.AdminLive.Analytics do
         <p class="text-xs text-muted">
           New accounts: {num(@summary.new_users_7d)} in the last 7 days, {num(@summary.new_users_30d)} in the last 30. Retention is pooled over the sign-ups of the last 60 days{since_note(
             @summary.retention_since
-          )} that have reached each horizon (a D7 needs a sign-up at least 7 days old); n is how many accounts a rate pools, and "—" means none yet.
+          )} whose horizon day is over (today is partial, so a D7 needs a sign-up at least 8 days old); n is how many accounts a rate pools, and "—" means none yet.
         </p>
 
         <.panel>
@@ -224,7 +236,7 @@ defmodule GamendWeb.AdminLive.Analytics do
           <.panel title="Activation" id="analytics-activation" class="space-y-3">
             <%= if @activation do %>
               <p class="text-xs text-muted">
-                Of the accounts made in the last 30 days{since_note(@summary.retention_since)}, the
+                Of the accounts made in the 30 days before today{since_note(@summary.retention_since)}, the
                 share that {String.downcase(@activation.label)} on the day they were made, and how
                 many of each came back the next day.
               </p>
@@ -343,7 +355,7 @@ defmodule GamendWeb.AdminLive.Analytics do
                 <dd class="text-right tabular-nums">
                   {pct(@money.trials.conversion)}
                   <span class="text-xs text-muted">
-                    {num(@money.trials.paid)} of {num(@money.trials.taken)}
+                    {num(@money.trials.paid)} of {num(@money.trials.decided)} ended or paid
                   </span>
                 </dd>
               <% end %>
@@ -407,9 +419,9 @@ defmodule GamendWeb.AdminLive.Analytics do
           </div>
           <p class="mt-2 text-xs text-muted">
             Returning is Active less the accounts made that day. WAU / MAU on a row are the distinct
-            accounts of the 7 / 30 days ending that day, and Stick. is that day's Active ÷ MAU. D1 /
+            accounts of the 7 / 30 days ending that day, and Stick. is that day's Active ÷ MAU ("—" today, still partial). D1 /
             D7 / D30 on a row are that day's sign-ups: the share seen again exactly 1 / 7 / 30 days
-            later ("—" before the first day whose visits all count).
+            later ("—" until that day is over, or before the first day whose visits all count).
           </p>
         </.panel>
       </div>
@@ -428,8 +440,8 @@ defmodule GamendWeb.AdminLive.Analytics do
       {"WAU", "Accounts seen on any of the last 7 days.", nil},
       {"MAU", "Accounts seen on any of the last 30 days.", nil},
       {"Stickiness",
-       "How much of the month comes on an average day: the average DAU of the 7 full days " <>
-         "before today ÷ MAU. A typical app is about 14%, the top quarter 20% " <>
+       "How much of the month comes on an average day: the average DAU of the 30 full days " <>
+         "before today ÷ the accounts seen in those 30 days. A typical app is about 14%, the top quarter 20% " <>
          "and up, Duolingo about 37%.", bands[:stickiness]},
       {"D1",
        "Of the accounts made, the share seen again the next day. #{pooled} Across mobile " <>

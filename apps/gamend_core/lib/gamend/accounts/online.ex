@@ -90,10 +90,29 @@ defmodule Gamend.Accounts.Online do
     end
   end
 
-  @doc "A socket of `user_id`'s is still open: `last_seen_at` refreshed."
+  @doc """
+  A socket of `user_id`'s is still open: `last_seen_at` refreshed, and the
+  user put back online (`set_user_online/1`, a no-op from the cache while
+  they are) if something marked them offline meanwhile, so their lobby,
+  party, friends and the game's `after_user_online` hear it.
+  """
   @spec heartbeat(Ecto.UUID.t()) :: :ok
   def heartbeat(user_id) when is_binary(user_id) do
     _ = Accounts.touch_last_seen_by_id(user_id)
+
+    # The cached read `set_user_online/1` answers from: a write only on a
+    # real offline to online move, and the lobby's `member_online` with it,
+    # as at a connect.
+    with %User{is_online: false} <- Accounts.get_user(user_id) do
+      case Accounts.set_user_online(user_id) do
+        {:ok, _user} ->
+          broadcast_member_presence(user_id, true)
+
+        {:error, reason} ->
+          Logger.warning("online: heartbeat could not put #{user_id} back: #{inspect(reason)}")
+      end
+    end
+
     :ok
   end
 

@@ -45,10 +45,11 @@ defmodule Gamend.Analytics do
 
   @doc ~S"""
     Activation, when the host declares it (`Catalog.overview/0`'s
-    `activation`): of the accounts made in the 30 days ending on `today` (from
-    `retention_since` on), how many reported one of its events on the day
-    they were made, and D1 for those that did and those that did not
-    (cohorts before today only). `%{label, new, activated, rate,
+    `activation`): of the accounts made in the 30 full days before `today`
+    (from `retention_since` on; today's are still in their first day), how
+    many reported one of its events on the day they were made, and D1 for
+    those that did and those that did not (cohorts whose next day is over:
+    before yesterday). `%{label, new, activated, rate,
     d1_activated, d1_activated_cohort, d1_other, d1_other_cohort}`, or nil
     with no activation declared. Options: `segment:` (`segments/0`).
     
@@ -166,8 +167,9 @@ defmodule Gamend.Analytics do
     new_users, d1, d7, d30}`. `new_active` are the accounts made that day and
     seen on it, `returning` the rest of `active`. `wau` / `mau` are the
     distinct users of the 7 / 30 days ending on that day, and `stickiness` is
-    `active ÷ mau` of that day. A retention rate is `nil` when the cohort is
-    empty, the horizon day has not happened yet, or the cohort is older than
+    `active ÷ mau` of that day (nil today, whose `active` is partial). A
+    retention rate is `nil` when the cohort is
+    empty, the horizon day is not over yet, or the cohort is older than
     `retention_since` (`Gamend.Analytics.Catalog.overview/0`). Options:
     `segment:` (`segments/0`).
     
@@ -358,9 +360,10 @@ defmodule Gamend.Analytics do
     deliveries that failed or were refused (`Gamend.Payments.Counters`),
     revenue by currency (completed production purchases, minor units),
     payers, and the free trials when the host names their keys
-    (`Catalog.overview/0`'s `trial_keys`): `%{started, running, taken, paid,
-    conversion}`, `paid` the people with a completed purchase after their
-    trial began.
+    (`Catalog.overview/0`'s `trial_keys`): `%{started, running, taken,
+    decided, paid, conversion}`, `paid` the people with a completed purchase
+    after their trial began, `decided` those whose trial ended or who paid,
+    and `conversion` paid ÷ decided.
     
   """
   @spec money(pos_integer(), Date.t()) :: map()
@@ -522,11 +525,13 @@ defmodule Gamend.Analytics do
 
   @doc ~S"""
     Headline numbers as of `today`: DAU (today so far) / WAU / MAU,
-    stickiness (`dau_7d_avg`, the average DAU of the 7 full days before today,
-    ÷ MAU: today's DAU is partial until midnight), new users
+    stickiness (`dau_avg`, the average DAU of the 30 full days before today,
+    ÷ `stickiness_mau`, the accounts seen in those same 30 days: today is
+    partial until midnight, and a shorter DAU window than the MAU's reads high
+    while the site grows), new users
     in the last 7 and 30 days, D1 / D7 / D30 pooled over every cohort of the
-    last 60 days that is old enough to have reached the
-    horizon and not older than `retention_since` (`Catalog.overview/0`), each
+    last 60 days whose horizon day is over and not older
+    than `retention_since` (`Catalog.overview/0`), each
     with its pool's size (`d1_cohort`, …), and payer conversion (distinct users
     with a completed purchase in the last 30 days ÷ MAU). Options: `segment:`
     (`segments/0`).
@@ -584,6 +589,25 @@ defmodule Gamend.Analytics do
 
       _ ->
         raise "Gamend.Analytics.track/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The host's traits (`Catalog.overview/0`'s `traits`) with the values the
+    event rows of the `days` days ending on `today` hold, most accounts first,
+    20 at most each: `[%{field, label, values: [value]}]`, a trait with no
+    value left out. What a page offers to filter accounts by
+    (`Segment.with_trait/2`). Cached for a few minutes.
+    
+  """
+  @spec trait_options(pos_integer(), Date.t()) :: [map()]
+  def trait_options(_days \\ 30, _today \\ Date.utc_today()) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Analytics.trait_options/2 is a stub - only available at runtime on Gamend"
     end
   end
 

@@ -35,15 +35,19 @@ defmodule Gamend.Accounts.Presence do
   @doc """
   Lightweight version of `touch_last_seen/1` that accepts a user ID directly.
   Performs a single UPDATE without loading the full struct first, setting
-  `last_seen_at` to now and `is_online` to true, then invalidates the cache.
-  Fire-and-forget — errors are ignored.
+  `last_seen_at` to now. Fire-and-forget — errors are ignored.
+
+  `is_online` is not touched: an offline to online move is `set_user_online/1`'s,
+  which tells the user's lobby, party and friends and runs `after_user_online`.
+  Written here, the flag came back with none of that, and a game's offline
+  mark (a voyage's "disconnected" card) stayed up on a player back online.
   """
   @spec touch_last_seen_by_id(Ecto.UUID.t()) :: :ok
   def touch_last_seen_by_id(user_id) when is_binary(user_id) do
     now = DateTime.utc_now(:second)
 
     from(u in User, where: u.id == ^user_id)
-    |> Repo.update_all(set: [last_seen_at: now, is_online: true])
+    |> Repo.update_all(set: [last_seen_at: now])
 
     # Update the cached struct in place rather than busting it: this runs every
     # few minutes per connected socket, and a delete would force cold get_user
@@ -54,7 +58,7 @@ defmodule Gamend.Accounts.Presence do
         _ =
           Gamend.Cache.put(
             {:accounts, :user, user_id},
-            %{cached | last_seen_at: now, is_online: true},
+            %{cached | last_seen_at: now},
             ttl: Accounts.user_cache_ttl_ms()
           )
 

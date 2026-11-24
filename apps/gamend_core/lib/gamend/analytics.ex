@@ -809,6 +809,41 @@ defmodule Gamend.Analytics do
 
   defp in_segment(query, segment), do: Segment.restrict(query, segment)
 
+  @doc """
+  The host's traits (`Catalog.overview/0`'s `traits`) with the values the
+  event rows of the `days` days ending on `today` hold, most accounts first,
+  #{20} at most each: `[%{field, label, values: [value]}]`, a trait with no
+  value left out. What a page offers to filter accounts by
+  (`Segment.with_trait/2`). Cached for a few minutes.
+  """
+  @spec trait_options(pos_integer(), Date.t()) :: [map()]
+  def trait_options(days \\ 30, today \\ Date.utc_today()) do
+    Cache.cached({:analytics, :trait_options, days, today}, [ttl: @stats_cache_ttl_ms], fn ->
+      start = start_of_day(Date.add(today, -(days - 1)))
+
+      for %{field: field, label: label} <- Catalog.overview().traits,
+          values = trait_values(field, start),
+          values != [] do
+        %{field: field, label: label, values: values}
+      end
+    end)
+  end
+
+  # `->>` with a CAST: the same SQL on Postgres (jsonb) and SQLite (JSON
+  # text), as `Gamend.Analytics.Explore` reads a field.
+  defp trait_values(field, start) do
+    from(e in Event,
+      where: e.inserted_at >= ^start and not is_nil(e.user_id),
+      where: not is_nil(fragment("? ->> CAST(? AS TEXT)", e.dims, ^field)),
+      group_by: fragment("? ->> CAST(? AS TEXT)", e.dims, ^field),
+      order_by: [desc: count(e.user_id, :distinct)],
+      limit: 20,
+      select: fragment("? ->> CAST(? AS TEXT)", e.dims, ^field)
+    )
+    |> Repo.all()
+    |> Enum.map(&to_string/1)
+  end
+
   # -- active users --------------------------------------------------------------
 
   @doc """
@@ -845,8 +880,9 @@ defmodule Gamend.Analytics do
   new_users, d1, d7, d30}`. `new_active` are the accounts made that day and
   seen on it, `returning` the rest of `active`. `wau` / `mau` are the
   distinct users of the 7 / 30 days ending on that day, and `stickiness` is
-  `active ÷ mau` of that day. A retention rate is `nil` when the cohort is
-  empty, the horizon day has not happened yet, or the cohort is older than
+  `active ÷ mau` of that day (nil today, whose `active` is partial). A
+  retention rate is `nil` when the cohort is
+  empty, the horizon day is not over yet, or the cohort is older than
   `retention_since` (`Gamend.Analytics.Catalog.overview/0`). Options:
   `segment:` (`segments/0`).
   """
@@ -873,7 +909,7 @@ defmodule Gamend.Analytics do
         returning: max(active - new_active, 0),
         wau: wau,
         mau: mau,
-        stickiness: ratio(active, mau),
+        stickiness: if(Date.compare(day, today) == :lt, do: ratio(active, mau)),
         new_users: Map.get(sizes, day, 0),
         d1: cohort_rate(retained, day, 1, size, today),
         d7: cohort_rate(retained, day, 7, size, today),
@@ -959,11 +995,13 @@ defmodule Gamend.Analytics do
 
   @doc """
   Headline numbers as of `today`: DAU (today so far) / WAU / MAU,
-  stickiness (`dau_7d_avg`, the average DAU of the 7 full days before today,
-  ÷ MAU: today's DAU is partial until midnight), new users
+  stickiness (`dau_avg`, the average DAU of the 30 full days before today,
+  ÷ `stickiness_mau`, the accounts seen in those same 30 days: today is
+  partial until midnight, and a shorter DAU window than the MAU's reads high
+  while the site grows), new users
   in the last 7 and 30 days, D1 / D7 / D30 pooled over every cohort of the
-  last #{@cohort_window_days} days that is old enough to have reached the
-  horizon and not older than `retention_since` (`Catalog.overview/0`), each
+  last #{@cohort_window_days} days whose horizon day is over and not older
+  than `retention_since` (`Catalog.overview/0`), each
   with its pool's size (`d1_cohort`, …), and payer conversion (distinct users
   with a completed purchase in the last 30 days ÷ MAU). Options: `segment:`
   (`segments/0`).
@@ -983,7 +1021,9 @@ defmodule Gamend.Analytics do
         {n, pooled_rate(sizes, retained, n, today, since)}
       end)
 
-    dau_7d_avg = average_dau(Date.add(today, -7), Date.add(today, -1), segment)
+    yesterday = Date.add(today, -1)
+    dau_avg = average_dau(Date.add(today, -30), yesterday, segment)
+    stickiness_mau = mau(yesterday, opts)
     payers = payers_since(Date.add(today, -29), opts)
 
     %{
@@ -992,8 +1032,9 @@ defmodule Gamend.Analytics do
       dau: dau,
       wau: wau(today, opts),
       mau: mau,
-      dau_7d_avg: dau_7d_avg,
-      stickiness: ratio(dau_7d_avg, mau),
+      dau_avg: dau_avg,
+      stickiness_mau: stickiness_mau,
+      stickiness: ratio(dau_avg, stickiness_mau),
       new_users_7d: sum_sizes(sizes, Date.add(today, -6), today),
       new_users_30d: sum_sizes(sizes, Date.add(today, -29), today),
       retention_since: since,
@@ -1148,10 +1189,11 @@ defmodule Gamend.Analytics do
 
   @doc """
   Activation, when the host declares it (`Catalog.overview/0`'s
-  `activation`): of the accounts made in the 30 days ending on `today` (from
-  `retention_since` on), how many reported one of its events on the day
-  they were made, and D1 for those that did and those that did not
-  (cohorts before today only). `%{label, new, activated, rate,
+  `activation`): of the accounts made in the 30 full days before `today`
+  (from `retention_since` on; today's are still in their first day), how
+  many reported one of its events on the day they were made, and D1 for
+  those that did and those that did not (cohorts whose next day is over:
+  before yesterday). `%{label, new, activated, rate,
   d1_activated, d1_activated_cohort, d1_other, d1_other_cohort}`, or nil
   with no activation declared. Options: `segment:` (`segments/0`).
   """
@@ -1164,9 +1206,9 @@ defmodule Gamend.Analytics do
   end
 
   defp activation(label, events, today, opts) do
-    first = latest(Date.add(today, -29), retention_since())
+    first = latest(Date.add(today, -30), retention_since())
     start = start_of_day(first)
-    stop = start_of_day(Date.add(today, 1))
+    stop = start_of_day(today)
 
     made =
       from(u in User,
@@ -1194,7 +1236,7 @@ defmodule Gamend.Analytics do
       CASE WHEN EXISTS (
         SELECT 1 FROM #{ActivityDay.__schema__(:source)} a
         WHERE a.user_id = days.user_id AND #{epoch_day("a.day")} = days.s + 1) THEN 1 ELSE 0 END AS back,
-      CASE WHEN days.s < #{epoch_n(today)} THEN 1 ELSE 0 END AS old_enough,
+      CASE WHEN days.s < #{epoch_n(today) - 1} THEN 1 ELSE 0 END AS old_enough,
       COUNT(*)
     FROM days
     GROUP BY 1, 2, 3
@@ -1294,6 +1336,24 @@ defmodule Gamend.Analytics do
     |> to_int()
   end
 
+  defp funnel_count({:entitlement_paid, keys}, first, today) do
+    keys = List.wrap(keys)
+
+    from(e in Entitlement,
+      join: p in Purchase,
+      on:
+        p.user_id == e.user_id and p.status == ^PurchaseStatus.completed() and
+          p.inserted_at >= e.inserted_at,
+      where: e.key in ^keys,
+      where:
+        e.inserted_at >= ^start_of_day(first) and
+          e.inserted_at < ^start_of_day(Date.add(today, 1)),
+      select: count(e.user_id, :distinct)
+    )
+    |> Repo.one()
+    |> to_int()
+  end
+
   defp funnel_count(:payers, first, _today), do: payers_since(first)
 
   @doc """
@@ -1302,9 +1362,10 @@ defmodule Gamend.Analytics do
   deliveries that failed or were refused (`Gamend.Payments.Counters`),
   revenue by currency (completed production purchases, minor units),
   payers, and the free trials when the host names their keys
-  (`Catalog.overview/0`'s `trial_keys`): `%{started, running, taken, paid,
-  conversion}`, `paid` the people with a completed purchase after their
-  trial began.
+  (`Catalog.overview/0`'s `trial_keys`): `%{started, running, taken,
+  decided, paid, conversion}`, `paid` the people with a completed purchase
+  after their trial began, `decided` those whose trial ended or who paid,
+  and `conversion` paid ÷ decided.
   """
   @spec money(pos_integer(), Date.t()) :: map()
   def money(days \\ 30, today \\ Date.utc_today()) do
@@ -1346,30 +1407,36 @@ defmodule Gamend.Analytics do
     base = from(e in Entitlement, where: e.key in ^keys)
     taken = people.(base)
 
-    paid =
-      people.(
-        from(e in base,
-          join: p in Purchase,
-          on:
-            p.user_id == e.user_id and p.status == ^PurchaseStatus.completed() and
-              p.inserted_at >= e.inserted_at
-        )
+    paid_after = fn query ->
+      from(e in query,
+        join: p in Purchase,
+        on:
+          p.user_id == e.user_id and p.status == ^PurchaseStatus.completed() and
+            p.inserted_at >= e.inserted_at
       )
+    end
+
+    running_base =
+      where(
+        base,
+        [e],
+        e.status == ^EntitlementStatus.active() and is_nil(e.revoked_at) and
+          (is_nil(e.expires_at) or e.expires_at > ^now)
+      )
+
+    paid = people.(paid_after.(base))
+    running = people.(running_base)
+    # A trial still running has not chosen yet: conversion is over the ones
+    # that ended or paid (2026-11-24: 0 of 24 read as a verdict while 19 ran).
+    decided = taken - running + people.(paid_after.(running_base))
 
     %{
       started: people.(where(base, [e], e.inserted_at >= ^start)),
-      running:
-        people.(
-          where(
-            base,
-            [e],
-            e.status == ^EntitlementStatus.active() and is_nil(e.revoked_at) and
-              (is_nil(e.expires_at) or e.expires_at > ^now)
-          )
-        ),
+      running: running,
       taken: taken,
+      decided: decided,
       paid: paid,
-      conversion: ratio(paid, taken)
+      conversion: ratio(paid, decided)
     }
   end
 
@@ -1427,23 +1494,25 @@ defmodule Gamend.Analytics do
     %{sizes: sizes, retained: retained}
   end
 
-  # Retention of one cohort at horizon `n`: nil until day+n has happened.
+  # Retention of one cohort at horizon `n`: nil until day+n is over. Today is
+  # partial until midnight, so a horizon of today would read low (yesterday's
+  # D1 read 2.9% at 01:00 against 10% the days before, 2026-11-24).
   defp cohort_rate(_retained, _day, _n, 0, _today), do: nil
 
   defp cohort_rate(retained, day, n, size, today) do
     target = Date.add(day, n)
 
-    if Date.compare(target, today) == :gt,
-      do: nil,
-      else: Map.get(retained, {day, target}, 0) / size
+    if Date.compare(target, today) == :lt,
+      do: Map.get(retained, {day, target}, 0) / size,
+      else: nil
   end
 
   # Sum of retained over sum of cohort sizes, `{rate, accounts pooled}`,
-  # cohorts old enough and counted in full only. Pooling (rather than
-  # averaging per-cohort rates) so a day with two sign-ups does not weigh as
-  # much as a day with two hundred.
+  # cohorts whose horizon day is over (`cohort_rate/5`) and counted in full
+  # only. Pooling (rather than averaging per-cohort rates) so a day with two
+  # sign-ups does not weigh as much as a day with two hundred.
   defp pooled_rate(sizes, retained, n, today, since) do
-    latest = Date.add(today, -n)
+    latest = Date.add(today, -(n + 1))
 
     {kept, total} =
       Enum.reduce(sizes, {0, 0}, fn {day, size}, {kept, total} ->

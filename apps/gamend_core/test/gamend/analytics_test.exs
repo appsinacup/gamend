@@ -117,7 +117,8 @@ defmodule Gamend.AnalyticsTest do
 
   describe "cohorts" do
     test "daily_series reports new users, active users and strict D1/D7 per cohort" do
-      cohort_day = Date.add(@today, -7)
+      # Eight days back, so its day 7 is over (today is partial).
+      cohort_day = Date.add(@today, -8)
 
       # Three sign-ups on cohort_day: one back the next day and on day 7, one
       # back only on day 7, one never again.
@@ -149,21 +150,27 @@ defmodule Gamend.AnalyticsTest do
       empty = Enum.find(series, &(&1.day == Date.add(@today, -3)))
       assert empty.new_users == 0
       assert empty.d1 == nil
+
+      # Today is partial: no stickiness yet.
+      assert List.last(series).stickiness == nil
     end
 
-    test "summary pools D1 over cohorts old enough and skips today's cohort" do
-      # Yesterday: 2 sign-ups, 1 back today → D1 50%.
-      y1 = user_registered_on(Date.add(@today, -1))
-      _y2 = user_registered_on(Date.add(@today, -1))
-      seen(y1, @today)
+    test "summary pools D1 over cohorts whose next day is over" do
+      # Two days ago: 2 sign-ups, 1 back yesterday → D1 50%.
+      y1 = user_registered_on(Date.add(@today, -2))
+      _y2 = user_registered_on(Date.add(@today, -2))
+      seen(y1, Date.add(@today, -1))
 
-      # Two days ago: 2 sign-ups, both back the next day → D1 100%.
-      d1 = user_registered_on(Date.add(@today, -2))
-      d2 = user_registered_on(Date.add(@today, -2))
-      seen(d1, Date.add(@today, -1))
-      seen(d2, Date.add(@today, -1))
+      # Three days ago: 2 sign-ups, both back the next day → D1 100%.
+      d1 = user_registered_on(Date.add(@today, -3))
+      d2 = user_registered_on(Date.add(@today, -3))
+      seen(d1, Date.add(@today, -2))
+      seen(d2, Date.add(@today, -2))
 
-      # Today: cannot have a D1 yet, must not dilute the pool.
+      # Yesterday and today: their next day is not over (today is partial),
+      # so they must not dilute the pool, even with one back today.
+      late = user_registered_on(Date.add(@today, -1))
+      seen(late, @today)
       _t = user_registered_on(@today)
 
       summary = Analytics.summary(@today)
@@ -171,14 +178,15 @@ defmodule Gamend.AnalyticsTest do
       assert_in_delta summary.d1, 0.75, 1.0e-9
       assert summary.d7 == nil
       assert summary.d30 == nil
-      assert summary.new_users_7d == 5
-      assert summary.new_users_30d == 5
+      assert summary.new_users_7d == 6
+      assert summary.new_users_30d == 6
       assert summary.dau == 1
-      assert summary.mau == 3
-      # The 7 full days before today: 2 accounts seen yesterday, none on the
-      # 6 before, so 2 / 7 a day over the MAU of 3.
-      assert_in_delta summary.dau_7d_avg, 2 / 7, 1.0e-9
-      assert_in_delta summary.stickiness, 2 / 21, 1.0e-9
+      assert summary.mau == 4
+      # The 30 full days before today: 3 rows (y1, d1, d2), so 3 / 30 a day,
+      # over the 3 accounts seen in those same 30 days.
+      assert_in_delta summary.dau_avg, 3 / 30, 1.0e-9
+      assert summary.stickiness_mau == 3
+      assert_in_delta summary.stickiness, 1 / 30, 1.0e-9
       assert summary.d1_cohort == 4
       assert summary.payers_30d == 0
       assert summary.conversion_30d == 0.0

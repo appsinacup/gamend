@@ -98,9 +98,10 @@ names which keys it holds. A guest is in no list, as on the website.
 
 ## All time
 
-A `:best` board with seasons (a start or an end date, `all_time?/1`) also
-has an all-time ranking: every board under its slug read as one, each
-player's (or label's) best row of them, ranked per key. `all_time: true` on
+A `:best` or `:incr` board with seasons (a start or an end date,
+`all_time?/1`) also has an all-time ranking: every board under its slug read
+as one, ranked per key. A `:best` board's is each player's (or label's) best
+row of them; an `:incr` board's, which counts (km a month), the sum of them. `all_time: true` on
 `list_records/2`, `count_records/2`, `get_user_record/3` and `list_keys/2`
 reads it, from any season's id.
 

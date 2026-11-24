@@ -13,7 +13,8 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
   `enabled: false` in the app config turns the sweep off entirely (tests).
 
   A connected socket refreshes `last_seen_at` on a heartbeat derived from the
-  threshold (`heartbeat_ms/0`), so a live player is never swept.
+  threshold (`heartbeat_ms/0`), and a player with a socket still tracked on
+  `Gamend.Presence` is never swept, only has `last_seen_at` refreshed.
   """
 
   use GenServer
@@ -121,7 +122,7 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
   def do_sweep(threshold_s) do
     cutoff = DateTime.utc_now() |> DateTime.add(-threshold_s, :second)
 
-    stale_users =
+    stale =
       from(u in User,
         where: u.is_online == true,
         where: is_nil(u.last_seen_at) or u.last_seen_at < ^cutoff,
@@ -129,7 +130,19 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
       )
       |> Repo.all()
 
-    Enum.each(stale_users, fn user_id ->
+    # A player with a socket still tracked is not gone, however old their
+    # `last_seen_at`: a page's heartbeat comes `heartbeat_ms/0` after it
+    # opens, and a connect while already online writes nothing, so a player
+    # moving to a new page more often than that never refreshed it, and was
+    # swept mid-voyage with their page open (prod, 2026-11-24: the others
+    # saw them "disconnected"). Presence is the source of truth; their
+    # `last_seen_at` is refreshed here instead, in one write. An entry whose
+    # node is gone does not count (the tracker keeps a down replica's entries
+    # until its permdown), so this net still catches a crashed node's players.
+    {live, gone} = Enum.split_with(stale, &live?/1)
+    refresh(live)
+
+    Enum.each(gone, fn user_id ->
       case Accounts.set_user_offline(user_id) do
         {:ok, _} ->
           :ok
@@ -141,7 +154,26 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
       end
     end)
 
-    length(stale_users)
+    length(gone)
+  end
+
+  defp live?(user_id) do
+    nodes = [node() | Node.list()]
+
+    user_id
+    |> Gamend.Presence.users_topic()
+    |> Gamend.Presence.tracked(user_id)
+    |> Enum.any?(fn {pid, _meta} ->
+      if node(pid) == node(), do: Process.alive?(pid), else: node(pid) in nodes
+    end)
+  end
+
+  defp refresh([]), do: :ok
+
+  defp refresh(user_ids) do
+    now = DateTime.utc_now(:second)
+    _ = from(u in User, where: u.id in ^user_ids) |> Repo.update_all(set: [last_seen_at: now])
+    :ok
   end
 
   # ── Helpers ─────────────────────────────────────────────────────────────────

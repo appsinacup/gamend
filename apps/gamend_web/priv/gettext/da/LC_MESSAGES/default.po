@@ -4243,3 +4243,43 @@ msgstr "Slutter"
 #, elixir-autogen, elixir-format
 msgid "News and announcements"
 msgstr "Nyheder og meddelelser"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Why are you leaving? (optional)"
+msgstr "Hvorfor forlader du os? (valgfrit)"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a reason"
+msgstr "Vælg en årsag"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not using it anymore"
+msgstr "Bruger den ikke længere"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not what I expected"
+msgstr "Ikke hvad jeg forventede"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Switched to another app"
+msgstr "Skiftet til en anden app"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Bugs or problems"
+msgstr "Fejl eller problemer"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Privacy concerns"
+msgstr "Bekymringer om privatliv"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Something else"
+msgstr "Noget andet"

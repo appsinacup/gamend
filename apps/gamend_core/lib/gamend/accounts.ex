@@ -25,6 +25,7 @@ defmodule Gamend.Accounts do
 
   alias Gamend.Accounts.{
     Broadcasts,
+    DeletionReason,
     Identities,
     LoginLockouts,
     PasswordHash,
@@ -40,6 +41,7 @@ defmodule Gamend.Accounts do
   }
 
   require Logger
+  require Gamend.Accounts.DeletedBy, as: DeletedBy
   require Gamend.Chat.ChatType, as: ChatType
 
   @user_metadata "user_metadata"
@@ -1077,15 +1079,23 @@ defmodule Gamend.Accounts do
     |> update_user_and_delete_all_tokens()
   end
 
+  @deletion_requested "accounts.deletion_requested"
+  @deleted "accounts.deleted"
+
   @doc "Days a player's own deletion waits (`auth.deletion_grace_days`); 0 deletes at once."
   @spec deletion_grace_days() :: non_neg_integer()
   def deletion_grace_days, do: max(Gamend.Settings.get(__MODULE__, :deletion_grace_days), 0)
 
   @doc """
-  A player deleting their own account.
+  A player deleting their own account, with the `reason` they picked (a
+  `Gamend.Accounts.DeletionReason`, or nil when they picked none).
+
+  Counted as `accounts.deletion_requested` (its `reason` dimension) whatever
+  happens next: a request the player later cancels by signing in still
+  counts, since the reason is what they said when they asked.
 
   With `auth.deletion_grace_days` at 0 the account is deleted now, by
-  `delete_user/1`. Otherwise it is scheduled that many days out and signed out
+  `delete_user/2`. Otherwise it is scheduled that many days out and signed out
   everywhere (every session, access, refresh and personal API token), and
   `Gamend.Retention` deletes it on the day unless its owner signs in on the
   website first (`cancel_deletion/1`). An account already scheduled keeps its
@@ -1093,16 +1103,21 @@ defmodule Gamend.Accounts do
   their LiveViews. `{:error, :not_found}` when another delete took the
   account first.
 
-  Admin deletions and the retention sweeps call `delete_user/1` and never wait.
+  Admin deletions and the retention sweeps call `delete_user/2` and never wait.
   """
-  @spec request_deletion(User.t()) ::
+  @spec request_deletion(User.t(), String.t() | nil) ::
           {:ok, :deleted}
           | {:ok, {:scheduled, User.t(), [UserToken.t()]}}
           | {:error, :not_found | Ecto.Changeset.t()}
-  def request_deletion(%User{} = user) do
+  def request_deletion(%User{} = user, reason \\ nil) do
+    # Only a listed reason is a dimension: anything else would be a counter
+    # key nobody declared.
+    reason = if reason in DeletionReason.all(), do: reason
+    Gamend.Analytics.track(@deletion_requested, %{reason: reason})
+
     case deletion_grace_days() do
       0 ->
-        with {:ok, _user} <- delete_user(user), do: {:ok, :deleted}
+        with {:ok, _user} <- delete_user(user, DeletedBy.self()), do: {:ok, :deleted}
 
       days ->
         at = user.deletion_scheduled_at || DateTime.add(DateTime.utc_now(:second), days, :day)
@@ -1151,13 +1166,18 @@ defmodule Gamend.Accounts do
   @doc """
   Deletes a user and associated resources.
 
+  `by` says who or what asked (a `Gamend.Accounts.DeletedBy`), counted as the
+  `by` of the `accounts.deleted` event once the row is gone. It has no user
+  id, so it is a count and never a row: nothing kept names the account.
+
   Returns `{:ok, user}` on success, `{:error, :not_found}` when the user was
   deleted first, or `{:error, changeset}` on failure.
   """
   alias Gamend.Lobbies
 
-  @spec delete_user(User.t()) :: {:ok, User.t()} | {:error, :not_found | Ecto.Changeset.t()}
-  def delete_user(%User{} = user) do
+  @spec delete_user(User.t(), String.t()) ::
+          {:ok, User.t()} | {:error, :not_found | Ecto.Changeset.t()}
+  def delete_user(%User{} = user, by \\ DeletedBy.admin()) do
     # First, while everything of the account's can still be read. It cannot
     # stop the delete: its answer is ignored, and a raise is logged like the
     # steps below.
@@ -1199,6 +1219,7 @@ defmodule Gamend.Accounts do
     case Repo.rescue_stale(:not_found, fn -> Repo.delete(user) end) do
       {:ok, _user} = ok ->
         invalidate_users_count_cache()
+        Gamend.Analytics.track(@deleted, %{by: by})
 
         best_effort(user, "subscription cancel", fn ->
           DeletedAccountSubscriptions.cancel(subscriptions)

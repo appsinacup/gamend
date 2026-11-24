@@ -4244,3 +4244,43 @@ msgstr "Termina"
 #, elixir-autogen, elixir-format
 msgid "News and announcements"
 msgstr "Novità e annunci"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Why are you leaving? (optional)"
+msgstr "Perché te ne vai? (facoltativo)"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a reason"
+msgstr "Scegli un motivo"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not using it anymore"
+msgstr "Non lo uso più"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not what I expected"
+msgstr "Non è quello che mi aspettavo"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Switched to another app"
+msgstr "Uso un'altra app"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Bugs or problems"
+msgstr "Bug o problemi"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Privacy concerns"
+msgstr "Dubbi sulla privacy"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Something else"
+msgstr "Altro"

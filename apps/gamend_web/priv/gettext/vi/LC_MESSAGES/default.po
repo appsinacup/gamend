@@ -4193,3 +4193,43 @@ msgstr "Kết thúc"
 #, elixir-autogen, elixir-format
 msgid "News and announcements"
 msgstr "Tin tức và thông báo"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Why are you leaving? (optional)"
+msgstr "Tại sao bạn rời đi? (không bắt buộc)"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a reason"
+msgstr "Chọn một lý do"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not using it anymore"
+msgstr "Không dùng nữa"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not what I expected"
+msgstr "Không như mong đợi"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Switched to another app"
+msgstr "Đã chuyển sang ứng dụng khác"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Bugs or problems"
+msgstr "Lỗi hoặc sự cố"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Privacy concerns"
+msgstr "Lo ngại về quyền riêng tư"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Something else"
+msgstr "Lý do khác"

@@ -202,7 +202,12 @@ Only password sign-in and codes are locked. An emailed login link, the confirmat
 - **Signing in on the website keeps the account**, with a message saying so. A person is at the keyboard there.
 - **An admin can keep it** from the user's page in **Admin → Users**, where a scheduled account is marked **Deleting**.
 
-On the date, the retention sweep deletes the account with `Gamend.Accounts.delete_user/1`, so every cleanup and the `after_user_deleted` hook run as for an immediate deletion. Admin deletions and the retention sweeps of inactive accounts never wait.
+On the date, the retention sweep deletes the account with `Gamend.Accounts.delete_user/2`, so every cleanup and the `after_user_deleted` hook run as for an immediate deletion. Admin deletions and the retention sweeps of inactive accounts never wait.
+
+The settings page asks why, before **Delete account**: a list of common reasons (`Gamend.Accounts.DeletionReason`), optional and never free text. **Admin → Analytics → Accounts** counts what was said and who deleted, with no account attached:
+
+- `accounts.deletion_requested`, split by `reason`, once per request: a scheduled deletion the player cancels still counts. The API's `DELETE /api/v1/me` takes no reason, so it counts with none.
+- `accounts.deleted`, split by `by` (`Gamend.Accounts.DeletedBy`): `self`, `admin`, `guest_merge`, `orphan` (a provider-only account removed while linking its provider) and the retention sweeps, `anonymous`, `unconfirmed` and `inactive`.
 
 ## OAuth: browser redirect (polling)
 

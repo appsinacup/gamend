@@ -19,6 +19,7 @@ defmodule GamendWeb.UserAuth do
 
   require Gamend.Placeholder, as: Placeholder
   require Logger
+  require Gamend.Accounts.DeletedBy, as: DeletedBy
   require Gamend.Quests.ReportedEvent, as: ReportedEvent
   require GamendWeb.ApiSegment, as: ApiSegment
 
@@ -112,7 +113,7 @@ defmodule GamendWeb.UserAuth do
     if Accounts.User.anonymous?(guest) do
       GamendWeb.endpoint().broadcast("user_socket:#{id}", "disconnect", %{})
       Accounts.GuestMerge.merge(guest, user)
-      Gamend.Async.run(fn -> Accounts.delete_user(guest) end)
+      Gamend.Async.run(fn -> Accounts.delete_user(guest, DeletedBy.guest_merge()) end)
     end
 
     :ok

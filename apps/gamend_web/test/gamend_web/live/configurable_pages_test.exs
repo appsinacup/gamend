@@ -40,8 +40,8 @@ defmodule GamendWeb.ConfigurablePagesTest do
 
     {:ok, conn} =
       lv
-      |> element("#delete-account-button")
-      |> render_click()
+      |> form("#delete-account-form", %{reason: "privacy"})
+      |> render_submit()
       |> follow_redirect(conn, "/")
 
     assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "will be deleted in 14 days"

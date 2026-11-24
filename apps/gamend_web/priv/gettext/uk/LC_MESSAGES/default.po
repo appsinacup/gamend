@@ -4293,3 +4293,43 @@ msgstr "Завершиться"
 #, elixir-autogen, elixir-format
 msgid "News and announcements"
 msgstr "Новини та оголошення"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Why are you leaving? (optional)"
+msgstr "Чому ти йдеш? (необов'язково)"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a reason"
+msgstr "Вибери причину"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not using it anymore"
+msgstr "Більше не користуюся"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Not what I expected"
+msgstr "Не виправдало очікувань"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Switched to another app"
+msgstr "Користуюся іншим застосунком"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Bugs or problems"
+msgstr "Помилки або проблеми"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Privacy concerns"
+msgstr "Занепокоєння щодо конфіденційності"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Something else"
+msgstr "Інше"

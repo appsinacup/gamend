@@ -9,6 +9,8 @@ defmodule GamendWeb.Api.V1.Admin.UserController do
   alias GamendWeb.Schemas.{AdminUserResponse, FreeForm, OkResponse}
   alias OpenApiSpex.Schema
 
+  require Gamend.Accounts.DeletedBy, as: DeletedBy
+
   tags(["Admin – Users"])
 
   operation(:update,
@@ -114,7 +116,7 @@ defmodule GamendWeb.Api.V1.Admin.UserController do
         reply_error(conn, :not_found, "not_found")
 
       user ->
-        case Accounts.delete_user(user) do
+        case Accounts.delete_user(user, DeletedBy.admin()) do
           {:ok, _} ->
             reply_ok(conn)
 

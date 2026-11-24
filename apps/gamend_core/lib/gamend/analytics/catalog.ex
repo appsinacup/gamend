@@ -27,7 +27,7 @@ defmodule Gamend.Analytics.Catalog do
         ]
       end
 
-  Core adds its own group (Payments, `payments.`). A name nobody declared
+  Core adds its own groups (Payments, `payments.`; Accounts, `accounts.`). A name nobody declared
   still shows: in the group whose prefix it starts with, else in a group of
   its own made of its first two segments (`web.game.started` →
   `web.game`), labelled with the name itself. With no host catalogue that
@@ -137,6 +137,15 @@ defmodule Gamend.Analytics.Catalog do
       label: "Payments",
       description: "Checkouts, purchases, subscriptions, refunds and webhooks (Gamend.Payments).",
       prefixes: ["payments."]
+    },
+    %{
+      id: "accounts",
+      label: "Accounts",
+      description:
+        "Deletions: accounts.deletion_requested by the player's reason " <>
+          "(Gamend.Accounts.DeletionReason), accounts.deleted by who deleted it " <>
+          "(Gamend.Accounts.DeletedBy). Counts only, no rows.",
+      prefixes: ["accounts."]
     }
   ]
 

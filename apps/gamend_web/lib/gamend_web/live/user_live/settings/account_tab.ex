@@ -21,6 +21,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
   require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
   require Gamend.Storage.StoragePrefix, as: StoragePrefix
+  require Gamend.Accounts.DeletedBy, as: DeletedBy
+  require Gamend.Accounts.DeletionReason, as: DeletionReason
 
   def assign_defaults(socket, user) do
     email_changeset = Accounts.change_user_email(user, %{}, validate_unique: false)
@@ -304,17 +306,26 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
             {gettext("Read data deletion instructions")}
           </.link>
         </div>
-        <div class="mt-4">
+        <form id="delete-account-form" phx-submit="delete_user" class="mt-4 space-y-3">
+          <.input
+            type="select"
+            id="delete-account-reason"
+            name="reason"
+            value=""
+            label={gettext("Why are you leaving? (optional)")}
+            prompt={gettext("Choose a reason")}
+            options={deletion_reason_options()}
+          />
           <button
             id="delete-account-button"
-            phx-click="delete_user"
+            type="submit"
             class="btn btn-error"
             data-confirm={delete_confirmation(Accounts.deletion_grace_days())}
           >
             <.icon name="hero-trash-solid" class="size-5" />
             {gettext("Delete account")}
           </button>
-        </div>
+        </form>
       </div>
     </div>
 
@@ -522,12 +533,12 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
-  event("delete_user")
+  event("delete_user", reason: {:optional, {:or_blank, {:in, DeletionReason.all()}}})
 
-  def handle_event("delete_user", _params, socket) do
+  def handle_event("delete_user", params, socket) do
     user = Shared.current_user(socket)
 
-    case Accounts.request_deletion(user) do
+    case Accounts.request_deletion(user, params["reason"]) do
       {:ok, :deleted} ->
         {:noreply,
          socket
@@ -763,7 +774,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   end
 
   defp perform_conflicting_account_deletion(socket, user) do
-    case Accounts.delete_user(user) do
+    case Accounts.delete_user(user, DeletedBy.orphan()) do
       {:ok, _} ->
         {:noreply,
          socket
@@ -773,6 +784,18 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
+  end
+
+  # In the order a player most often means them; "Something else" last.
+  defp deletion_reason_options do
+    [
+      {gettext("Not using it anymore"), DeletionReason.not_using()},
+      {gettext("Not what I expected"), DeletionReason.not_for_me()},
+      {gettext("Switched to another app"), DeletionReason.other_app()},
+      {gettext("Bugs or problems"), DeletionReason.problems()},
+      {gettext("Privacy concerns"), DeletionReason.privacy()},
+      {gettext("Something else"), DeletionReason.other()}
+    ]
   end
 
   defp delete_confirmation(0),

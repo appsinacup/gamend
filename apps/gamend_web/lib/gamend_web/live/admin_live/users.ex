@@ -11,6 +11,7 @@ defmodule GamendWeb.AdminLive.Users do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Accounts.DeletedBy, as: DeletedBy
   require Gamend.Accounts.TokenContext, as: TokenContext
   require GamendWeb.FormName, as: FormName
   require Gamend.SortDirection, as: SortDirection
@@ -1195,7 +1196,7 @@ defmodule GamendWeb.AdminLive.Users do
             {d + 1, f}
 
           user ->
-            case Accounts.delete_user(user) do
+            case Accounts.delete_user(user, DeletedBy.admin()) do
               {:ok, _} -> {d + 1, f}
               {:error, _} -> {d, f + 1}
             end
@@ -1257,7 +1258,7 @@ defmodule GamendWeb.AdminLive.Users do
   end
 
   defp delete_user(socket, user) do
-    case Accounts.delete_user(user) do
+    case Accounts.delete_user(user, DeletedBy.admin()) do
       {:ok, _user} ->
         page = socket.assigns[:users_page] || 1
         page_size = socket.assigns[:users_page_size] || 25

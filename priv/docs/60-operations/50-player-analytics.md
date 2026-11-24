@@ -18,7 +18,7 @@ numbers appear as soon as players log in.
 | Payers | Distinct users with a completed purchase in the last 30 days, and that ÷ MAU | `purchases` |
 | Snapshot | Live counters from every context — players, lobbies, parties, quests, signaling, matchmaking queue, tournaments — composed once, cached a minute | the contexts' `stats/0` |
 | Economy flow | Currency granted / spent per UTC day per ledger `reason` — whatever labels your game passes, e.g. `match_reward`, `store_purchase` | `ledger_entries` |
-| Counters | Game-defined per-day counters written with `Analytics.count/3`. Core writes `payments.*`; the rest are yours, e.g. `level.started`, `level.finished`, sliced by a dimension after a colon (`level.started.mode:ranked`) | `analytics_daily_counts` |
+| Counters | Game-defined per-day counters written with `Analytics.count/3`. Core writes `payments.*` and `accounts.*` (deletions, [Authentication](/docs/authentication#deleting-an-account)); the rest are yours, e.g. `level.started`, `level.finished`, sliced by a dimension after a colon (`level.started.mode:ranked`) | `analytics_daily_counts` |
 | Events | `Analytics.track/3`: counts the name and each dimension like `count/3` AND, for an account, keeps the row (who, when, every field). The rows answer what a sum cannot: how many distinct people did a thing, their return rates per feature, averages of a score. A visitor's event (no user id) is counted, never kept | `analytics_events` |
 
 "Seen" is any authenticated contact: a login (session or JWT), a socket

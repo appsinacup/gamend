@@ -86,6 +86,7 @@ defmodule Gamend.Retention do
   import Ecto.Query
 
   require Logger
+  require Gamend.Accounts.DeletedBy, as: DeletedBy
 
   alias Gamend.Accounts
   alias Gamend.Accounts.{ApiTokens, LoginLockouts, User, UserToken}
@@ -512,7 +513,7 @@ defmodule Gamend.Retention do
   defp prune_anonymous_users do
     case config(:anonymous_users_days) do
       days when is_integer(days) and days > 0 ->
-        :anonymous |> deletable_users(days) |> delete_users()
+        :anonymous |> deletable_users(days) |> delete_users(DeletedBy.anonymous())
 
       _ ->
         0
@@ -526,7 +527,7 @@ defmodule Gamend.Retention do
   defp prune_unconfirmed_users do
     case config(:unconfirmed_users_days) do
       days when is_integer(days) and days > 0 ->
-        :unconfirmed |> deletable_users(days) |> delete_users()
+        :unconfirmed |> deletable_users(days) |> delete_users(DeletedBy.unconfirmed())
 
       _ ->
         0
@@ -539,7 +540,7 @@ defmodule Gamend.Retention do
         :identified
         |> deletable_users(days)
         |> Enum.filter(&warned?/1)
-        |> delete_users()
+        |> delete_users(DeletedBy.inactive())
 
       _ ->
         0
@@ -629,8 +630,8 @@ defmodule Gamend.Retention do
     end)
   end
 
-  defp delete_users(users) do
-    Enum.count(users, fn user -> match?({:ok, _}, Accounts.delete_user(user)) end)
+  defp delete_users(users, by) do
+    Enum.count(users, fn user -> match?({:ok, _}, Accounts.delete_user(user, by)) end)
   end
 
   # Accounts their owners deleted, once `auth.deletion_grace_days` has run out.
@@ -638,7 +639,7 @@ defmodule Gamend.Retention do
   defp delete_due_accounts do
     from(u in Accounts.due_deletions_query(), limit: ^batch())
     |> Repo.all()
-    |> delete_users()
+    |> delete_users(DeletedBy.self())
   end
 
   # Object storage neither cascades nor takes part in the deletion transaction.

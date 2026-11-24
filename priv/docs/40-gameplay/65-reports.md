@@ -125,6 +125,28 @@ end
 def take(_attrs), do: :file
 ```
 
+### Filed by the host only
+
+A kind no form of core's files (a survey on a page of the host's own, asked
+of regular players) answers `sources/0` with `[ReportSource.host()]`: it is
+not on `/report`, the API neither lists nor takes it, and the host files it
+itself with `Reports.create(params, %{user_id: id, source: ReportSource.host()})`.
+Without `sources/0` a kind is filed from the page and the API (`web`, `api`).
+
+### Its own words
+
+A kind that is no problem to fix (feedback) names how it is closed and what
+the reporter is told:
+
+- `reply_title/1` (on the kind) gets the report and answers the title of the
+  reply notification, in the reporter's language (`report.locale`), or nil
+  for "Your report was reviewed";
+- `status_label/1` (on the UI) answers the queue's button for `"fixed"`,
+  `"duplicate"` or `"wontfix"`, in English, or nil for core's ("Read" for
+  Fixed);
+- `default_reply/2` (on the UI) answers the reply the close form starts
+  from, or nil for core's.
+
 ## Limits
 
 | Setting | Default | |
@@ -179,7 +201,8 @@ nothing itself.
 
 ## Closing a report
 
-From the queue: **Fixed**, **Duplicate** or **Won't fix**. Each takes a note
+From the queue: **Fixed**, **Duplicate** or **Won't fix** (or the kind's own
+words for them, `status_label/1`). Each takes a note
 for admins and, when the reporter had an account, a reply sent as a
 notification (`report_resolved`). Admins get one standing "N reports are
 waiting" notification (`report`) whose count moves.

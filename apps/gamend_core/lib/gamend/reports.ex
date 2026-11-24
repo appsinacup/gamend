@@ -115,6 +115,22 @@ defmodule Gamend.Reports do
     |> Enum.uniq_by(& &1.key())
   end
 
+  @doc """
+  The kinds `source` may file (`c:Gamend.Reports.Kind.sources/0`): what core's
+  report page offers (`ReportSource.web()`) and what the API lists
+  (`ReportSource.api()`).
+  """
+  @spec kinds(String.t()) :: [module()]
+  def kinds(source) when is_binary(source), do: Enum.filter(kinds(), &(source in sources(&1)))
+
+  @doc "Where a report of `kind` may come from: its `sources/0`, else the page and the API."
+  @spec sources(module()) :: [String.t()]
+  def sources(kind) do
+    if function_exported?(kind, :sources, 0),
+      do: kind.sources(),
+      else: [ReportSource.web(), ReportSource.api()]
+  end
+
   @doc "The kind module for `key`, or nil."
   @spec kind(String.t() | nil) :: module() | nil
   def kind(key) when is_binary(key), do: Enum.find(kinds(), &(&1.key() == key))
@@ -184,7 +200,7 @@ defmodule Gamend.Reports do
     user_id = context[:user_id]
     topic = blank(params["topic"])
 
-    with {:ok, kind} <- fetch_kind(params["kind"]),
+    with {:ok, kind} <- fetch_kind(params["kind"], context[:source] || ReportSource.web()),
          :ok <- check_topic(kind, topic),
          {:ok, cast} <- cast_subject(kind, params, context),
          :ok <- check_description(kind, topic, params["description"]),
@@ -219,10 +235,11 @@ defmodule Gamend.Reports do
     end
   end
 
-  defp fetch_kind(key) do
+  # A kind its source may not file is unknown there, as on its listing.
+  defp fetch_kind(key, source) do
     case kind(key) do
       nil -> {:error, :unknown_kind}
-      kind -> {:ok, kind}
+      kind -> if source in sources(kind), do: {:ok, kind}, else: {:error, :unknown_kind}
     end
   end
 
@@ -586,14 +603,29 @@ defmodule Gamend.Reports do
     end
   end
 
-  defp maybe_notify_reporter(%Report{user_id: user_id}, message) when is_binary(user_id) do
+  defp maybe_notify_reporter(%Report{user_id: user_id} = report, message)
+       when is_binary(user_id) do
     case blank(message) do
       nil -> :ok
-      message -> Notices.notify_reporter(user_id, message)
+      message -> Notices.notify_reporter(user_id, message, reply_title(report))
     end
   end
 
   defp maybe_notify_reporter(_report, _message), do: :ok
+
+  @doc """
+  The title of the reply `report`'s reporter gets: its kind's
+  (`c:Gamend.Reports.Kind.reply_title/1`), else core's.
+  """
+  @spec reply_title(Report.t()) :: String.t()
+  def reply_title(%Report{kind: key} = report) do
+    kind = kind(key)
+
+    title =
+      if kind && function_exported?(kind, :reply_title, 1), do: kind.reply_title(report)
+
+    title || Notices.reporter_title()
+  end
 
   @doc "Delete a report and its images."
   @spec delete(Report.t()) :: {:ok, Report.t()} | {:error, term()}

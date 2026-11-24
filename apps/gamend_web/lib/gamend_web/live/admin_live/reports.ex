@@ -113,7 +113,9 @@ defmodule GamendWeb.AdminLive.Reports do
            "status" => status,
            "note" => "",
            "notify" => if(report.user_id, do: "true", else: "false"),
-           "message" => Notices.default_reporter_message(status, label)
+           "message" =>
+             KindUI.default_reply(ui_for(report), status, report) ||
+               Notices.default_reporter_message(status, label)
          })}
     end
   end
@@ -205,6 +207,16 @@ defmodule GamendWeb.AdminLive.Reports do
     |> assign(:count, total)
     |> assign(:by_status, Reports.count_by_status())
     |> assign(:total_pages, LiveHelpers.total_pages(total, socket.assigns.page_size))
+  end
+
+  # The close button's words: the kind's own, else core's.
+  defp status_label(report, status) do
+    KindUI.status_label(ui_for(report), status) ||
+      case status do
+        ReportStatus.fixed() -> gettext("Fixed")
+        ReportStatus.duplicate() -> gettext("Duplicate")
+        _wontfix -> gettext("Won't fix")
+      end
   end
 
   defp close_form(socket), do: socket |> assign(:form, nil) |> assign(:action_report, nil)
@@ -440,7 +452,7 @@ defmodule GamendWeb.AdminLive.Reports do
                     class="btn btn-primary btn-xs"
                   >
                     <.icon name="hero-check-solid" class="size-4" />
-                    {gettext("Fixed")}
+                    {status_label(report, ReportStatus.fixed())}
                   </button>
                   <button
                     phx-click="open_close"
@@ -449,7 +461,7 @@ defmodule GamendWeb.AdminLive.Reports do
                     class="btn btn-surface btn-xs"
                   >
                     <.icon name="hero-document-duplicate-solid" class="size-4" />
-                    {gettext("Duplicate")}
+                    {status_label(report, ReportStatus.duplicate())}
                   </button>
                   <button
                     phx-click="open_close"
@@ -458,7 +470,7 @@ defmodule GamendWeb.AdminLive.Reports do
                     class="btn btn-surface btn-xs"
                   >
                     <.icon name="hero-x-mark-solid" class="size-4" />
-                    {gettext("Won't fix")}
+                    {status_label(report, "wontfix")}
                   </button>
                 <% else %>
                   <button phx-click="reopen" phx-value-id={report.id} class="btn btn-surface btn-xs">
@@ -496,7 +508,7 @@ defmodule GamendWeb.AdminLive.Reports do
       <div :if={@form} class="modal modal-open">
         <div class="modal-box">
           <h3 class="text-lg font-bold">
-            {gettext("Close as %{status}", status: @form["status"])}
+            {gettext("Close as %{status}", status: status_label(@action_report, @form["status"]))}
           </h3>
 
           <form

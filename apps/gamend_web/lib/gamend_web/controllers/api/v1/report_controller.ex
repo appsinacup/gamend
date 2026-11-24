@@ -20,9 +20,8 @@ defmodule GamendWeb.Api.V1.ReportController do
   alias GamendWeb.Schemas.ReportReceiptResponse
   alias GamendWeb.Schemas.ReportRequest
 
+  require Gamend.Reports.ReportSource, as: ReportSource
   require Gamend.Reports.ReportStatus, as: ReportStatus
-
-  @api_source "api"
 
   tags(["Reports"])
 
@@ -39,7 +38,7 @@ defmodule GamendWeb.Api.V1.ReportController do
 
     reply_data(conn, %{
       kinds:
-        Enum.map(Reports.kinds(), fn kind ->
+        Enum.map(Reports.kinds(ReportSource.api()), fn kind ->
           %{
             key: kind.key(),
             topics: kind.topics(),
@@ -75,7 +74,7 @@ defmodule GamendWeb.Api.V1.ReportController do
            Reports.create(params, %{
              user_id: Scope.user_id(conn.assigns[:current_scope]),
              locale: params["locale"],
-             source: @api_source,
+             source: ReportSource.api(),
              client: params["client"],
              attachments: images
            }) do

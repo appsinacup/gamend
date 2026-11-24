@@ -42,7 +42,7 @@ defmodule GamendWeb.ReportLive do
 
   @impl true
   def mount(_params, session, socket) do
-    kinds = Enum.filter(Reports.kinds(), &Reports.ui/1)
+    kinds = ReportSource.web() |> Reports.kinds() |> Enum.filter(&Reports.ui/1)
     max_images = kinds |> Enum.map(& &1.max_attachments()) |> Enum.max(fn -> 0 end)
 
     socket =

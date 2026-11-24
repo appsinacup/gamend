@@ -84,6 +84,20 @@ defmodule GamendWeb.Reports.KindUI do
   @doc "A download of these reports: `{filename, content_type, body}`, or nil."
   @callback export([Gamend.Reports.Report.t()]) :: {String.t(), String.t(), iodata()} | nil
 
+  @doc """
+  The queue's button for closing a report of this kind as `status`
+  (`"fixed"`, `"duplicate"`, `"wontfix"`), in English like the rest of the
+  admin, or nil for core's ("Fixed", "Duplicate", "Won't fix"). A kind that
+  is no problem to fix (feedback) names its own ("Read").
+  """
+  @callback status_label(status :: String.t()) :: String.t() | nil
+
+  @doc """
+  The reply the close form starts from for `report` closed as `status`, or
+  nil for core's (`Gamend.Reports.Notices.default_reporter_message/2`).
+  """
+  @callback default_reply(status :: String.t(), Gamend.Reports.Report.t()) :: String.t() | nil
+
   @optional_callbacks topic_label: 1,
                       topic_icon: 1,
                       fields: 1,
@@ -91,7 +105,9 @@ defmodule GamendWeb.Reports.KindUI do
                       subject_label: 1,
                       admin_subject: 1,
                       error_message: 1,
-                      export: 1
+                      export: 1,
+                      status_label: 1,
+                      default_reply: 2
 
   @doc "`ui.topic_label(topic)`, or the topic itself when the kind has none."
   @spec topic_label(module() | nil, String.t()) :: String.t()
@@ -128,6 +144,18 @@ defmodule GamendWeb.Reports.KindUI do
   @spec error_message(module() | nil, term()) :: String.t() | nil
   def error_message(ui, reason) do
     if exports?(ui, :error_message, 1), do: ui.error_message(reason), else: nil
+  end
+
+  @doc "`ui.status_label(status)`, or nil for core's label."
+  @spec status_label(module() | nil, String.t()) :: String.t() | nil
+  def status_label(ui, status) do
+    if exports?(ui, :status_label, 1), do: ui.status_label(status), else: nil
+  end
+
+  @doc "`ui.default_reply(status, report)`, or nil for core's."
+  @spec default_reply(module() | nil, String.t(), Gamend.Reports.Report.t()) :: String.t() | nil
+  def default_reply(ui, status, report) do
+    if exports?(ui, :default_reply, 2), do: ui.default_reply(status, report), else: nil
   end
 
   @doc "Whether `ui` can export."

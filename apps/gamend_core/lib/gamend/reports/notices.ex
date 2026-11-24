@@ -52,10 +52,13 @@ defmodule Gamend.Reports.Notices do
     end)
   end
 
-  @doc "Send `message` to the player who filed a report."
-  @spec notify_reporter(Ecto.UUID.t(), String.t()) :: :ok
-  def notify_reporter(user_id, message),
-    do: deliver(user_id, @reporter_title, message, %{"type" => "report_resolved"})
+  @doc """
+  Send `message` to the player who filed a report, under `title` (core's
+  "Your report was reviewed", or the kind's: `Gamend.Reports.reply_title/1`).
+  """
+  @spec notify_reporter(Ecto.UUID.t(), String.t(), String.t()) :: :ok
+  def notify_reporter(user_id, message, title \\ @reporter_title),
+    do: deliver(user_id, title, message, %{"type" => "report_resolved"})
 
   @doc """
   A starting point for the reply, by the status the report was closed with.

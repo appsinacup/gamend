@@ -774,6 +774,29 @@ defmodule Gamend.Analytics do
 
   defp seen_key(user_id), do: {:analytics, :seen_day, user_id}
 
+  @doc """
+  The accounts seen on `min_days` different days or more, ever (their
+  `user_activity_days` rows): a host's "regular players", asked something
+  only they can answer.
+  """
+  @spec users_seen_on(pos_integer()) :: [Ecto.UUID.t()]
+  def users_seen_on(min_days) when is_integer(min_days) and min_days > 0 do
+    from(a in ActivityDay,
+      group_by: a.user_id,
+      having: count(a.day) >= ^min_days,
+      select: a.user_id
+    )
+    |> Repo.all()
+  end
+
+  @doc "On how many different days `user_id` was seen, ever."
+  @spec days_seen(Ecto.UUID.t()) :: non_neg_integer()
+  def days_seen(user_id) when is_binary(user_id) do
+    from(a in ActivityDay, where: a.user_id == ^user_id, select: count(a.day))
+    |> Repo.one()
+    |> to_int()
+  end
+
   # -- segments ------------------------------------------------------------------
 
   @doc "Every segment the people numbers split by (`Gamend.Analytics.Segment`)."

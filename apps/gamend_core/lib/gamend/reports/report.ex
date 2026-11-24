@@ -20,7 +20,7 @@ defmodule Gamend.Reports.Report do
   @type t :: %__MODULE__{}
 
   @statuses ~w(open fixed wontfix duplicate)
-  @sources ~w(web api)
+  @sources ReportSource.all()
 
   @max_description 2_000
   @max_email 160

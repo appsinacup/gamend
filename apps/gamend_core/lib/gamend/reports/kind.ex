@@ -40,6 +40,21 @@ defmodule Gamend.Reports.Kind do
   `user_id`, …), after `before_report_create/1`. A kind without it files
   everything.
 
+  ## `sources/0`, optional
+
+  Where a report of the kind may come from (`Gamend.Reports.ReportSource`):
+  core's report page (`web`), the API (`api`), the host's own code (`host`).
+  A kind left out of a source is not listed there and is refused from it as
+  an unknown kind. Without it, `web` and `api`. A kind only the host files
+  (an in-game survey on a page of its own) answers `[ReportSource.host()]`
+  and calls `Gamend.Reports.create/2` with `source: ReportSource.host()`.
+
+  ## `reply_title/1`, optional
+
+  The title of the notification a reporter gets when a report of the kind
+  is closed with a reply (gets the report; its `locale` is the reporter's).
+  nil, or no callback, for core's "Your report was reviewed".
+
   ## The web side
 
   `c:ui/0` names the module that draws the kind on `/report` and in the admin
@@ -75,5 +90,11 @@ defmodule Gamend.Reports.Kind do
   @doc "Whether the host takes this report elsewhere instead of the queue. See the module doc."
   @callback take(attrs :: map()) :: :file | :taken | {:error, term()}
 
-  @optional_callbacks description_required?: 1, ui: 0, take: 1
+  @doc "Where a report of the kind may be filed from. See the module doc."
+  @callback sources() :: [String.t()]
+
+  @doc "The reply notification's title for `report`, or nil for core's. See the module doc."
+  @callback reply_title(report :: Gamend.Reports.Report.t()) :: String.t() | nil
+
+  @optional_callbacks description_required?: 1, ui: 0, take: 1, sources: 0, reply_title: 1
 end

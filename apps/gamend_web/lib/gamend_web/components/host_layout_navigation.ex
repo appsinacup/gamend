@@ -1454,23 +1454,44 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   defp resolve_entry_count(entry, _scope), do: Map.delete(entry, "count")
 
-  # An entry's `"status"`: a `{Module.fun}` token that resolves to a heroicon
-  # name (`"hero-..."`) saying what goes on there for the viewer (a game's
-  # search running), drawn where a count would be, while there is none. A
-  # blank answer, or anything not a heroicon, is `""`: the place kept,
-  # hidden, so a page's `nav_status` event (`app.js`, pushed by a host's
-  # view) can fill it without a redraw.
+  # A status that is not an icon: daisyUI's spinner (`app.js` draws it too).
+  # literal-ok: the one value a status may hold besides a heroicon name
+  @status_spinner "spinner"
+
+  # An entry's `"status"`: a `{Module.fun}` token whose function, given the
+  # scope, says what goes on there for the viewer (a game's search running):
+  # a heroicon name (`"hero-..."`) or `"spinner"` (daisyUI's, for something
+  # running), or `{icon, label}` with the words a
+  # screen reader says and a hover shows (a msgid, translated here). Drawn
+  # where a count would be, while there is none; with nothing to say the
+  # place is kept, hidden. Resolved to `%{"key", "icon", "label"}`, `key` the
+  # entry's own label as configured: a page's `nav_status` event names it
+  # (`app.js`, pushed by a host's view), and only that link's copies change,
+  # with no redraw.
   defp resolve_entry_status(%{"items" => items} = entry, scope) when is_list(items),
     do: Map.put(entry, "items", Enum.map(items, &resolve_entry_status(&1, scope)))
 
-  defp resolve_entry_status(%{"status" => token} = entry, scope) when is_binary(token) do
-    case token |> resolve_dynamic_tokens(scope) |> String.trim() do
-      "hero-" <> _ = icon -> Map.put(entry, "status", icon)
-      _ -> Map.put(entry, "status", "")
-    end
+  defp resolve_entry_status(%{"status" => "{" <> _ = token} = entry, scope) do
+    {icon, label} =
+      case call_token(token |> String.trim() |> String.trim_leading("{") |> String.trim_trailing("}"), [scope]) do
+        {icon, label} when is_binary(icon) and is_binary(label) -> {status_icon(icon), translate_label(label)}
+        icon when is_binary(icon) -> {status_icon(icon), nil}
+        _ -> {"", nil}
+      end
+
+    Map.put(entry, "status", %{"key" => entry["label"], "icon" => icon, "label" => label})
   end
 
   defp resolve_entry_status(entry, _scope), do: Map.delete(entry, "status")
+
+  # A status's icon as drawn: a heroicon, the spinner, or none.
+  defp status_icon("hero-" <> _ = icon), do: icon
+  defp status_icon(@status_spinner), do: @status_spinner
+  defp status_icon(_icon), do: ""
+
+  # The glyph inside a status chip: the spinner's classes, or the icon's.
+  defp status_glyph_class(@status_spinner), do: "loading loading-spinner loading-xs"
+  defp status_glyph_class(icon), do: [icon, "size-3.5"]
 
   # An entry's `"href"` as a `{Module.fun}` token: the function is given the
   # scope and the current path (arity 2) and answers the path to link, which
@@ -1601,6 +1622,14 @@ defmodule GamendWeb.HostLayoutNavigation do
   # `args` is what the provider is called with: the scope for a label or a
   # count, the scope and the current path for an href.
   defp resolve_token(token, args) do
+    case call_token(token, args) do
+      value when is_binary(value) or is_number(value) or is_atom(value) -> to_string(value)
+      _ -> ""
+    end
+  end
+
+  # The provider's answer as it is (`""` when there is none to call).
+  defp call_token(token, args) do
     parts = String.split(token, ".")
     {fun_str, mod_parts} = List.pop_at(parts, -1)
 
@@ -1612,7 +1641,7 @@ defmodule GamendWeb.HostLayoutNavigation do
          true <- Code.ensure_loaded?(module),
          fun = String.to_atom(fun_str),
          true <- function_exported?(module, fun, length(args)) do
-      module |> apply(fun, args) |> to_string()
+      apply(module, fun, args)
     else
       _ -> ""
     end
@@ -1667,13 +1696,15 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   attr :count, :any, default: 0
-  attr :status, :string, default: nil
+  attr :status, :map, default: nil, doc: "`%{\"key\", \"icon\", \"label\"}` (`resolve_entry_status/2`)"
   attr :class, :string, default: nil
 
   # The red number on the nav: unread notifications, an entry's `"count"`
   # (quests to claim). Nothing at zero. With no number, an entry's
   # `"status"` icon in the same place, in the link's own tone (its
-  # `data-nav-status`, hidden while empty).
+  # `data-nav-status` the entry's key, hidden while empty, named by its
+  # label when it has one). Its colours are a host's to set (`gamend.css`
+  # `.nav-status`).
   defp count_pill(assigns) do
     ~H"""
     <span
@@ -1686,12 +1717,15 @@ defmodule GamendWeb.HostLayoutNavigation do
       {@count}
     </span>
     <span
-      :if={!(is_integer(@count) and @count > 0) and is_binary(@status)}
-      data-nav-status
-      hidden={@status == ""}
+      :if={!(is_integer(@count) and @count > 0) and is_map(@status)}
+      data-nav-status={@status["key"]}
+      hidden={@status["icon"] == ""}
+      role="img"
+      aria-label={@status["label"]}
+      title={@status["label"]}
       class={["nav-status inline-flex items-center justify-center size-5 rounded-full", @class]}
     >
-      <span class={[@status, "size-3.5"]}></span>
+      <span class={status_glyph_class(@status["icon"])} aria-hidden="true"></span>
     </span>
     """
   end

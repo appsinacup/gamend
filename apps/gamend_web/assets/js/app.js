@@ -521,15 +521,21 @@ window.addEventListener("phx:page-loading-start", info => topbar.show(BAR_DELAY_
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // A nav link's `"status"` changed (`HostLayoutNavigation.count_pill/1`'s
-// `data-nav-status`): a host's view pushes `nav_status` with the heroicon,
-// or "" for none, and every copy of the link (bar, sidebar, tab bar, menu)
-// shows it, with no redraw of the nav.
+// `data-nav-status`, the link's key): a host's view pushes `nav_status` with
+// that `key`, the heroicon or "spinner" ("" for none) and the `label` a screen reader
+// says, and every copy of that link (bar, sidebar, tab bar, menu) shows it,
+// with no redraw of the nav. Other links' statuses are left alone.
 window.addEventListener("phx:nav_status", ({detail}) => {
-  const icon = typeof detail?.icon === "string" && detail.icon.startsWith("hero-") ? detail.icon : ""
-  for (const chip of document.querySelectorAll("[data-nav-status]")) {
+  if (typeof detail?.key !== "string") return
+  const spinner = detail.icon === "spinner"
+  const icon = typeof detail.icon === "string" && (spinner || detail.icon.startsWith("hero-")) ? detail.icon : ""
+  const label = icon && typeof detail.label === "string" ? detail.label : ""
+  for (const chip of document.querySelectorAll(`[data-nav-status="${CSS.escape(detail.key)}"]`)) {
     chip.hidden = icon === ""
+    for (const [name, value] of [["aria-label", label], ["title", label]])
+      value ? chip.setAttribute(name, value) : chip.removeAttribute(name)
     const glyph = chip.firstElementChild
-    if (glyph && icon) glyph.className = `${icon} size-3.5`
+    if (glyph && icon) glyph.className = spinner ? "loading loading-spinner loading-xs" : `${icon} size-3.5`
   }
 })
 

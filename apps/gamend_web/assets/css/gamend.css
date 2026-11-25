@@ -89,11 +89,15 @@
 @utility nav-tone-ring {
   @apply ring-1 ring-[color-mix(in_oklab,var(--nav-tone)_45%,transparent)];
 }
-/* A nav link's `"status"` icon (`HostLayoutNavigation.count_pill/1`), where
-   its count would be: the link's tone, else the primary. */
+/* A nav link's `"status"` (`HostLayoutNavigation.count_pill/1`), where its
+   count would be. A host sets its colours on `:root`: `--nav-status-bg`,
+   `--nav-status-fg` and a ring (`--nav-status-ring`, its width
+   `--nav-status-ring-width`); without them the link's tone, else the
+   primary, with no ring. */
 .nav-status {
-  background: var(--nav-tone, var(--color-primary));
-  color: var(--color-primary-content);
+  background: var(--nav-status-bg, var(--nav-tone, var(--color-primary)));
+  color: var(--nav-status-fg, var(--color-primary-content));
+  box-shadow: 0 0 0 var(--nav-status-ring-width, 0) var(--nav-status-ring, transparent);
 }
 
 .summary-no-marker {

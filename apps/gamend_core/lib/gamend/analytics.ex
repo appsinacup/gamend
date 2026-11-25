@@ -830,15 +830,17 @@ defmodule Gamend.Analytics do
   end
 
   # `->>` with a CAST: the same SQL on Postgres (jsonb) and SQLite (JSON
-  # text), as `Gamend.Analytics.Explore` reads a field.
+  # text), as `Gamend.Analytics.Explore` reads a field. Grouped by the
+  # selected alias: Postgres counts a repeated fragment's two parameters as
+  # two expressions and refuses the GROUP BY (grouping_error 42803).
   defp trait_values(field, start) do
     from(e in Event,
       where: e.inserted_at >= ^start and not is_nil(e.user_id),
       where: not is_nil(fragment("? ->> CAST(? AS TEXT)", e.dims, ^field)),
-      group_by: fragment("? ->> CAST(? AS TEXT)", e.dims, ^field),
+      group_by: selected_as(:trait_value),
       order_by: [desc: count(e.user_id, :distinct)],
       limit: 20,
-      select: fragment("? ->> CAST(? AS TEXT)", e.dims, ^field)
+      select: selected_as(fragment("? ->> CAST(? AS TEXT)", e.dims, ^field), :trait_value)
     )
     |> Repo.all()
     |> Enum.map(&to_string/1)

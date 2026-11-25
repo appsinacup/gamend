@@ -419,7 +419,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_FEATURES_LIST_LEADERBOARDS` | boolean | `true` | Public GET/resolve /api/v1/leaderboards* and the /leaderboards pages. |
 | `GAMEND_FEATURES_LIST_LOBBIES` | boolean | `true` | GET /api/v1/lobbies and the "lobbies" channel. |
 | `GAMEND_FEATURES_LIST_MATCHMAKING` | boolean | `true` | GET /api/v1/matchmaking/stats. Own-ticket endpoints stay. |
-| `GAMEND_FEATURES_LIST_QUESTS` | boolean | `true` | Public GET /api/v1/quests*, the /quests page and the "Quests and rewards" row on the Notifications tab. Achievements are quests of kind `achievement`, so this is them too. |
+| `GAMEND_FEATURES_LIST_QUESTS` | boolean | `true` | Public GET /api/v1/quests*, the /quests page and the "Quests" row on the Notifications tab. Achievements are quests of kind `achievement`, so this is them too. |
 | `GAMEND_FEATURES_LIST_TOURNAMENTS` | boolean | `true` | Public GET /api/v1/tournaments* and the /tournaments pages. |
 | `GAMEND_FEATURES_LIST_USERS` | boolean | `true` | GET /api/v1/users and /users/:id. |
 | `GAMEND_FEATURES_MAILBOX_PREVIEW` | boolean | `false` | Serve the in-browser mailbox at /dev/mailbox outside dev. Every sent email is readable there. |

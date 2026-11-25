@@ -78,7 +78,7 @@ defmodule Gamend.Notifications do
   @doc ~S"""
     Admin: tell every player the same thing at once (`attrs` as `notify/3`
     takes them: `"title"`, `"content"`, `"url"`, `"site_only"`), in the
-    "News and announcements" group, so each player's choices for it apply.
+    "News" group, so each player's choices for it apply.
     Delivery runs in the background (`Gamend.Notifications.Announcements`);
     answers how many accounts it is going to.
     

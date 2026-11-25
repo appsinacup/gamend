@@ -1,7 +1,7 @@
 defmodule Gamend.PresenceWriterTest do
   @moduledoc """
-  The connect/disconnect path fixes: `is_online` coalescing, and the two
-  cluster-wide/per-node counts that used to be O(all connections).
+  The connect/disconnect path: `is_online` coalescing, and the two
+  cluster-wide/per-node counts, neither O(all connections).
   """
 
   # async: false — flush_ms is application env, and PresenceWriter is a single

@@ -389,8 +389,8 @@ defmodule Gamend.PaymentsTest do
         }
       end
 
-      # The third used to raise Ecto.MultipleResultsError: the original
-      # transaction was looked up with `get_by`, and two purchases share it.
+      # Two purchases share the original transaction, so a lookup with
+      # `get_by` would raise Ecto.MultipleResultsError on the third.
       for n <- 1..3 do
         assert {:ok, %{seen_before: false}} =
                  Payments.validate_store_purchase(user, "apple", renewal.(n))

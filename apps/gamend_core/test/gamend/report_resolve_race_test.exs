@@ -2,10 +2,10 @@ defmodule Gamend.ReportResolveRaceTest do
   @moduledoc """
   Two moderators closing the same open report at once.
 
-  `Reports.resolve/3` decided "this closes an open report" from the struct
-  each moderator had read, so both closes landed, and `after_report_resolved`
-  fired and the reporter was told twice. The close is now a write made only
-  while the report still has the status the caller read: one lands, the
+  Deciding "this closes an open report" from the struct each moderator had
+  read would land both closes, fire `after_report_resolved` twice and tell the
+  reporter twice. The close is a write made only while the report still has
+  the status the caller read: one lands, the
   other answers `:status_changed` and sends nothing.
 
   Postgres only shows it; see `Gamend.RaceCase`.

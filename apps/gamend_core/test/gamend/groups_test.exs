@@ -622,10 +622,10 @@ defmodule Gamend.GroupsTest do
     end
 
     test "cannot invite a user you have no connection to", %{owner: owner} do
-      # The point of the rule. A group admin used to be able to put any user id
-      # at all into a group with them, which made a group invite a weaker
-      # control than a party invite — and being addable to a stranger's group
-      # is a contact path, not just an annoyance.
+      # The point of the rule. A group admin able to put any user id at all
+      # into a group with them would make a group invite a weaker control than
+      # a party invite, and being addable to a stranger's group is a contact
+      # path, not just an annoyance.
       stranger = AccountsFixtures.user_fixture()
       {:ok, group} = Groups.create_group(owner.id, %{"title" => "Strangers", "type" => "private"})
 
@@ -689,7 +689,7 @@ defmodule Gamend.GroupsTest do
       {:ok, group} = Groups.create_group(owner.id, %{"title" => "MetaGrp", "type" => "hidden"})
       {:ok, invite} = Groups.invite_to_group(owner.id, group.id, other.id)
 
-      # invite_to_group now returns a GroupInvite struct;
+      # invite_to_group returns a GroupInvite struct;
       # verify the informational notification was also created
       notifications =
         Gamend.Notifications.list_notifications_by_title(other.id, "Invited to MetaGrp")

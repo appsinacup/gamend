@@ -151,8 +151,8 @@ defmodule Gamend.Hooks.HookSchemas do
     _ -> {:error, :invalid_reply_payload}
   end
 
-  # {:raw, binary} returns were the pre-schema escape hatch; without a
-  # registered schema they no longer have a defined contract on the wire.
+  # A {:raw, binary} return has no defined contract on the wire without a
+  # registered schema, so it is refused.
   defp encode_result(nil, {:raw, _}, _wire), do: {:error, :raw_reply_unsupported}
 
   # Dynamic results pass through; the caller JSON-encodes for its transport.

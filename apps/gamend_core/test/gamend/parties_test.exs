@@ -173,7 +173,7 @@ defmodule Gamend.PartiesTest do
       make_friends(leader, member1)
       {:ok, invite} = Parties.invite_to_party(leader, member1.id)
 
-      # invite_to_party now returns a PartyInvite record
+      # invite_to_party returns a PartyInvite record
       assert invite.sender_id == leader.id
       assert invite.recipient_id == member1.id
       assert invite.status == "pending"

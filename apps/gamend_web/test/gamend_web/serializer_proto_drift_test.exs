@@ -6,9 +6,9 @@ defmodule GamendWeb.SerializerProtoDriftTest do
   `*_at_ms`, `metadata` becomes `metadata_json`/`metadata_pb`).
 
   Grep-style like RealtimeEventsDriftTest, because the drift it hunts is
-  structural: `Lobby.state` was missing for months and every protobuf client
-  silently read no lobby state at all — nothing crashed, the field just never
-  arrived. Payloads assembled outside Serializers (user presence payloads,
+  structural: a field such as `Lobby.state` missing from the proto means every
+  protobuf client silently reads no lobby state at all, and nothing crashes;
+  the field just never arrives. Payloads assembled outside Serializers (user presence payloads,
   member events) are covered by the channel tests instead.
   """
   use ExUnit.Case, async: true

@@ -12,8 +12,8 @@ defmodule GamendWeb.ErrorStatus do
   `GamendWeb.Reply.reply_reason/2` looks the atom up here and answers with its
   name as the code. A new reason needs no controller change: name it so a rule
   below covers it, or add a line to the table. A reason with no status raises
-  `GamendWeb.UnmappedReason`, a 500 whose log names the atom, instead of the
-  400 or 403 a catch-all clause used to make up for it. A controller that
+  `GamendWeb.UnmappedReason`, a 500 whose log names the atom, never a 400 or
+  403 made up by a catch-all clause. A controller that
   answers a reason with another code (`:invalid` as `captcha_invalid`) keeps a
   clause of its own before the fallback.
 

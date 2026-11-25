@@ -30,7 +30,7 @@ test("a stage never brings back what an earlier one dropped", () => {
   }
 })
 
-test("with nothing measured yet, the bar shows from the old breakpoint", () => {
+test("with nothing measured yet, the bar shows from the xl breakpoint", () => {
   assert.equal(stageFor(null, UNMEASURED_BAR), words.full)
   assert.equal(stageFor(null, UNMEASURED_BAR - 1), MENU)
 })

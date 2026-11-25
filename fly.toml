@@ -1,5 +1,5 @@
-# The app name and the database filename predate the Gamend rename. Changing
-# either creates a new Fly app / an empty database instead of reusing the volume.
+# The app name and the database filename are fixed: changing either creates a
+# new Fly app / an empty database instead of reusing the volume.
 app = "game-server-uro"
 primary_region = "ams"
 
@@ -43,7 +43,7 @@ primary_region = "ams"
 [[vm]]
   size = "shared-cpu-4x"
 
-# The volume also predates the rename and can't be renamed in place.
+# A Fly volume cannot be renamed in place, so it keeps its name too.
 [[mounts]]
   source = "game_server_data"
   destination = "/data"

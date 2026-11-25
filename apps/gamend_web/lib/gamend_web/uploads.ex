@@ -163,8 +163,8 @@ defmodule GamendWeb.Uploads do
   deliberately disagree: the player-facing one passes `""`, so
   `Storage.validate_upload/2` rejects an upload that did not declare a type,
   while the admin one passes `"application/octet-stream"` and stores the bytes
-  as-is. That difference used to live in two private copies of this function
-  that were otherwise identical, where it read as drift rather than a choice.
+  as-is. The difference is this argument, so it reads as a choice rather than
+  drift.
   """
   @spec request_content_type(Plug.Conn.t(), String.t()) :: String.t()
   def request_content_type(conn, default \\ "") do

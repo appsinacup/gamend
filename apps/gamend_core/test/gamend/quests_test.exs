@@ -356,7 +356,7 @@ defmodule Gamend.QuestsTest do
       assert Economy.balance(user.id, "gold") == 100
       assert Inventory.quantity(user.id, "loot_crate") == 2
 
-      # The wallet row names its quest — every payout used to be an
+      # The wallet row names its quest, so payouts are told apart, not each an
       # indistinguishable "quest_reward".
       assert [entry] = Economy.list_ledger(user_id: user.id)
       assert entry.reason == "quest_reward:paid"

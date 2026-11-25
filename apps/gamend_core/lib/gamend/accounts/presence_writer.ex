@@ -28,7 +28,7 @@ defmodule Gamend.Accounts.PresenceWriter do
       config :gamend_core, Gamend.Accounts.PresenceWriter,
         flush_ms: 200      # 0 writes through synchronously
 
-  `flush_ms: 0` is exactly the old behaviour and is what the test environment
+  `flush_ms: 0` writes each change as it comes and is what the test environment
   runs, so a test can assert on `is_online` immediately after the call. In
   production the flag lags by at most one window — `StalePresenceSweeper` is
   the backstop that already tolerates far more drift than that, and realtime

@@ -34,9 +34,9 @@ defmodule GamendWeb.GettextSync do
   #
   # This is on the layout's hot path, not a cold one: every nav and footer
   # link calls `HostLayouts.strip_locale_prefix/2`, which lands here, so a
-  # rendered page runs it ~100 times. The linear scan this replaces downcased
-  # *every* known locale on *every* call — ~6,000 `String.downcase/1` calls per
-  # request, and the single largest cost in rendering a vocabulary page.
+  # rendered page runs it ~100 times. A linear scan downcasing *every* known
+  # locale on *every* call would be ~6,000 `String.downcase/1` calls per
+  # request, the single largest cost in rendering a vocabulary page.
   #
   # An empty map is not cached: `known_locales/0` is empty until the backend is
   # loaded, and caching that would make every locale unrecognized for the life

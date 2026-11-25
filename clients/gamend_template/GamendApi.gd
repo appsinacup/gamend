@@ -1144,8 +1144,6 @@ func authenticate_refresh_token(refresh_token: String) -> GamendResult:
 ## session is kept. The server emails a link and a six-digit code; pass the code
 ## and the password the player chooses to `authenticate_confirm_registration`,
 ## which signs in. The server generates a username when none is given.
-## (It replaces `authenticate_register(email, password)`, under a new name so an
-## old call fails instead of sending the password as the username.)
 func authenticate_register_email(email: String, username := "") -> GamendResult:
 	var register_request := GamendRegisterRequest.new()
 	register_request.email = email

@@ -7,9 +7,9 @@ defmodule Gamend.QuestClaimRaceTest do
   completed to claimed and pays with an idempotency key built from
   `claim_count`. The first claim pays and re-arms the row onto the banked run,
   so the row is completed again, one `claim_count` on. A second claim that
-  read the row before all that used to pass the flip (it matched on status
-  alone) and pay with the key it read: the first run's. The ledger dropped
-  that as a replay, and the banked run was re-armed away unpaid.
+  read the row before all that, with a flip matching on status alone, would
+  pass the flip and pay with the key it read: the first run's. The ledger
+  would drop that as a replay, and the banked run be re-armed away unpaid.
 
   The hook holds the first claim until the second has read the row, then
   holds the second until the first has paid and re-armed, so the interleaving

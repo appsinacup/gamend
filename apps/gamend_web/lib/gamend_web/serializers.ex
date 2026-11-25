@@ -396,10 +396,9 @@ defmodule GamendWeb.Serializers do
 
   # `sender_name`, `host_name`, `creator_name` and `leader_name` are labels for a
   # person, so they follow `Gamend.Accounts.display_name/1`: the display name,
-  # else the username. They used to stop at the display name and send `""`,
-  # while a party or group invite's `sender_name` — built in core — already fell
-  # back to the username, so the same field named the same player two ways. A
-  # deleted user is still `""`.
+  # else the username, as a party or group invite's `sender_name` (built in
+  # core) does, so the same field never names the same player two ways. A
+  # deleted user is `""`.
   #
   # Not `display_name:` fields — those carry the raw column (see `display_name/1`).
   defp assoc_display_name(%User{} = user), do: Accounts.display_name(user)

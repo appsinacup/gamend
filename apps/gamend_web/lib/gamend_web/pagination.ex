@@ -9,10 +9,9 @@ defmodule GamendWeb.Pagination do
       %{page: 1, page_size: 25, count: 25,
         total_count: 130, total_pages: 6, has_more: true}
 
-  Four controllers used to hand-roll this with a private `parse_int/2` and a
-  literal `min(size, 100)`, which silently ignored the configurable
-  `max_page_size` limit and shipped metas of three, four and six keys. Both
-  halves live here now, and `mix gamend.api.lint` (R7/R8) rejects a new copy.
+  Both halves live here, so every controller honours the configurable
+  `max_page_size` limit and ships the same meta, and `mix gamend.api.lint`
+  (R7/R8) rejects a hand-rolled copy.
 
   ## Usage
 

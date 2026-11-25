@@ -386,7 +386,7 @@ defmodule Gamend.Accounts.Identities do
 
   # Our stored avatars live under the `avatars/<user_id>/…` key namespace, so a
   # profile URL containing that segment is one we already host (uploaded or
-  # previously mirrored), and one of the site's own icons is ours too
+  # mirrored), and one of the site's own icons is ours too
   # (`Gamend.Icons`) — anything else is an external provider link. The same
   # test decides what is ever shown (`User.public_avatar_url/1`).
   defp our_stored_avatar?(%User{id: id, profile_url: url}),

@@ -109,9 +109,9 @@ defmodule GamendWeb.LobbyChannel do
     {:reply, {:ok, %{server_now: Gamend.Time.now_ms()}}, socket}
   end
 
-  # Answer and stay up. This used to be `{:stop, :normal, ...}`, which killed the
-  # channel over a single event the server did not recognise — and this is the
-  # channel a player's word data rides on, so the cost of one stray push was the
+  # Answer and stay up. `{:stop, :normal, ...}` would kill the channel over a
+  # single event the server did not recognise, and this is the channel a
+  # player's word data rides on, so the cost of one stray push would be the
   # rest of the session going quiet. A client that pushes something we do not
   # know is a client to answer, not to hang up on.
   def handle_in(event, _payload, socket),

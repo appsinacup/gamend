@@ -297,12 +297,12 @@ defmodule Gamend.Tournaments do
       true ->
         # The checks above are only cheap early refusals; the seat is the
         # rule. It is taken before the hook, which games charge the entry fee
-        # in. The hook used to run first: a double tap passed the checks
-        # twice and was charged twice (one seat then failed
-        # `:already_registered`), and a tournament that filled between the
-        # hook and the seat charged the player and answered
-        # `:tournament_full`. Now the second tap meets the first one's seat,
-        # and a refusal comes before any charge.
+        # in. With the hook first, a double tap would pass the checks twice
+        # and be charged twice (one seat then failing `:already_registered`),
+        # and a tournament that filled between the hook and the seat would
+        # charge the player and answer `:tournament_full`. Seat first, the
+        # second tap meets the first one's seat, and a refusal comes before
+        # any charge.
         with {:ok, entry} <- claim_entry_seat(tournament, user),
              :ok <- run_register_hook(tournament, user, entry) do
           Gamend.Async.run(fn ->

@@ -2,9 +2,8 @@ defmodule GamendWeb.UnknownEventTest do
   @moduledoc """
   Every channel answers an event it does not recognise, and stays up.
 
-  Five of the seven used to reply `{:stop, :normal, {:error, ...}}` — one
-  unrecognised push and the channel was gone. That is silent from the client
-  side: a stopped channel looks exactly like a quiet one, so the broadcasts it
+  A reply of `{:stop, :normal, {:error, ...}}` would mean one unrecognised push
+  and the channel is gone. That is silent from the client side: a stopped channel looks exactly like a quiet one, so the broadcasts it
   carried simply never arrive again. On `lobby:` those broadcasts are the
   player's word data, so the next game start waits out its timeout with nothing
   to show for it.

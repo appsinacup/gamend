@@ -106,8 +106,7 @@ defmodule GamendWeb.CoreComponents do
   *painted*, so a `deferred` flag costs nothing until the panel opens. Use it
   only where the flag is decorative and hidden — it carries no `alt`.
 
-  Sized in `em` so the caller still controls it with a `text-*` class, exactly
-  as the old `.fi`/`.fis` classes did.
+  Sized in `em` so the caller controls it with a `text-*` class.
 
   No cache-busting query: a page carries up to 114 of these, and a content hash
   on each costs more in HTML than it saves. The artwork is fixed reference
@@ -1587,8 +1586,8 @@ defmodule GamendWeb.CoreComponents do
   # spaces made the stamp 4px narrower as it did (host, 2026-11-21).
   # A bare date (blog posts, release dates) has no instant to localize, and
   # shifting it into the reader's zone would move it across midnight boundaries
-  # it never crossed. It used to skip the localizer for that reason, which left
-  # it in English for every reader. `calendar-date` translates it with the zone
+  # it never crossed, and skipping the localizer would leave it in English for
+  # every reader. `calendar-date` translates it with the zone
   # pinned to UTC, so it changes language without changing day.
   def timestamp(%{at: %Date{} = at} = assigns) do
     assigns = assign(assigns, iso: Date.to_iso8601(at), text: utc_text(at, TimeFormat.date()))

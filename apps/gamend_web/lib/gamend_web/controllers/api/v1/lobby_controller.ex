@@ -472,10 +472,10 @@ defmodule GamendWeb.Api.V1.LobbyController do
 
   # `hostless` and `host_id` are server-owned and are dropped, not rejected.
   #
-  # The old guard compared against the boolean `true` only, so `"hostless":
-  # "true"` sailed past it and Ecto cast the string — producing a lobby with no
-  # host, which nobody can manage, and which game hooks reasonably read as
-  # "created by the server". Stripping is also the better shape than a 401: a
+  # A guard comparing against the boolean `true` only would let `"hostless":
+  # "true"` past it for Ecto to cast, producing a lobby with no host, which
+  # nobody can manage, and which game hooks reasonably read as "created by the
+  # server". Stripping is also the better shape than a 401: a
   # client sending a field it does not own gets its lobby, minus that field.
   @server_owned_lobby_fields ~w(hostless host_id)a ++ ~w(hostless host_id)
 

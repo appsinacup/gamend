@@ -19,7 +19,7 @@
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html"
-// Theme switcher & card collapse/expand (previously inline in root.html.heex)
+// Theme switcher & card collapse/expand
 import "./theme.js"
 // Establish Phoenix Socket and LiveView configuration.
 import {Socket} from "phoenix"
@@ -492,9 +492,10 @@ function createLiveSocket(extraHooks) {
     hooks: {...colocatedHooks, ...Hooks, ...extraHooks},
     // A `phx-remove` plays when a patch takes its element away, never when
     // the page is left. LiveView 1.2 defaults this to true: on a live
-    // navigation every `phx-remove` in the old page played at the click, so
-    // a list item faded out (a hub's Continue card, a pinned tile) and a
-    // panel folded shut, and the page sat that way until the next one came.
+    // navigation every `phx-remove` in the page being left would play at the
+    // click, so a list item fades out (a hub's Continue card, a pinned tile)
+    // and a panel folds shut, and the page sits that way until the next one
+    // comes.
     cascadePhxRemoveOnNavigation: false,
   })
 }

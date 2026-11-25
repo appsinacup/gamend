@@ -66,8 +66,8 @@ void Auth::register_email(std::string email, Callback done) {
 }
 
 // Not `sign_in_with`: registering answers the account, never tokens. Two
-// overloads rather than a defaulted username: the old `(email, password)`
-// call would otherwise compile and send the password as the username.
+// overloads rather than a defaulted username: an `(email, password)` call
+// would otherwise compile and send the password as the username.
 void Auth::register_email(std::string email, std::string username, Callback done) {
   json params = {{"email", std::move(email)}};
   if (!username.empty()) params["username"] = std::move(username);

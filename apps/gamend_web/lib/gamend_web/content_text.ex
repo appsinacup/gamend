@@ -4,11 +4,10 @@ defmodule GamendWeb.ContentText do
   tournaments.
 
   The database stores **one** string per field — the source text, in English.
-  It never stores a translation. Quests and leaderboards used to keep a
-  per-locale copy in `metadata["titles"][locale]`, which drifted exactly like
-  the per-locale theme files did: editing the title left 29 stale copies and
-  nothing said which were stale. `mix gamend.content.migrate_metadata` lifts
-  any of those into the PO files.
+  It never stores a translation: a per-locale copy drifts, since editing the
+  title leaves 29 stale copies and nothing says which are stale.
+  `mix gamend.content.migrate_metadata` lifts a copy kept in
+  `metadata["titles"][locale]` into the PO files.
 
   Translations come from the `content` domain, whose msgids
   `mix gamend.content.extract` reads back out of the database. That covers

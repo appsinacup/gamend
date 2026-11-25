@@ -322,9 +322,8 @@ defmodule GamendWeb.HostLayoutShell do
           ]}>
             <%!-- The page's own frame, applied here so no page has to know it:
                   one gap between blocks and one landing before the footer,
-                  whichever repo wrote the page. A page that set its own `py-6`
-                  used to sit lower than the page beside it in the nav, and
-                  `pb-10` was on six pages and off the rest. `page-stack` is the
+                  whichever repo wrote the page, so no page sits lower than
+                  the page beside it in the nav. `page-stack` is the
                   hook a host restyles; the utilities are the default. A
                   one-screen page (`screen`) has no footer, so no landing. --%>
             <div class={["page-stack space-y-6", !@screen && "pb-10"]}>

@@ -663,9 +663,9 @@ export function startSearchPalette(doc = typeof document === "undefined" ? null 
     // Anything that is not the panel is outside it. That includes the
     // `::backdrop`, which is a pseudo-element and so reports the `<dialog>`
     // itself as the target — the reason a plain "did the click land in the
-    // panel" test covers clicking away, and the reason the daisyUI
-    // `.modal-backdrop` div that used to sit here had to go: a real element
-    // over the backdrop swallowed the click and nothing ever closed.
+    // panel" test covers clicking away, and the reason there is no daisyUI
+    // `.modal-backdrop` div here: a real element over the backdrop would
+    // swallow the click and nothing would ever close.
     if (dialogFor()?.open && !target.closest("[data-gamend-search-panel]")) close()
   })
 

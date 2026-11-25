@@ -543,7 +543,7 @@ defmodule GamendWeb.AdminLive.Users do
 
             <.form for={@form} id="user-form" phx-submit="save_user">
               <%!-- Read-only: `User.admin_changeset/2` does not cast `email`, so an
-                   edit here was dropped while the flash still said "updated". --%>
+                   edit here would be dropped while the flash says "updated". --%>
               <div class="form-control">
                 <label class="label" for="admin-user-email">
                   <span class="label-text">Email</span>

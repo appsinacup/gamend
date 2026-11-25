@@ -1,8 +1,8 @@
 defmodule Mix.Tasks.Gen.SdkPlaceholderTest do
   @moduledoc """
   The value a `gamend_sdk` stub answers in `:placeholder` mode has the shape
-  its `@spec` promises, decided by the outermost type: `[map()]` used to match
-  `map()` inside it and answer `%{}`.
+  its `@spec` promises, decided by the outermost type: `[map()]` answers a
+  list, not the `%{}` of the `map()` inside it.
   """
   use ExUnit.Case, async: true
 

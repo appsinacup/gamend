@@ -5,8 +5,8 @@ defmodule Gamend.Icons do
   set the website draws (`GamendWeb.Icons`).
 
   People pick from a few of them instead of uploading an image, for a group's
-  icon or an account's avatar: `picks/0`. Any other still works where it is
-  stored, by an API client or from before there was a list.
+  icon or an account's avatar: `picks/0`. Any other works where it is
+  stored, by an API client for one.
 
   An icon is nothing but a URL, `path/1` (`/icons/<name>.svg`), stored where
   an uploaded image's URL would be (a group's `icon_url`, a user's

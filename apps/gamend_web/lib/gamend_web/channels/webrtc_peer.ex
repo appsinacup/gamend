@@ -155,11 +155,11 @@ defmodule GamendWeb.WebRTCPeer do
   # Decoding and negotiation are wrapped, and failures answered with a log line
   # rather than a crash.
   #
-  # These clauses used to decode straight from the client's JSON and assert
-  # `:ok =` on the results. This process is started with a link from the
-  # channel, and `Phoenix.Channel.Server` does not trap exits, so any of those
-  # raises took the caller's whole `user:<id>` channel down — bypassing its
-  # `terminate/2` and the cleanup that lives there. The channel now validates
+  # This process is started with a link from the channel, and
+  # `Phoenix.Channel.Server` does not trap exits, so a raise here (decoding
+  # straight from the client's JSON, or asserting `:ok =` on a result) would
+  # take the caller's whole `user:<id>` channel down, bypassing its
+  # `terminate/2` and the cleanup that lives there. The channel validates
   # payload shape too; this is the second line of defence, for the errors that
   # only the WebRTC stack can detect.
   @impl true

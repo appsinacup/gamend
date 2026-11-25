@@ -381,10 +381,10 @@ defmodule Gamend.LobbiesTest do
     end
 
     # A candidate that will not take this user is not a match — matchmaking has
-    # to move on. One refusal used to abort the whole quick join, and the player
-    # got an error where a fresh lobby was the obvious answer: in the game that
-    # surfaced as "Could not start game" every time quick_join landed on a lobby
-    # already mid-match, which a stale one did to every player who tried.
+    # to move on. One refusal must not abort the whole quick join and give the
+    # player an error where a fresh lobby is the obvious answer: in a game that
+    # shows as "Could not start game" every time quick_join lands on a lobby
+    # already mid-match.
     defmodule RefuseJoinHook do
       use Gamend.TestSupport.NoopHooks
 
@@ -714,8 +714,8 @@ defmodule Gamend.LobbiesTest do
       assert {:ok, _} = Lobbies.join_lobby(member, lobby)
       assert {:ok, _} = Lobbies.join_lobby(other, lobby)
 
-      # Regression: this guard used to read `host_id != caller and not hostless`,
-      # which never fires on a hostless lobby — every member could kick.
+      # A guard reading `host_id != caller and not hostless` never fires on a
+      # hostless lobby, so every member could kick.
       refute Lobbies.can_manage_lobby?(member, lobby)
       assert {:error, :not_host} = Lobbies.kick_user(member, lobby, other)
       assert Gamend.Accounts.get_user(other.id).lobby_id == lobby.id
@@ -734,8 +734,8 @@ defmodule Gamend.LobbiesTest do
       assert {:error, :not_host} = Lobbies.transition_state_by_host(member, lobby, "playing")
       assert {:error, :not_host} = Lobbies.update_lobby_by_host(member, lobby, %{"title" => "x"})
 
-      # The plain matchmaking case of the kick regression: the old guard read
-      # `host_id != caller and not hostless`, which never fired here at all.
+      # The plain matchmaking case of the same kick: a guard reading
+      # `host_id != caller and not hostless` never fires here at all.
       assert {:error, :not_host} = Lobbies.kick_user(member, lobby, other)
       assert Gamend.Accounts.get_user(other.id).lobby_id == lobby.id
     end
@@ -778,10 +778,10 @@ defmodule Gamend.LobbiesTest do
       assert Lobbies.get_lobby_members(a) |> Enum.map(& &1.id) == [player.id]
     end
 
-    # `update_lobby_by_host/3` takes only the fields a host owns. It used to pass
-    # attrs straight through to a changeset that casts `host_id`, `hostless` and
-    # `password_hash`, so a host could hand the lobby to a non-member, write the
-    # password hash unhashed, or set `hostless` — which makes `can_manage_lobby?/2`
+    # `update_lobby_by_host/3` takes only the fields a host owns. Attrs passed
+    # straight through to a changeset that casts `host_id`, `hostless` and
+    # `password_hash` would let a host hand the lobby to a non-member, write the
+    # password hash unhashed, or set `hostless`, which makes `can_manage_lobby?/2`
     # false for everyone and leaves the lobby permanently unmanageable.
     test "a host cannot rewrite ownership, hostless or the password hash" do
       host = AccountsFixtures.unconfirmed_user_fixture()

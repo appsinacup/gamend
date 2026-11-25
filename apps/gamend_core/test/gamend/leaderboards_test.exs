@@ -404,13 +404,13 @@ defmodule Gamend.LeaderboardsTest do
 
       target = Enum.at(users, 0)
 
-      # This is the actual bug, expressed as the only thing that can rule it
-      # out. The window used to be built from a rank query and then an OFFSET
-      # query that trusted it; any score submitted in between moved the caller
-      # and the second query windowed around where they had been, so past a
-      # few positions of drift the caller was missing from their own
-      # "around me" page — 3.2% of those reads under 30 concurrent writers on
-      # Postgres, and none on SQLite, whose single writer hid it.
+      # The race, expressed as the only thing that can rule it out. A window
+      # built from a rank query and then an OFFSET query trusting it lets any
+      # score submitted in between move the caller, and the second query
+      # windows around where they had been, so past a few positions of drift
+      # the caller is missing from their own "around me" page: 3.2% of those
+      # reads under 30 concurrent writers on Postgres, and none on SQLite,
+      # whose single writer hides it.
       #
       # No test can schedule that interleaving reliably. Counting the
       # statements can: with one, there is no interval for a write to land in.

@@ -641,9 +641,9 @@ defmodule Gamend.Lobbies do
 
   # The lock guards the seat count against a concurrent join, and only that.
   # The slow gates run before it: the plugin's hook (up to its timeout) and the
-  # password check (bcrypt, ~250ms). Inside the lock they held the lobby and,
-  # on SQLite, the only database connection, so repeated wrong passwords from
-  # one player stalled every request in the server. The seat check also runs
+  # password check. Inside the lock they would hold the lobby and, on SQLite,
+  # the only database connection, so repeated wrong passwords from one player
+  # would stall every request in the server. The seat check also runs
   # first, unlocked, so a full lobby is refused without calling the hook.
   defp do_join_with_lock(user, lobby, opts, user_id) do
     with :ok <- check_seat(lobby, user_id),
@@ -1722,9 +1722,9 @@ defmodule Gamend.Lobbies do
   end
 
   # Argon2id, as account passwords are (`PasswordHash`): bcrypt at cost 12
-  # spent ~250ms of CPU on every join attempt, ten times Argon2id's here, and a
-  # join is something any signed-in player can repeat. Existing bcrypt hashes
-  # still verify.
+  # spends ~250ms of CPU on every join attempt, ten times Argon2id's here, and
+  # a join is something any signed-in player can repeat. A bcrypt hash still
+  # verifies.
   defp maybe_hash_password(attrs) when is_map(attrs) do
     cond do
       Map.has_key?(attrs, "password") and attrs["password"] != nil ->

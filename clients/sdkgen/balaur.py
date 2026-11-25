@@ -29,7 +29,7 @@ TEMPLATE = CLIENTS / "balaur_template"
 OUT = ROOT / "balaur_addons" / "addons" / "gamend"
 REGENERATE = "clients/generate_balaur.sh"
 # Every file in OUT is this emitter's or the template's, so a file neither
-# writes any more (a tag renamed, the old `.rn` modules) is removed.
+# writes any more (a tag renamed, say) is removed.
 OWNS_OUT = True
 
 # A tag whose file would read as something else.

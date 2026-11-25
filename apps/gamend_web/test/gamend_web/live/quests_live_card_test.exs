@@ -122,9 +122,9 @@ defmodule GamendWeb.QuestsLiveCardTest do
       conn = log_in_user(conn, Gamend.AccountsFixtures.user_fixture())
       {:ok, view, _html} = live(conn, ~p"/quests")
 
-      # Rendering the modal used to raise KeyError :locked — the members come
-      # from Quests.group/2, which has no tiers and so no `locked` key, and the
-      # modal was reusing the chain's status label.
+      # The members come from Quests.group/2, which has no tiers and so no
+      # `locked` key: the modal must not reuse the chain's status label, which
+      # would raise KeyError :locked.
       html = render_click(view, "show_group", %{"group" => "countries"})
 
       for id <- ["RO", "ES", "PL"], do: assert(html =~ "Visit #{id}")

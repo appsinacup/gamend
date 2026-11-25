@@ -1804,9 +1804,9 @@ defmodule GamendWeb.HostLayoutNavigation do
     if external_href?(href) do
       nil
     else
-      # Both sides get stripped: the href now carries the reader's locale
-      # prefix, while `current_path` may be the clean path the PageMeta plug
-      # stashed. Comparing them raw left the whole nav unhighlighted under /fr.
+      # Both sides get stripped: the href carries the reader's locale prefix,
+      # while `current_path` may be the clean path the PageMeta plug stashed.
+      # Compared raw, the whole nav would be unhighlighted under /fr.
       known = GamendWeb.GettextSync.known_locales()
       href = GamendWeb.HostLayouts.strip_locale_prefix(href, known)
       current_path = GamendWeb.HostLayouts.strip_locale_prefix(current_path, known)

@@ -11,9 +11,7 @@ defmodule Mix.Tasks.Gamend.Gen.Events do
   The registry is held to the channel code by `realtime_events_drift_test.exs`
   and its `pb` flag to the codec by `event_codec_coverage_test.exs`, so a
   table generated from it cannot name an event the server never sends or miss
-  one it does. It was hand-written before, and had drifted both ways: events
-  the server sent were missing (the matchmaking accept's `ready_check_*` on the
-  user channel), and events it never sent were listed.
+  one it does.
 
   Generated from it (`clients/sdkgen`): the C++, C#, Rust and Balaur SDKs,
   so the Unreal and Unity packages built on them, and the TypeScript

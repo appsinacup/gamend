@@ -125,12 +125,10 @@ defmodule GamendWeb.ConnectionTracker do
   Registers a user channel under the `:user_channel` type, which the admin
   connections page counts.
 
-  There used to be a second, per-user registration here, to answer "does this
-  user have any other socket?" on disconnect. That question is now
-  `Gamend.Presence.last_socket?/1`, which sees the whole cluster rather than
-  one node — see `GamendWeb.UserChannel.terminate/2`. Nothing read the per-user
-  key afterwards, so every channel join paid for a registry write that no
-  longer had a reader.
+  There is no per-user registration: "does this user have any other socket?"
+  on disconnect is `Gamend.Presence.last_socket?/1`, which sees the whole
+  cluster rather than one node (see `GamendWeb.UserChannel.terminate/2`), so
+  a channel join pays for no registry write without a reader.
   """
   def register_user_channel(user_id) do
     _ = register(:user_channel, %{user_id: user_id})

@@ -3,13 +3,11 @@ defmodule GamendWeb.SingleDeliveryTest do
   One PubSub broadcast, one push.
 
   `Phoenix.Channel.Server` subscribes a channel process to its own topic on
-  the endpoint's PubSub (`Gamend.PubSub`) right after `join/3` returns. The
-  lobby, party, group, lobbies and groups channels used to subscribe to that
-  same topic themselves inside `join/3` as well — `Phoenix.PubSub` is a
-  duplicate registry, so the process was registered twice and every
-  `handle_info` ran twice: a Godot client saw `state_changed` (and `updated`,
-  `user_joined`, …) arrive twice per event. Reported from the Godot SDK; the
-  SDK was faithful, the server pushed twice.
+  the endpoint's PubSub (`Gamend.PubSub`) right after `join/3` returns, so a
+  channel that also subscribed to that same topic inside `join/3` would be
+  registered twice (`Phoenix.PubSub` is a duplicate registry) and run every
+  `handle_info` twice: a client would see `state_changed` (and `updated`,
+  `user_joined`, …) arrive twice per event.
 
   Each test broadcasts once on the channel's own topic — the same
   `Phoenix.PubSub.broadcast/3` the core `broadcast_*` helpers use — and

@@ -2,11 +2,9 @@ defmodule GamendWeb.ChangelogLive do
   @moduledoc """
   `/changelog`, rendered from the registered `:changelog` markdown file.
 
-  This used to be a shim that looked for `GamendWeb.HostChangelogLive` by name
-  and rendered "unavailable in standalone web mode" when it found nothing —
-  so every host wrote the page itself, and the two that did wrote it twice.
-  The page is `GamendWeb.ContentPages.changelog/1` now; a host that wants
-  something else routes its own module, which the route macro already allows.
+  The page is `GamendWeb.ContentPages.changelog/1`, so no host writes it
+  itself; a host that wants something else routes its own module, which the
+  route macro allows.
   """
 
   use GamendWeb, :live_view

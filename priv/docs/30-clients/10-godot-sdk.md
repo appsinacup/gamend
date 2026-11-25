@@ -67,8 +67,6 @@ password: it answers the new account and keeps no session. The server emails
 a link and a six-digit code. Ask the player for the code and a password, then
 `authenticate_confirm_registration(email, code, password)` sets the password
 and signs in; `authenticate_resend_confirmation(email)` sends a new code.
-(`authenticate_register(email, password)` is gone, under a new name so an old
-call fails rather than send the password as the username.)
 
 Those always sign in, even when a player is signed in already. To add a
 provider to the signed-in account, use the link calls instead:

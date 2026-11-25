@@ -2,16 +2,16 @@ defmodule Gamend.ReadyCheckJoinRaceTest do
   @moduledoc """
   A player joining a lobby while its last pending member answers ready.
 
-  The join put the newcomer on the lobby's open check only after the seat
-  had committed, with no lock: the answer could pass the check in between,
-  without the member who had just joined, and the late insert then put them,
-  pending, into a check that had already passed. The newcomer now goes on the
-  board in the seat's own transaction, under the check's lock.
+  A join that put the newcomer on the lobby's open check only after the seat
+  had committed, with no lock, would let the answer pass the check in
+  between, without the member who had just joined, and the late insert would
+  then put them, pending, into a check that had already passed. The newcomer
+  goes on the board in the seat's own transaction, under the check's lock.
 
   Each lobby must end one of two ways: the check passed before the join (the
   newcomer is not on it), or the join came first (the newcomer is on it,
   pending, and it has not passed). The answers are staggered across lobbies
-  so some land inside the old window. Postgres only shows it; see
+  so some land inside that window. Postgres only shows it; see
   `Gamend.RaceCase`.
   """
 

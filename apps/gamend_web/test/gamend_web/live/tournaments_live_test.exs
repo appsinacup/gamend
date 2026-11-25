@@ -79,7 +79,7 @@ defmodule GamendWeb.TournamentsLiveTest do
     conn: conn
   } do
     # "weekend-gauntlet" is exactly 16 bytes; Ecto.UUID.cast/1 treats any 16-byte
-    # binary as a raw UUID, so fetch/1 used to look it up by id and 404 the page.
+    # binary as a raw UUID, and fetch/1 must not look it up by id and 404 the page.
     slug = "weekend-gauntlet"
     assert byte_size(slug) == 16
     tournament = create_tournament(%{slug: slug})

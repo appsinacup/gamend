@@ -1183,8 +1183,7 @@ defmodule Gamend.Parties do
   # "Recently active" means online, or last seen inside the grace window — this
   # avoids false negatives from brief disconnects and heartbeat delays. The
   # window and the rule live in Accounts.PresenceStatus so this check and the
-  # three-state one the UI draws cannot drift apart; they used to be separate
-  # copies that merely happened to agree on 300 seconds.
+  # three-state one the UI draws cannot drift apart.
   defp check_all_members_online(members) do
     if Enum.all?(members, &PresenceStatus.active?/1) do
       :ok
@@ -1327,8 +1326,8 @@ defmodule Gamend.Parties do
   end
 
   # Under the party's lock, which a join takes for its room check, and on the
-  # party as it is now. The member count read outside it let an accept land
-  # between the count and the write, leaving more members than `max_size`;
+  # party as it is now. A member count read outside it would let an accept
+  # land between the count and the write, leaving more members than `max_size`;
   # and the caller must still lead it, since a leader who handed the party
   # over meanwhile no longer may change it.
   defp update_party_locked(party_id, %User{id: user_id}, attrs) do

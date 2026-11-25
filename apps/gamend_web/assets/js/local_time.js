@@ -14,9 +14,8 @@ const FORMATS = {
   full: {dateStyle: "medium", timeStyle: "medium"},
   // A calendar date or month (a blog post's publication day) is not an instant.
   // Pinned to UTC so it is only *translated*, never shifted: in the reader's own
-  // zone "2026-09-16" would print as the 15th anywhere west of Greenwich. The
-  // server used to skip these entirely to avoid that shift, which left every
-  // date on the site in English.
+  // zone "2026-09-16" would print as the 15th anywhere west of Greenwich.
+  // Skipping them instead would leave every date on the site in English.
   "calendar-date": {dateStyle: "medium", timeZone: "UTC"},
   "calendar-month": {month: "long", timeZone: "UTC"},
 }

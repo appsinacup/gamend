@@ -8,7 +8,7 @@ defmodule Gamend.Payments.Settings do
 
   These are namespaced away from `Gamend.OAuth.Providers` deliberately:
   Apple issues *different* keys for Sign in with Apple and the App Store Server
-  API, from different portals, and the two used to collide on one name.
+  API, from different portals, and the two must not share one name.
   """
 
   use Gamend.Settings.Provider,

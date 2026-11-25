@@ -40,8 +40,8 @@ decision, touch code outside the page, or could not be verified.
   declared in the polyglot host too, so reword both together.
 - [ ] Apple's brand rules may require "Sign in with Apple"; the button says
   "Log in with Apple" like every provider.
-- [ ] Matchmaking admin: the match id is no longer a link, because
-  `/admin/lobbies` takes no id filter. Add one to restore the link.
+- [ ] Matchmaking admin: the match id is not a link, because
+  `/admin/lobbies` takes no id filter. Add one to link it.
 
 ## Not verified
 

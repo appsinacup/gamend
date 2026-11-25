@@ -3,11 +3,9 @@ defmodule GamendWeb.HostRuntime do
   The boot-time configuration derivations every host shares: declared settings
   turned into the shapes Phoenix, Ecto, Bandit, Swoosh and Pigeon expect.
 
-  This used to live only in this repo's `config/host_runtime.exs`, which host
-  repos forked and let drift — one fork went 361 lines out of sync, another
-  slimmed itself down to just the `Settings.from_env/0` loop and lost the Repo
-  and Endpoint configuration entirely. Shipping the derivations as code means
-  a host's `config/host_runtime.exs` is one loop:
+  Shipping the derivations as code, rather than as a `config/host_runtime.exs`
+  each host forks and lets drift, means a host's `config/host_runtime.exs` is
+  one loop:
 
       for entry <-
             GamendWeb.HostRuntime.config(config_env(),
@@ -470,9 +468,8 @@ defmodule GamendWeb.HostRuntime do
             override
         end
 
-      # The setting is a declared :atom, so it arrives cast — the old case on
-      # "off"/"normal"/"full"/"extra" strings could never match and silently
-      # forced :normal for every configured value.
+      # The setting is a declared :atom, so it arrives cast: a case on
+      # "off"/"normal"/"full"/"extra" strings could never match.
       sqlite_synchronous =
         case setting.(Gamend.Database, :sqlite_synchronous) do
           value when value in [:off, :normal, :full, :extra] -> value

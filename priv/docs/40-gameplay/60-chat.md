@@ -188,7 +188,7 @@ A public multi-language list you can start from:
 |---|---|---|
 | [LDNOOBW](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words) | ~30 languages, one word per line | CC-BY-4.0 |
 
-It is the list Shutterstock started, so the old `shutterstock/…` link is the same
+It is the list Shutterstock started, so a `shutterstock/…` link is the same
 repository, under the same licence.
 
 Read one before you ship it, because lists built for filtering search queries are

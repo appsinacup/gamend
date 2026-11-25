@@ -265,10 +265,10 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
     end
 
     # A party board STANDS — it is "are you coming", asked once and left up, not
-    # the countdown a lobby board is. It used to inherit the lobby default, and
-    # an expired check reports no participants: the crew's button fell to a
-    # disabled "Waiting for captain" and the leader's to a disabled "Waiting for
-    # crew", with nothing left that could reopen it. Both were stuck for good.
+    # the countdown a lobby board is. With the lobby default it would expire,
+    # and an expired check reports no participants: the crew's button would
+    # fall to a disabled "Waiting for captain" and the leader's to a disabled
+    # "Waiting for crew", with nothing left that could reopen it.
     test "the board it opens has no deadline", ctx do
       conn = post(authed(ctx.leader), "/api/v1/parties/ready_check", %{})
 

@@ -3,11 +3,11 @@ defmodule Gamend.SecretRotationRaceTest do
   A key rotation walking the table while owners write and delete their
   secrets.
 
-  The walk read a row, decrypted it and upserted the old value by name, so a
-  `put/5` that landed between the two was overwritten with the value before
-  it, a deleted secret came back, and the walk's `{:ok, _} =` raised on a
-  conflict. It now re-encrypts only the row it read (`Repo.compare_and_set/2`
-  on id, key and last write) and skips one that changed.
+  A walk that upserted the value it read by name would overwrite a `put/5`
+  landing in between with the value before it, bring a deleted secret back,
+  and raise on a conflict. The walk re-encrypts only the row it read
+  (`Repo.compare_and_set/2` on id, key and last write) and skips one that
+  changed.
   """
 
   use Gamend.RaceCase

@@ -732,8 +732,8 @@ defmodule GamendWeb.AdminLive.KV do
     end
   end
 
-  # `label` names the field: the error used to read "ID must be a valid UUID"
-  # with two ID fields on the form.
+  # `label` names the field, so the error says which of the form's two ID
+  # fields is not a valid UUID.
   defp parse_optional_id(nil, _label), do: {:ok, nil}
 
   defp parse_optional_id(raw, label) when is_binary(raw) do

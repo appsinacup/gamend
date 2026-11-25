@@ -445,7 +445,7 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
   end
 
   # Each reason answers with the status `GamendWeb.ErrorStatus` gives it, the
-  # same from every endpoint: a catch-all clause used to pick one per site.
+  # same from every endpoint, never one a catch-all clause picks per site.
   describe "the status follows the reason" do
     setup do
       previous = Application.get_env(:gamend_core, :hooks_module)

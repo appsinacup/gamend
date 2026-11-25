@@ -311,8 +311,7 @@ defmodule GamendWeb.Api.V1.QuestController do
     summary: "List a user's completed quests",
     description:
       "Publicly visible completions for a specific user, newest first — " <>
-        "defaults to category \"achievement\" (the replacement for the old " <>
-        "/achievements/user/:user_id endpoint). Hidden quests appear once earned.",
+        "defaults to category \"achievement\". Hidden quests appear once earned.",
     parameters: [
       user_id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true],
       category: [in: :query, schema: %Schema{type: :string}, required: false],
@@ -409,7 +408,7 @@ defmodule GamendWeb.Api.V1.QuestController do
 
     # The API ships the stored string, so a repeat quest's `%{n}` has to be
     # collapsed here. The web pages leave it in place until Gettext fills it,
-    # which is why `resolve_counter/2` no longer does this for everyone.
+    # which is why `resolve_counter/2` does not do this for everyone.
     quest = Quests.render_counter(quest)
 
     base =

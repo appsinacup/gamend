@@ -482,7 +482,7 @@ step "Reclaiming disk"
 used_kb() { df --output=used / | tail -1 | tr -d ' '; }
 before=$(used_kb)
 if [ -n "$KEEP_CACHE" ]; then
-  # --keep-storage was renamed --reserved-space in Docker 28; the new name first.
+  # Docker 28 calls it --reserved-space, an older Docker --keep-storage.
   docker builder prune -f --reserved-space "$KEEP_CACHE" 2>/dev/null \
     || docker builder prune -f --keep-storage "$KEEP_CACHE" || warn "build cache prune failed"
 else

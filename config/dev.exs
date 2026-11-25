@@ -173,10 +173,8 @@ config :gamend_web, GamendWeb.Auth.Guardian,
   issuer: "gamend",
   secret_key: "l/tTJZ4KUNjIfiUsNQDQLWOTgFlyiOz8RQ2EgSRa7mopMzPLJuu7/8s5pA7iiSgO"
 
-# Looser throttling for local iteration. These were previously the *implicit*
-# dev values — the production numbers only ever applied inside runtime.exs's
-# prod branch, so dev silently got the code defaults. Now that the declared
-# defaults are the production ones, dev asks for the slack explicitly.
+# Looser throttling for local iteration: the declared defaults are the
+# production ones, so dev asks for the slack explicitly.
 config :gamend_web, GamendWeb.Plugs.RateLimiter,
   general_limit: 1200,
   auth_limit: 30,

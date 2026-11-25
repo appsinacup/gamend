@@ -501,9 +501,9 @@ defmodule Gamend.KV do
 
   # The cap is a count and then an insert, so it holds only if nothing inserts
   # for the same user in between: counted under a lock keyed on the user, from
-  # the database. The count used to be read through the cache (up to its TTL
-  # behind) and outside any lock, so creates landing together all passed at
-  # one under the cap.
+  # the database. A count read through the cache (up to its TTL behind) and
+  # outside any lock would let creates landing together all pass at one under
+  # the cap.
   defp insert_within_cap(changeset, user_id) when is_binary(user_id) and user_id != "" do
     max = Gamend.Limits.get(:max_kv_entries_per_user)
 

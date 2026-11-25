@@ -26,8 +26,8 @@ defmodule Gamend.UUIDv7 do
   @doc """
   Casts a value to a UUID string, returning `nil` when invalid.
 
-  Convenience for boundary code (channel topics, URL params) that previously
-  used `Integer.parse/1` to validate ids.
+  Convenience for boundary code (channel topics, URL params) that validates
+  an id it was handed.
   """
   @spec cast_or_nil(term()) :: Ecto.UUID.t() | nil
   def cast_or_nil(value) do

@@ -309,8 +309,8 @@ defmodule GamendWeb.Plugs.LocalePath do
   end
 
   # An unprefixed path that *also* has per-locale URLs is the default-locale
-  # document, and only that. It used to render in whatever language the session
-  # happened to hold, which was wrong twice over: a cache keyed on the URL would
+  # document, and only that. Rendered in whatever language the session happens
+  # to hold, it would be wrong twice over: a cache keyed on the URL would
   # serve one visitor's language to the next, and a page whose content depends
   # on a cookie has no stable canonical URL to hand a crawler.
   #

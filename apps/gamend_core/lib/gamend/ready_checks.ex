@@ -242,9 +242,9 @@ defmodule Gamend.ReadyChecks do
   # A lobby's or party's check is written under the subject's own lock, the
   # one every seat and every leave takes. A join then lands either before the
   # open, which reads the joiner among the members, or after it, when the
-  # join's `add_member/2` finds the check. The members used to be read before
-  # any lock: one who left in between stayed on the board, which then could
-  # never pass, and one who joined was left off it. Two opens for one subject
+  # join's `add_member/2` finds the check. Members read before any lock would
+  # let one who left in between stay on the board, which then could never
+  # pass, and leave one who joined off it. Two opens for one subject
   # queue here too, and the second answers `:already_pending`.
   defp within_subject(%Lobby{id: id}, fun), do: Gamend.Lock.serialize(:lobby, id, fun)
   defp within_subject(%Party{id: id}, fun), do: Gamend.Lock.serialize(:party, id, fun)

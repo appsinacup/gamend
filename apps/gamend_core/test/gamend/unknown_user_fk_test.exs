@@ -2,14 +2,15 @@ defmodule Gamend.UnknownUserFkTest do
   @moduledoc """
   Writing a row that points at a user who does not exist.
 
-  These all used to raise `Ecto.ConstraintError`, so an admin request naming a
-  stale id — or a plugin passing one — came back 500. The schemas did declare
-  `foreign_key_constraint(:user_id)`, but SQLite (the default adapter) does not
-  report *which* constraint an INSERT violated, so Ecto cannot match the
-  declaration and raises instead of returning a changeset. The adapter's own
-  docs say `foreign_key_constraint/3` "may not work at all" there.
+  Left to the database, these raise `Ecto.ConstraintError`, so an admin
+  request naming a stale id, or a plugin passing one, would come back 500. The
+  schemas declare `foreign_key_constraint(:user_id)`, but SQLite (the default
+  adapter) does not report *which* constraint an INSERT violated, so Ecto
+  cannot match the declaration and raises instead of returning a changeset.
+  The adapter's own docs say `foreign_key_constraint/3` "may not work at all"
+  there.
 
-  The contexts check first now. The constraint stays declared: it is still the
+  So the contexts check first. The constraint stays declared: it is still the
   thing that makes the row impossible, and on Postgres it still reports.
   """
   use Gamend.DataCase, async: false

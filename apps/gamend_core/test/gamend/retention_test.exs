@@ -788,8 +788,8 @@ defmodule Gamend.RetentionTest do
     end
 
     # CONTRIBUTING requires every unbounded table to have a retention class, and
-    # a host application's tables are no exception — but core's list was fixed,
-    # so a fork could not comply with a rule core enforces on itself.
+    # a host application's tables are no exception, so a fork registers its
+    # own and complies with the rule core enforces on itself.
     test "a registered class runs with core's and reports its count" do
       Gamend.Retention.register_class(:test_host_table, fn -> 7 end)
 

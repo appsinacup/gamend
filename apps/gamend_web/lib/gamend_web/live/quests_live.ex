@@ -482,8 +482,8 @@ defmodule GamendWeb.QuestsLive do
   defp status_icon(QuestFilter.done()), do: "hero-check-circle-solid"
 
   # Whichever comes first: the window closing, or the next reset — tagged, so
-  # the card says "Resets in" when the reset is what it is counting down to.
-  # It used to say "Ends in" whenever the quest had a window at all.
+  # the card says "Resets in" when the reset is what it is counting down to,
+  # and "Ends in" only when the window closes first.
   # The instant, not the seconds to it: `<.timestamp>` counts down to it on
   # its own and says it in the reader's language.
   defp time_left(quest, now) do
@@ -861,7 +861,7 @@ defmodule GamendWeb.QuestsLive do
       progress != nil and progress.status in [QuestStatus.completed(), QuestStatus.claimed()]
 
     claimed? = progress != nil and progress.status == QuestStatus.claimed()
-    # Hidden quests stay teasers until earned, the way achievements did.
+    # Hidden quests stay teasers until earned.
     secret? = quest.hidden and not done?
     # A finished run waits for its claim with no clock: nothing to count down.
     left = if claimable, do: nil, else: time_left(quest, assigns.now)

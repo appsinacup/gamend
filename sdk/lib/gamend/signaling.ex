@@ -21,10 +21,10 @@ defmodule Gamend.Signaling do
       Signaling.configure(lobby, enabled: true, topology: :star, host_id: some_server_user_id)
 
   Held in server-owned `lobbies.webrtc_*` columns, written only by
-  `configure/2`. It lived in `metadata` once, which was wrong twice over: that
-  map is replaced wholesale by any writer, so a game storing match state wiped
-  it, and the lobby host can `PATCH` it, so a player could flip the topology and
-  hand everyone the right to broadcast. The star host defaults to
+  `configure/2`, not in `metadata`: that map is replaced wholesale by any
+  writer, so a game storing match state would wipe it, and the lobby host can
+  `PATCH` it, so a player could flip the topology and hand everyone the right
+  to broadcast. The star host defaults to
   `lobby.host_id`; `configure/2` can pin a different one, which is how a
   headless server process hosts a lobby it is not a member of.
 

@@ -48,7 +48,7 @@ console.log('WebRTC connected (protobuf events channel)')
 
 // Concurrent calls to the same fn — only possible to correlate with ids.
 // Concurrent same-fn calls require id correlation (protobuf only); the
-// legacy JSON protocol matches by plugin+fn so it must call sequentially.
+// JSON format matches by plugin+fn so it must call sequentially.
 let r1, r2
 if ((process.env.RTC_FORMAT || 'protobuf') === 'protobuf') {
   ;[r1, r2] = await Promise.all([

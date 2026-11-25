@@ -190,7 +190,7 @@ defmodule Gamend.Payments.StoreEvents do
   end
 
   # A renewal (or a recovered, or resubscribed, period) is a new transaction
-  # on a purchase already sold: the purchase row now carries it, so revenue
+  # on a purchase already sold: the purchase row carries the latest, so revenue
   # keeps its own row, at the price Apple says the buyer paid for it (the
   # catalogue's price when the transaction names none).
   defp record_apple_renewal(

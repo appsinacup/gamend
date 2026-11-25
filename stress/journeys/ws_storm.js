@@ -23,10 +23,8 @@
  *
  * Per connection the server does a JWT verify, a per-user socket-limit count,
  * a Presence track, a `users` read, a friends query, a notifications query and
- * five PubSub subscribes. Two of those used to be O(all connections on the
- * node), which made this shape quadratic; they are per-key now (see "Fixes that
- * landed before this round" in the spec), so the pre-fix commit is the natural
- * `report.mjs --diff` baseline.
+ * five PubSub subscribes. Each is per-key, not O(all connections on the node),
+ * so this shape is linear in the connections.
  */
 
 import { check, sleep } from 'k6';

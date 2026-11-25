@@ -62,7 +62,7 @@ defmodule Gamend.Content.MarkdownTest do
       refute html =~ "class=\"anchor\""
     end
 
-    test "strip_first_h1 tolerates the id the heading now carries" do
+    test "strip_first_h1 tolerates the id the heading carries" do
       assert Markdown.strip_first_h1(
                ~s(<h1 id="t">T<a href="#t" class="anchor"></a></h1>\n<p>x</p>)
              ) ==

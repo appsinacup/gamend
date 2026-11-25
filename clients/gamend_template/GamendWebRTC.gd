@@ -115,7 +115,7 @@ func connect_webrtc() -> void:
 ##
 ## In protobuf mode replies are correlated by request id, so concurrent
 ## calls (including to the same function) are safe. In JSON mode replies
-## are matched by plugin+fn (legacy protocol), first pending call wins.
+## are matched by plugin+fn, first pending call wins.
 func call_hook(plugin: String, fn: String, args: Array = [], timeout_sec: float = 10.0) -> Dictionary:
 	if not is_channel_open("events"):
 		return {"ok": false, "error": "events DataChannel is not open"}

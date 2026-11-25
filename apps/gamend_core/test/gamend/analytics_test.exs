@@ -56,8 +56,8 @@ defmodule Gamend.AnalyticsTest do
       user = AccountsFixtures.user_fixture()
 
       # The failure seen in the wild is SQLite answering a contended write with
-      # `Exqlite.Error: Database busy` under concurrent registration: it escaped
-      # the old `Ecto.ConstraintError`-only rescue and 500'd
+      # `Exqlite.Error: Database busy` under concurrent registration: a rescue
+      # of `Ecto.ConstraintError` alone lets it escape and 500
       # `POST /api/v1/login/device`. Any raise out of `Repo.insert` reaches the
       # caller the same way, and a process with no sandbox connection provokes
       # one (`DBConnection.OwnershipError`) without taking a lock on the

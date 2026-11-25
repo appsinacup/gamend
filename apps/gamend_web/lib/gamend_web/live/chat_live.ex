@@ -360,7 +360,7 @@ defmodule GamendWeb.ChatLive do
   @impl true
   # Selection happens in handle_params, so the click only updates the URL —
   # that keeps the chosen conversation in the address bar and restores it on
-  # refresh (previously the URL stayed /chat and a reload reset to no chat).
+  # refresh, where a bare /chat would reset to no chat.
   def handle_event("open_friend", %{"id" => id}, socket) do
     {:noreply, push_patch(socket, to: ~p"/chat?#{[type: "friend", id: id]}")}
   end

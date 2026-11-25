@@ -2,14 +2,9 @@ defmodule GamendWeb.BlogLive do
   @moduledoc """
   `/blog` and `/blog/:slug`, rendered from the registered `:blog` directory.
 
-  This used to be a shim that looked for `GamendWeb.HostBlogLive` by name and
-  rendered "unavailable in standalone web mode" when it found nothing — so
-  every host wrote the page itself, and the two that did wrote it twice, each
-  with a private copy of `Gamend.Content.blog_posts_grouped/0`. See
-  `GamendWeb.ChangelogLive` for the same story one page earlier. The page is
-  `GamendWeb.ContentPages.blog_index/1` and `blog_post/1` now; a host that
-  wants something else routes its own module, which the route macro already
-  allows.
+  The page is `GamendWeb.ContentPages.blog_index/1` and `blog_post/1`, so no
+  host writes it itself; a host that wants something else routes its own
+  module, which the route macro allows.
   """
 
   use GamendWeb, :live_view

@@ -42,9 +42,8 @@ Undeclared currencies keep working exactly as now (no regen, no cap). The
 declaration is also what the admin runtime page and `/config` publish, so the
 client can compute the same countdown instead of hardcoding 900.
 
-Note the difference from `lobby_states/0`, which was removed from
-`Declarations` in July 2026: that one declared *words core attached no meaning
-to*, so the registry bought nothing over documentation. `currencies/0` declares
+Note the difference from a declaration of *words core attaches no meaning
+to* (lobby states, say), which buys nothing over documentation. `currencies/0` declares
 **behaviour core executes** — the fold below reads `amount`, `interval_sec` and
 `cap` on every balance read — which puts it in the enforced category alongside
 `notification_types/0`, not the observability-only one.

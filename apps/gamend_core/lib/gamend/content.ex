@@ -867,7 +867,7 @@ defmodule Gamend.Content do
       # first paragraph stays where it is. Without one the page opens with
       # the first paragraph, and the body drops its copy. A truncate marker
       # only decides the excerpt: the text above it is the first paragraph
-      # too, and the page used to print it twice.
+      # too, and the page must not print it twice.
       lede_in_body?: is_nil(description),
       description: description,
       image: image,
@@ -1263,9 +1263,9 @@ defmodule Gamend.Content do
   the label already translated.
 
   Both spellings are handled: a marker that reached the cache is already a
-  neutral `<span>`, while one written after the fact is still `[Tag]` — the
-  roadmap has had both, and handling only the first left `[Beta]` printed
-  verbatim in the middle of a heading.
+  neutral `<span>`, while one written after the fact is still `[Tag]`, and
+  handling only the first would leave `[Beta]` printed verbatim in the middle
+  of a heading.
   """
   @spec relabel_pills(String.t() | nil, %{optional(String.t()) => {String.t(), String.t()}}) ::
           String.t() | nil

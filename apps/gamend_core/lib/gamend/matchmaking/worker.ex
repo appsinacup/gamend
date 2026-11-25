@@ -142,9 +142,9 @@ defmodule Gamend.Matchmaking.Worker do
     # `Matchmaking.claim/1` is a conditional update and seats a group only if
     # every ticket in it is still queued. Sweeps overlap (one per node, and the
     # admin's "Run sweep now" beside the timer), so a refused claim puts back
-    # only what it flipped itself: requeueing its whole group used to undo the
-    # claim of the sweep that was seating those tickets, and the next sweep
-    # matched them again into a second lobby.
+    # only what it flipped itself: requeueing its whole group would undo the
+    # claim of the sweep that is seating those tickets, and the next sweep
+    # would match them again into a second lobby.
     proposed =
       Matchmaking.list_queued_by_params()
       |> Enum.flat_map(&form_bucket/1)

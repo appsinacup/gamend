@@ -3,7 +3,7 @@ defmodule Gamend.SettingsHelpers do
   Set a declared setting for the duration of a test.
 
   Settings resolve from `Application` config, not from the environment, so a
-  test that used to `System.put_env/2` sets the value here instead. Merging
+  test sets the value here rather than with `System.put_env/2`. Merging
   rather than replacing keeps sibling keys in the same provider intact.
   """
 

@@ -382,10 +382,10 @@ defmodule GamendWeb.AuthController do
 
             # The conflict is recorded in the session, not in the URL.
             #
-            # It used to travel as `?conflict_user_id=`, and the settings page
-            # rendered a delete button straight from that parameter — so any
-            # signed-in user could name any account and delete it, provided it
-            # had no password (which is every device and OAuth-only account).
+            # As a `?conflict_user_id=` parameter the settings page would render
+            # a delete button straight from it, so any signed-in user could
+            # name any account and delete it, provided it had no password
+            # (which is every device and OAuth-only account).
             # Only this branch has actually proven the caller controls the
             # provider identity the other account claims, so only this branch
             # may authorise anything.
@@ -944,11 +944,11 @@ defmodule GamendWeb.AuthController do
         reply_error(conn, :not_found, "session_not_found", "OAuth session not found")
 
       %Gamend.OAuthSession{status: status, data: data} ->
-        # Hand the tokens over exactly once. They used to be re-served on every
-        # read until retention pruned the row a day later, so the session id —
-        # which travels in a redirect URL, and therefore through browser
-        # history, proxies and access logs — stayed a bearer credential for 24
-        # hours after the client had already collected it.
+        # Hand the tokens over exactly once. Re-served on every read until
+        # retention prunes the row a day later, the session id (which travels
+        # in a redirect URL, and therefore through browser history, proxies
+        # and access logs) would stay a bearer credential for 24 hours after
+        # the client had already collected it.
         session = session_of(data)
         if session, do: consume_session_tokens(session_id, data)
 

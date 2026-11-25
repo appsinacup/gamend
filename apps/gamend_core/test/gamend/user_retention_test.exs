@@ -218,8 +218,8 @@ defmodule Gamend.UserRetentionTest do
   end
 
   describe "storage" do
-    # Storage has no foreign key to cascade, so avatars used to outlive the
-    # account indefinitely.
+    # Storage has no foreign key to cascade, so without this avatars would
+    # outlive the account indefinitely.
     test "deleting an account removes its stored objects" do
       dir =
         Path.join(System.tmp_dir!(), "gs_retention_storage_#{System.unique_integer([:positive])}")

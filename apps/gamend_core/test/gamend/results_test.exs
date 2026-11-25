@@ -22,7 +22,7 @@ defmodule Gamend.ResultsTest do
 
   test "an event recorded through a copy read before the end is refused", %{result: result} do
     # `result` still says open: the end is read under the result's lock, not
-    # from the copy. It used to be written after the play had ended.
+    # from the copy, so nothing is written after the play has ended.
     {:ok, _ended} = Results.finish(result)
 
     assert {:error, :ended} = Results.record(result, "late", 1)
@@ -36,7 +36,8 @@ defmodule Gamend.ResultsTest do
     assert Results.get(result.id) == nil
     assert Results.count_events(result.id) == 0
 
-    # The struct still names the row; it used to raise `Ecto.StaleEntryError`.
+    # The struct still names the row, and the delete answers rather than
+    # raising `Ecto.StaleEntryError`.
     assert {:error, :not_found} = Results.delete(result)
   end
 

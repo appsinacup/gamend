@@ -230,8 +230,8 @@ defmodule GamendWeb.LiveHelpers do
   The flash for a failed action: `reason`'s readable text when
   `error_message/1` knows it, else `prefix` alone.
 
-  This used to append `inspect(reason)`, which showed players `:group_full` or
-  a raw Ecto error list. A reason with no player-facing text now shows only the
+  It never appends `inspect(reason)`, which would show players `:group_full`
+  or a raw Ecto error list. A reason with no player-facing text shows only the
   prefix (usually "Failed").
   """
   @spec failure_message(String.t(), term()) :: String.t()
@@ -403,9 +403,9 @@ defmodule GamendWeb.LiveHelpers do
   map (string or atom keys) has no struct to hand over, so its fields are read
   directly by the same rule: display name, else username.
 
-  This used to end at `"User <id>"` — the one fallback
+  An unresolvable user is `""`, never `"User <id>"`: the one fallback
   `Gamend.Accounts.display_label/1` documents as wrong, because it reads like a
-  name while telling the reader nothing. An unresolvable user is `""` now.
+  name while telling the reader nothing.
   """
   def public_user_name(nil), do: ""
   def public_user_name(%Gamend.Accounts.User{} = user), do: Gamend.Accounts.display_name(user)

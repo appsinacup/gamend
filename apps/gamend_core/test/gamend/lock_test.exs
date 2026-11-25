@@ -62,8 +62,7 @@ defmodule Gamend.LockTest do
     assert {:ok, :c} = Lock.serialize("ad_hoc", "shared-id", fn -> :c end)
   end
 
-  # The regression that broke the suite when the mutex was added: an inner
-  # `serialize/3` on a different key must not wait on a mutex while holding the
+  # An inner `serialize/3` on a different key must not wait on a mutex while holding the
   # write lock, or it inverts lock order against whoever holds that mutex.
   test "a nested acquisition on a different key does not deadlock" do
     task =
@@ -105,10 +104,10 @@ defmodule Gamend.LockTest do
   end
 
   # `:global` releases on holder death, so a crash must not wedge the key.
-  # This is the bug this test exists for: `Lock.serialize/3` only reaches
-  # `AdvisoryLock.lock/2` on Postgres, so an unregistered atom namespace used to
-  # pass every test on the default SQLite setup and raise `KeyError` on the
-  # Postgres CI job. The namespace is now resolved on both adapters.
+  # `Lock.serialize/3` only reaches `AdvisoryLock.lock/2` on Postgres, so the
+  # namespace is resolved on both adapters: otherwise an unregistered atom
+  # namespace would pass every test on the default SQLite setup and raise
+  # `KeyError` on the Postgres CI job.
   describe "namespace validation (adapter-independent)" do
     test "an unregistered atom namespace raises here, not only on Postgres" do
       assert_raise ArgumentError, ~r/unknown advisory-lock namespace :nope_not_registered/, fn ->

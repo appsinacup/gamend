@@ -132,8 +132,8 @@ defmodule Gamend.MatchmakingPartyTest do
 
   describe "matching" do
     test "a party is never split across lobbies" do
-      # The regression: 3-party + 1 solo into 2-player lobbies used to seat two
-      # members together and strand the third with a stranger.
+      # 3-party + 1 solo into 2-player lobbies must not seat two members
+      # together and strand the third with a stranger.
       {_party, [leader | _] = crew} = party_of(3)
       assert {:error, :party_too_large} = Matchmaking.join(leader, %{"mode" => "duel"}, 2, 2)
 

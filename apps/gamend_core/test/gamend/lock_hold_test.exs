@@ -165,8 +165,8 @@ defmodule Gamend.LockHoldTest do
   end
 
   test "Lock.exclusive holds no transaction while its function runs" do
-    # Each write inside commits by itself: the tournament tick used to hold one
-    # transaction, and every row it touched, across all due tournaments.
+    # Each write inside commits by itself, so the tournament tick never holds
+    # one transaction, and every row it touches, across all due tournaments.
     assert {:ok, false} = Gamend.Lock.exclusive("lock_hold_test", "tick", &Repo.in_transaction?/0)
   end
 end

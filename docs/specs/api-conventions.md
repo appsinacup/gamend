@@ -172,7 +172,7 @@ end
 failed changeset as `unprocessable_or_conflict/2`, and a hook's veto
 (`{:hook_rejected, reason}`) as 403 `rejected`. A reason the table does not
 know raises `GamendWeb.UnmappedReason`: a 500 whose log names the reason,
-where a catch-all clause used to answer 400 or 403 for anything. Words that
+never a 400 or 403 a catch-all clause answers for anything. Words that
 mean different things in different places (`invalid`, `missing`, `disabled`)
 have no status on purpose; a controller says which code each is.
 `mix gamend.api.lint` flags, in an API controller, a status chosen for a

@@ -216,11 +216,10 @@ defmodule Gamend.Payments.Providers.Google do
 
   # Deliberately not read from `attrs`.
   #
-  # A clause here used to accept `"access_token"` from the request body, so a
-  # caller of `POST /api/v1/payments/validate/google` chose which credential the
-  # server used for its own server-to-server call to Google. It gained nothing
-  # against Google, but the credential for a server-side call is not an input a
-  # client gets to supply. Operators still override it with the configured
+  # Taking `"access_token"` from the request body would let a caller of
+  # `POST /api/v1/payments/validate/google` choose which credential the server
+  # uses for its own server-to-server call to Google. The credential for a
+  # server-side call is not an input a client gets to supply. Operators still override it with the configured
   # `GOOGLE_PLAY_ACCESS_TOKEN`.
   defp access_token(_attrs) do
     case config_value("GOOGLE_PLAY_ACCESS_TOKEN", :google_play_access_token) do

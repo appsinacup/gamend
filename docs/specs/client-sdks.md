@@ -5,8 +5,7 @@ it is the core an Unreal plugin builds on, then C#/Unity and the lighter
 targets — without writing the realtime layer from scratch each time or
 shipping generator-invented type names.
 
-This replaces the roadmap's "Unity and Unreal, driven by demand" with an
-order and a method. Each SDK gets its own spec when it starts;
+This gives the roadmap's client SDKs an order and a method. Each SDK gets its own spec when it starts;
 [cpp-sdk.md](cpp-sdk.md) is the first.
 
 ## What every SDK speaks
@@ -78,7 +77,7 @@ It ports the C++ SDK with these differences:
 - A null or empty path parameter refuses the call: the C++ `string_view` cannot
   be null, and `/lobbies/` would be another operation.
 - `Event.Name` is C++'s `event.event`, since C# forbids a member named after its
-  type. A timer cancelled by an earlier timer in the same drain no longer fires.
+  type. A timer cancelled by an earlier timer in the same drain does not fire.
 - No peer connection ships: `IPeerTransport` is the interface a Unity package or
   a game fills.
 

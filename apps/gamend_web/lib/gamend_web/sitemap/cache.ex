@@ -198,8 +198,8 @@ defmodule GamendWeb.Sitemap.Cache do
   @prune_page 1000
 
   # No `is_list` guard: `Gamend.Storage.Adapter`'s `list/1` callback is typed
-  # `[object()]`, so the fallback branch this used to carry was unreachable —
-  # dialyzer flagged it as pattern_match_cov.
+  # `[object()]`, so a fallback branch would be unreachable (dialyzer's
+  # pattern_match_cov).
   defp signature_prefixes(offset, acc) do
     page = Storage.list_objects(prefix: "#{@prefix}/", offset: offset, limit: @prune_page)
 

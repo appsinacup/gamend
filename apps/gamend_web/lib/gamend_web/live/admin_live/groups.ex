@@ -732,8 +732,8 @@ defmodule GamendWeb.AdminLive.Groups do
   # Private
   # ---------------------------------------------------------------------------
 
-  # One page of the open group's members: a group can hold every player, and
-  # the modal used to load them all with their accounts.
+  # One page of the open group's members: a group can hold every player, so
+  # the modal never loads them all with their accounts.
   defp load_members(%{assigns: %{selected_group: %{id: group_id}}} = socket) do
     %{members_page: page, members_page_size: page_size} = socket.assigns
     count = Groups.count_group_members(group_id)
@@ -834,10 +834,10 @@ defmodule GamendWeb.AdminLive.Groups do
   end
 
   # The Groups member commands authorise an acting group admin, and the console
-  # has none of its own. It used to pass `creator_id` unconditionally, which
-  # crashed on a group whose creator was deleted (nil id), failed with
-  # `:not_admin` once the creator was demoted, and reported "cannot kick self"
-  # when the target WAS the creator. Act as the creator while they are still an
+  # has none of its own. Passing `creator_id` unconditionally would crash on a
+  # group whose creator was deleted (nil id), fail with `:not_admin` once the
+  # creator is demoted, and report "cannot kick self" when the target IS the
+  # creator. Act as the creator while they are still an
   # admin, else as any other admin, and never as the target.
   defp run_member_action(socket, gid, uid, command, success, failure) do
     user_id = to_string(uid)

@@ -892,8 +892,7 @@ After several rounds of narrowing, the list reduces to **one root cause**. Every
 item below is a consequence of it, not a separate limit.
 
 **There is no engine in the process.** Nothing here is a compiler limitation;
-there is simply nothing to call. Reference semantics used to be a second root
-cause; it shipped, and the list is down to this one.
+there is simply nothing to call.
 
 | Ruled out by it | Nearest thing that works |
 |---|---|

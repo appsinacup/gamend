@@ -346,12 +346,11 @@ defmodule GamendWeb.AdminLive.ServiceDiagnostics do
   # A fixed-width mask, plus the last four characters once the value is long
   # enough for four to be a small fraction of it.
   #
-  # This used to show the first and last `ceil(len/4)` characters — about half
-  # of the value, contiguous at both ends. For a 64-character `secret_key_base`
-  # that is 32 characters; for a 16-character SMTP password it left 8 to guess;
-  # and it masked `RELEASE_COOKIE`, the BEAM distribution credential, the same
-  # way. Recognising a value needs a handful of characters, not half of it.
-  # Matches `GamendWeb.AdminLive.Settings`, which already did this.
+  # Recognising a value needs a handful of characters, not half of it: the
+  # first and last `ceil(len/4)` would show 32 characters of a 64-character
+  # `secret_key_base`, leave 8 of a 16-character SMTP password to guess, and
+  # treat `RELEASE_COOKIE`, the BEAM distribution credential, the same way.
+  # Matches `GamendWeb.AdminLive.Settings`.
   def mask_secret(nil), do: "<unset>"
   def mask_secret(""), do: "<unset>"
 

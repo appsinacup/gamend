@@ -307,14 +307,14 @@ defmodule Gamend.Chat do
   #
   # `create_chat_notification/3` upserts on `(sender_id, recipient_id, title)`
   # and these set sender == recipient, so the title alone decides which
-  # notifications merge. That made a *user-chosen name* the key: a group or
-  # lobby named "friends" produced "New messages from friends" — the same slot
-  # as the friend-DM notification — and the two merged, accumulating each
-  # other's `message_count` and overwriting each other's routing metadata, so
-  # tapping the notification opened the wrong conversation. Two lobbies sharing
-  # a title collided the same way.
+  # notifications merge. With one phrasing for every type, a *user-chosen name*
+  # would be the key: a group or lobby named "friends" would produce "New
+  # messages from friends", the same slot as the friend-DM notification, and
+  # the two would merge, accumulating each other's `message_count` and
+  # overwriting each other's routing metadata, so tapping the notification
+  # would open the wrong conversation.
   #
-  # Each chat type now has its own phrasing, so no name can reach another type's
+  # Each chat type has its own phrasing, so no name can reach another type's
   # slot. Group titles are unique, so a group name is safe to keep. Lobby and
   # party titles are not unique — but a user is in at most one lobby and one
   # party at a time (`users.lobby_id`, `users.party_id`), so those consolidate
@@ -691,9 +691,9 @@ defmodule Gamend.Chat do
         %ReadCursor{user_id: user_id}
         |> ReadCursor.changeset(attrs)
         |> Repo.insert(
-          # Only ever forward. The cursor used to be set unconditionally, so two
-          # marks racing (or arriving out of order from different tabs) could
-          # leave it on an older message — and `count_unread/3` then counts
+          # Only ever forward. Set unconditionally, two marks racing (or
+          # arriving out of order from different tabs) could leave it on an
+          # older message — and `count_unread/3` then counts
           # everything after that one, so the badge climbs back up with no way for
           # the reader to clear it. Ids are UUIDv7, so lexicographic order is
           # chronological, which is what `count_unread/3`'s `m.id > ^last_id`

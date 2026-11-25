@@ -181,11 +181,9 @@ branch instead, `fly deploy` the same app from source with
 Leave `GAMEND_LIMITS_MAX_SOCKETS_PER_USER` at its default (20). Every socket is
 its own device user, which is both more realistic and how the limit is meant to
 be respected — so the limit never actually trips, but the *check* still runs on
-every connect. That check used to be the connect path's O(all sockets on the
-node) term, and setting the limit to `0` short-circuited it, which made `0` vs
-`20` a change of cost *class* rather than a tweak. It is now counted from a
-per-user registry key, so both values cost the same; run cell B once with `0`
-to confirm that on the machine rather than on the reasoning.
+every connect. It is counted from a per-user registry key, so `0` and `20`
+cost the same; run cell B once with `0` to confirm that on the machine rather
+than on the reasoning.
 
 Two new knobs, both defaulting to today's behaviour, both worth one run each on
 cell B (and on H, where they should matter most):

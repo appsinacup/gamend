@@ -79,8 +79,8 @@ defmodule Gamend.CacheFillRaceTest do
     key = {:kv, :global, "gone"}
     _ = Cache.delete(key)
 
-    # Stopped right after it evicts the key. The eviction used to come before
-    # the row's delete, so a read here found the row and cached it back.
+    # Stopped right after it evicts the key. An eviction before the row's
+    # delete would let a read here find the row and cache it back.
     deleter = paused_on_evict(cache, key, fn -> KV.delete("gone") end)
     _ = KV.get("gone")
     :ok = resume(deleter)

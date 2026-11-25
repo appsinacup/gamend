@@ -175,9 +175,9 @@ defmodule Gamend.Groups.JoinRequests do
 
   # The seat is the join's (`Shared.do_add_group_member/5`): the group's room
   # and the player's cap on groups checked under the locks a join takes, and
-  # the request moved from pending to accepted inside that transaction. The
-  # approve used to write "accepted" over whatever the request was by then, so
-  # with a reject landing too the player ended a member with a rejected
+  # the request moved from pending to accepted inside that transaction. An
+  # approve that wrote "accepted" over whatever the request was by then would,
+  # with a reject landing too, leave the player a member with a rejected
   # request and both answers in their notifications.
   defp approve_join_request_with_hook(request, group, admin_id, request_id) do
     group_id = request.group_id

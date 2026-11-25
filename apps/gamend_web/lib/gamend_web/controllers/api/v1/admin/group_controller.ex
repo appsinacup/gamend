@@ -170,7 +170,7 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
   end
 
   # Once the group exists, a refusal is the `before_group_delete` hook's veto:
-  # 403 `rejected`. It used to be reported as not_found.
+  # 403 `rejected`, not not_found.
   defp do_delete(conn, group_id) do
     case Groups.admin_delete_group(group_id) do
       {:ok, _} -> reply_ok(conn)

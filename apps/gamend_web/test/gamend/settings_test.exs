@@ -139,11 +139,11 @@ defmodule Gamend.SettingsTest do
   end
 
   describe "cast/3 for :atom with declared values" do
-    # The regression this guards: with no declared values the cast falls back
-    # to `String.to_existing_atom/1`, so a legal choice is rejected unless some
-    # unrelated module happens to name that atom. `:sandbox` was named nowhere
-    # outside the test suite, so `GAMEND_PAYMENTS_ENVIRONMENT=sandbox` cast as
-    # :error and silently fell back to the default — `:production`.
+    # With no declared values the cast falls back to
+    # `String.to_existing_atom/1`, so a legal choice is rejected unless some
+    # unrelated module happens to name that atom: an atom named nowhere else,
+    # such as `:sandbox` in `GAMEND_PAYMENTS_ENVIRONMENT=sandbox`, would cast as
+    # :error and silently fall back to the default, `:production`.
     test "accepts a declared value whose atom nothing else mentions" do
       values = [:production, :zzz_never_mentioned_anywhere_else]
 

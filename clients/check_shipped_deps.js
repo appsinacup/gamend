@@ -5,12 +5,12 @@
  * Fail the build when the published bundle requires a package that the
  * published package.json does not declare.
  *
- * This exists because @ughuuu/gamend 1.0.0 shipped broken: the handcrafted
- * realtime code reaches protobufjs through
- * realtime.js -> gamend_proto.js -> gamend_realtime.pb.js, and nothing
- * declared protobufjs. Every generated API class imported fine, so the build
- * and the smoke checks were green, but `require('@ughuuu/gamend')` threw
- * "Cannot find module 'protobufjs/minimal.js'" on a clean install.
+ * The handcrafted realtime code reaches protobufjs through
+ * realtime.js -> gamend_proto.js -> gamend_realtime.pb.js. Every generated API
+ * class imports fine without it, so the build and the smoke checks stay green
+ * while `require('@ughuuu/gamend')` throws "Cannot find module
+ * 'protobufjs/minimal.js'" on a clean install of a package that does not
+ * declare it.
  *
  *   node clients/check_shipped_deps.js
  */

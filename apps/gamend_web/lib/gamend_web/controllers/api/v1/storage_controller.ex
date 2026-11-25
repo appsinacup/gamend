@@ -140,7 +140,7 @@ defmodule GamendWeb.Api.V1.StorageController do
   # Prefixes this unauthenticated route may serve: `Storage.public_prefixes/0`,
   # `avatars/` and `icons/` unless a host adds its own.
   #
-  # It used to serve *any* key in the store. Avatar and icon keys carry 16 bytes
+  # Not *any* key in the store. Avatar and icon keys carry 16 bytes
   # of entropy so they are effectively unguessable, but the admin uploader
   # writes operator-chosen keys at any path (`PUT /api/v1/admin/storage/object`,
   # and the admin page advertises "any file type, at any path") — and a

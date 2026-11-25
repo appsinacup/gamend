@@ -1755,18 +1755,16 @@ defmodule Gamend.Leaderboards do
 
   # Ranked and windowed in one statement, deliberately.
   #
-  # This used to be two queries: `get_user_record/2` for the rank (itself
-  # cached for 10s), then an OFFSET query that trusted it. Anyone submitting a
-  # better score in between pushed the caller down the board, so the second
-  # query windowed around a position the caller had already left — and once
-  # that drift passed `half`, the caller was missing from their own "around
-  # me" page. The load test caught it on 3.2% of reads under 30 concurrent
-  # writers on Postgres and on none under SQLite, whose single writer hides
-  # the race rather than removing it.
+  # Two queries, the rank (`get_user_record/2`, cached for 10s) and then an
+  # OFFSET query trusting it, would race: anyone submitting a better score in
+  # between pushes the caller down the board, so the second query windows
+  # around a position the caller has already left, and once that drift passes
+  # `half` the caller is missing from their own "around me" page. Under 30
+  # concurrent writers on Postgres that is 3.2% of reads; SQLite's single
+  # writer hides the race rather than removing it.
   #
   # One CTE means the rank and the window read the same snapshot, so the
-  # caller is in the result by construction — and it is one round trip where
-  # the old path was three.
+  # caller is in the result by construction, in one round trip.
   @decorate cacheable(
               key:
                 {:leaderboards, :around_user, records_cache_version(leaderboard.id),
@@ -1776,11 +1774,10 @@ defmodule Gamend.Leaderboards do
   defp list_records_around_user_cached(%Leaderboard{} = leaderboard, key, user_id, limit)
        when is_binary(user_id) and is_integer(limit) do
     # `rank >= mine - half`, rearranged so the interpolated value sits on the
-    # side Ecto can type. `LIMIT` then does what `max(1, ...)` used to: a
-    # caller inside the top `half` simply starts the window at rank 1. A
-    # caller with no record on this board matches nothing — the subquery is
-    # empty, the comparison is NULL — which is the `[]` the old clause
-    # returned explicitly.
+    # side Ecto can type. `LIMIT` then bounds the window: a caller inside the
+    # top `half` simply starts it at rank 1. A caller with no record on this
+    # board matches nothing (the subquery is empty, the comparison is NULL),
+    # so the answer is `[]`.
     half = div(limit, 2)
 
     my_rank =

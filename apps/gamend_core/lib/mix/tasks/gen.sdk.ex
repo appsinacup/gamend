@@ -228,7 +228,7 @@ defmodule Mix.Tasks.Gen.Sdk do
   # A context split by concern keeps its API as `defdelegate`s marked
   # `@doc delegate_to: {Module, :fun, arity}` (see `Gamend.Accounts`). The
   # stub is still the context's, so its docs and specs come from where each
-  # function now lives -- otherwise every delegated function would reach the
+  # function lives -- otherwise every delegated function would reach the
   # SDK undocumented, and without the spec this task insists on.
   defp resolve_delegates(function_docs, specs) do
     {docs, specs} =

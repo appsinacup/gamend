@@ -128,20 +128,17 @@ func can_push(event : String) -> bool:
 	
 ## A message stamped with a join_ref belongs to THAT join and to no other, so a
 ## message for a join this channel has already replaced is dropped (phoenix.js
-## does the same). The old guard read `topic == CHANNEL_EVENTS.close` — the
-## TOPIC against the EVENT names — so it was never true and every stale message
-## was delivered anyway. A close for a dead join then reached the live channel,
-## failed the ref test in trigger(), and went out as an ordinary broadcast: that
-## is what "[gamend] Unhandled user event: phx_close" is.
+## does the same). A close for a dead join delivered anyway would reach the live
+## channel, fail the ref test in trigger(), and go out as an ordinary broadcast,
+## which is what "[gamend] Unhandled user event: phx_close" is.
 func is_member(topic, join_ref, event := "") -> bool:
 	if topic != _topic:
 		return false
 
 	if join_ref != "" and _join_ref != "" and join_ref != _join_ref:
 		if event == CHANNEL_EVENTS.close or event == CHANNEL_EVENTS.error:
-			# Loud on purpose. Dropping this silently is what made the original
-			# bug unreadable: you want to know a channel died for a join you are
-			# no longer on, and not confuse it with the live one dying.
+			# Loud on purpose: you want to know a channel died for a join you
+			# are no longer on, and not confuse it with the live one dying.
 			push_warning(
 				"[phoenix] Dropped %s on %s for a stale join (message join_ref=%s, current=%s)"
 				% [event, _topic, join_ref, _join_ref]
@@ -164,11 +161,12 @@ func trigger(message : PhoenixMessage):
 	var event := message.get_event()
 
 	# Close and error are bound by EVENT, the way phoenix.js binds them — NOT by
-	# ref. Gating them on `ref == _join_ref` meant a close whose ref did not line
-	# up was handed on as an ordinary broadcast, and nothing here ever learned
-	# the channel was gone: the state stayed JOINED against a server process that
-	# no longer exists, no rejoin was scheduled, and the registry kept the topic,
-	# so add_channel() hands back the dead object instead of joining. On a
+	# ref. Gated on `ref == _join_ref`, a close whose ref did not line up would
+	# be handed on as an ordinary broadcast, and nothing here would learn the
+	# channel was gone: the state would stay JOINED against a server process
+	# that does not exist, no rejoin would be scheduled, and the registry would
+	# keep the topic, so add_channel() would hand back the dead object instead
+	# of joining. On a
 	# `lobby:` channel that failure is completely silent — the next level waits
 	# out its whole start timeout for word data on a channel that will never
 	# speak again. is_member() above is what keeps a STALE close from getting

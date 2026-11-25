@@ -32,8 +32,7 @@ defmodule GamendWeb.Api.V1.Admin.ValidationErrorsTest do
     test "admin kv entry create", %{admin_conn: conn} do
       resp = post(conn, ~p"/api/v1/admin/kv/entries", %{})
       assert resp.status in [400, 422]
-      # Whatever the status, the body must survive JSON encoding — that is the
-      # part that used to raise.
+      # Whatever the status, the body must survive JSON encoding.
       assert is_map(json_response(resp, resp.status))
     end
   end

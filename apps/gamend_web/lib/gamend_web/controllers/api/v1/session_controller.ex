@@ -617,10 +617,8 @@ defmodule GamendWeb.Api.V1.SessionController do
     ]
   )
 
-  # Previously this returned `%{}` and did nothing at all, while its own
-  # description claimed to invalidate the session — so a client that had
-  # "logged out" kept a working access token, and its refresh token stayed
-  # valid for 30 days.
+  # Sign-out revokes: a client that has "logged out" must not keep a working
+  # access token, or a refresh token valid for 30 days.
   #
   # There is no per-token denylist to revoke against, so revocation is
   # `token_version`, which is account-wide. Callers are told that plainly above.

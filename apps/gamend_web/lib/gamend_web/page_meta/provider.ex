@@ -12,12 +12,11 @@ defmodule GamendWeb.PageMeta.Provider do
   the path, trimming a description to what a search engine shows, turning a
   breadcrumb trail into `BreadcrumbList` markup.
 
-  The contract used to live in `GamendWeb.Plugs.PageMeta`'s moduledoc, with the
-  plug probing each function by name at request time. It still probes, because
-  it must: a release loads modules lazily, so a provider may not be loaded the
-  first time a page is served. Declaring the behaviour does not remove the
-  check — it gives the check something to be checked against, and a host that
-  misspells a callback now hears about it at compile time.
+  `GamendWeb.Plugs.PageMeta` probes each function by name at request time,
+  because it must: a release loads modules lazily, so a provider may not be
+  loaded the first time a page is served. The behaviour gives the check
+  something to be checked against, and a host that misspells a callback hears
+  about it at compile time.
   """
 
   @doc ~S'The `<meta name="description">` for `path`, or `nil` to fall back.'

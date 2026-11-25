@@ -105,14 +105,13 @@ export function setup() {
 export default function (state) {
   // Spread the CONNECTS across the ramp, not just the joins.
   //
-  // This used to delay only the channel join, with `setTimeout` inside the
-  // socket callback — but the socket was already open by then, so every VU
-  // connected at once. `per-vu-iterations` starts all VUs immediately, so
-  // 24,000 sockets arrived in about 21 seconds against a configured 130-second
-  // ramp, and what got measured was a connect storm rather than a steady
-  // population. That distinction matters: the server OOMed above ~15,000 on
-  // both 3 GB and 4 GB, which is the signature of an arrival-rate problem
-  // rather than a capacity one.
+  // Delaying only the channel join, with `setTimeout` inside the socket
+  // callback, is too late: the socket is already open, and
+  // `per-vu-iterations` starts all VUs immediately, so 24,000 sockets arrive
+  // in about 21 seconds against a configured 130-second ramp, and what gets
+  // measured is a connect storm rather than a steady population. That
+  // distinction matters: an OOM above ~15,000 on both 3 GB and 4 GB is the
+  // signature of an arrival-rate problem rather than a capacity one.
   //
   // `sleep` blocks the VU before anything is opened, which is the only way to
   // pace admission with this executor.

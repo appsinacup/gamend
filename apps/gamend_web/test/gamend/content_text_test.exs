@@ -1,9 +1,8 @@
 defmodule GamendWeb.ContentTextTest do
   @moduledoc """
-  Quests and leaderboards used to store a translation per locale inside
-  `metadata`. Editing a title left the copies behind, stale, with nothing to
-  say which. These lock in the replacement rule: a row holds its source text
-  and only its source text.
+  A quest or leaderboard row holds its source text and only its source text:
+  a translation per locale inside `metadata` would be left behind, stale, by
+  every edit of the title, with nothing to say which.
   """
 
   use ExUnit.Case, async: true
@@ -70,9 +69,9 @@ defmodule GamendWeb.ContentTextTest do
     end
 
     test "never logs a missing binding" do
-      # The anonymous quest catalog pairs no progress row, so this used to log
+      # The anonymous quest catalog pairs no progress row, and must not log
       # `missing Gettext bindings: [:n]` on every page view in a locale that
-      # had the string translated.
+      # has the string translated.
       quest = %Quest{title: "Treasures x %{n}", description: "Find number %{n}."}
 
       log = ExUnit.CaptureLog.capture_log(fn -> ContentText.translate(quest) end)

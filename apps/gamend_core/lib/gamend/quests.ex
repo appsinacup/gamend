@@ -360,10 +360,10 @@ defmodule Gamend.Quests do
   @doc """
   The active quests with an objective listening to `event`.
 
-  `report_event/4` is the hottest write a player makes, and it used to scan
-  every active quest to find the handful that care. That is linear in the size
+  `report_event/4` is the hottest write a player makes, and scanning every
+  active quest to find the handful that care would be linear in the size
   of the whole catalogue, so a host that adds a large family of quests — one
-  per language, say — pays for all of them on every unrelated event.
+  per language, say — would pay for all of them on every unrelated event.
 
   Cached **per event**, not as one grouped map. Nebulex copies a value out on
   read, so a single map of every event's quests would copy the entire
@@ -540,20 +540,19 @@ defmodule Gamend.Quests do
 
   # Advance one quest for one user. Side effects run after the write lands.
   #
-  # This used to hold a per-(user, quest) advisory lock for the whole
-  # read-modify-write, which cost a transaction and a lock round trip on the
-  # hottest write a player makes — the load test puts a locked write at 966/s
-  # against 4,266/s unlocked. What the lock actually protected is the objective
-  # merge: read the JSON map, add `amount` to the objectives this event
-  # matches, write it back. Two events arriving together both read the old map,
-  # and the second write drops the first's increment without a trace.
+  # No advisory lock: a per-(user, quest) lock over the whole
+  # read-modify-write costs a transaction and a lock round trip on the hottest
+  # write a player makes (the load test puts a locked write at 966/s against
+  # 4,266/s unlocked). What needs protecting is the objective merge: read the
+  # JSON map, add `amount` to the objectives this event matches, write it back.
+  # Two events arriving together both read the same map, and the second write
+  # would drop the first's increment without a trace.
   #
-  # `lock_version` closes that without the lock and without adapter-specific
+  # `lock_version` closes that without a lock and without adapter-specific
   # JSON SQL. The UPDATE carries the version it read, so the loser of a race
   # matches no row and `do_advance/7` re-reads and merges again against what
   # actually landed. Claiming, re-arming and reward grants bump the same
-  # counter, so a claim landing mid-merge is caught too — which the advisory
-  # lock never covered, because none of those paths ever took it.
+  # counter, so a claim landing mid-merge is caught too.
   defp advance_quest(user_id, quest, event, amount, meta, now) do
     outcome =
       case do_advance(user_id, quest, event, amount, meta, now, @advance_attempts) do
@@ -2209,8 +2208,8 @@ defmodule Gamend.Quests do
 
   defp matches_status?(_entry, _status), do: true
 
-  # Hidden quests are listed but obscured by the serializer until earned (the
-  # same teaser behavior achievements had) — a locked prerequisite, by
+  # Hidden quests are listed but obscured by the serializer until earned, as
+  # teasers — a locked prerequisite, by
   # contrast, hides the quest outright, and so does a code-only quest with no
   # row: only a code can start it, so the list has nothing to offer until then.
   defp visible_to_user?(%Quest{code_only: true}, nil, _done_prereqs), do: false
@@ -2372,8 +2371,8 @@ defmodule Gamend.Quests do
 
   # Racing a player's own event on the same row is the ordinary case here — an
   # admin grant lands while the player is playing — so this takes the same
-  # optimistic lock the advance path does rather than an advisory lock the
-  # advance path no longer holds.
+  # optimistic lock the advance path does: the advance path holds no advisory
+  # lock to take.
   defp do_admin_complete(user_id, quest, period_key, full, now, attempts_left) do
     progress =
       Repo.get_by(QuestProgress,

@@ -1435,17 +1435,12 @@ defmodule Gamend.Hooks do
     end
   end
 
-  defp build_signature(ar, name, parsed_signatures, doc_signatures, spec_map) do
-    parsed_entry = Map.get(parsed_signatures, {name, ar})
-
-    parsed_sig =
-      if is_map(parsed_entry), do: Map.get(parsed_entry, :signature), else: parsed_entry
-
+  # The doc signature, else the typespec.
+  defp build_signature(ar, name, doc_signatures, spec_map) do
     doc_entry = Map.get(Map.get(doc_signatures, name, %{}), ar, %{})
-    doc_text = Map.get(parsed_entry || %{}, :doc) || Map.get(doc_entry, :doc)
+    doc_text = Map.get(doc_entry, :doc)
 
-    typespec_sig = Map.get(spec_map, {name, ar})
-    chosen_signature = choose_signature(parsed_sig, doc_entry, typespec_sig)
+    chosen_signature = Map.get(doc_entry, :signature) || Map.get(spec_map, {name, ar})
     example_args = example_args_for(chosen_signature)
 
     %{
@@ -1480,11 +1475,6 @@ defmodule Gamend.Hooks do
       _ ->
         %{}
     end
-  end
-
-  defp choose_signature(parsed, doc_entry, typespec_sig) do
-    # Prefer parsed -> doc signature -> typespec
-    parsed || Map.get(doc_entry || %{}, :signature) || typespec_sig
   end
 
   defp example_args_for(nil), do: nil
@@ -1578,10 +1568,6 @@ defmodule Gamend.Hooks do
         # Extract docs-based signatures from compiled module docs
         doc_signatures = doc_signatures_for(mod)
 
-        # Source-based signature parsing (via HOOKS_FILE_PATH / :hooks_file_path)
-        # has been removed. We only use BEAM metadata (docs + typespecs).
-        parsed_signatures = %{}
-
         # Extract typespecs -> signature strings
         spec_map = spec_map_for(mod)
 
@@ -1590,7 +1576,7 @@ defmodule Gamend.Hooks do
           sigs =
             Enum.map(
               arities,
-              &build_signature(&1, name, parsed_signatures, doc_signatures, spec_map)
+              &build_signature(&1, name, doc_signatures, spec_map)
             )
 
           %{name: to_string(name), arities: Enum.sort(arities), signatures: sigs}
@@ -1939,11 +1925,11 @@ defmodule Gamend.Hooks.Default do
   everyone. A read that *names* a user or lobby defaults to
   `:owner_or_lobby_member`, so the caller has to be that user or in that lobby.
 
-  It used to return `:public` unconditionally, and `kv_access_allowed?/4` grants
-  a `:public` read without looking at who is asking — so with no plugin
-  overriding this hook, `GET /api/v1/kv/save_data?user_id=<someone else>` (and
-  the `kv:subscribe` channel event, which then streamed every later write)
-  returned another player's entries. Saves and progression live there.
+  `kv_access_allowed?/4` grants a `:public` read without looking at who is
+  asking, so answering `:public` for every read would let
+  `GET /api/v1/kv/save_data?user_id=<someone else>` (and the `kv:subscribe`
+  channel event, which then streams every later write) return another
+  player's entries. Saves and progression live there.
 
   A game that genuinely wants cross-player reads implements this hook and
   returns `:public` for those keys.

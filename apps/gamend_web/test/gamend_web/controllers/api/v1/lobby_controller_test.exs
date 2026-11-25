@@ -488,7 +488,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
       |> put_req_header("authorization", "Bearer " <> token)
       |> post("/api/v1/lobbies/#{lobby.id}/join", %{})
 
-    # join now returns the lobby representation
+    # join returns the lobby representation
     assert conn.status == 200
     body = json_response(conn, 200)["data"]
     assert body["id"] == lobby.id
@@ -853,7 +853,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
       |> put_req_header("authorization", "Bearer " <> token_member)
       |> post("/api/v1/lobbies/leave")
 
-    # leave now returns 200 with empty object
+    # leave returns 200 with empty object
     assert conn.status == 200
 
     reloaded = Gamend.Repo.get(Gamend.Accounts.User, member.id)
@@ -1023,7 +1023,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
   end
 
   # Each reason answers with the status `GamendWeb.ErrorStatus` gives it, the
-  # same from every endpoint: a catch-all clause used to pick one per site.
+  # same from every endpoint, never one a catch-all clause picks per site.
   describe "the status follows the reason" do
     setup %{conn: conn} do
       host = AccountsFixtures.user_fixture()

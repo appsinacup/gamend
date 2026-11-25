@@ -1,7 +1,7 @@
 defmodule GamendWeb.LiveHelpersPaginationTest do
   @moduledoc """
-  The pagination arithmetic eighteen LiveViews used to write for themselves,
-  each of these a bug one of the copies had.
+  The pagination arithmetic every paged LiveView shares, each of these a bug
+  a hand-written copy would have.
   """
   use ExUnit.Case, async: true
 

@@ -27,8 +27,8 @@ defmodule Gamend.Accounts.Presence do
       _ -> :ok
     end
 
-    # No stats-cache bust here any more: the only counter a login used to move
-    # ("active in the last N days") now lives in `Gamend.Analytics`.
+    # No stats-cache bust: the counter a login moves ("active in the last N
+    # days") lives in `Gamend.Analytics`.
     Gamend.Analytics.record_activity(user.id, now)
   end
 

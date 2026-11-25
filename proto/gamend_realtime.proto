@@ -138,9 +138,8 @@ message Lobby {
   // Distinguishes "members changed to empty" from "members unchanged".
   optional bool has_members = 14;
   optional bytes metadata_pb = 15;
-  // Lifecycle state ("created"/"playing"/"ended", the game's vocabulary) —
-  // the JSON payload always carried it; on protobuf it used to travel only
-  // in state_changed, so `updated` consumers read no state at all.
+  // Lifecycle state ("created"/"playing"/"ended", the game's vocabulary),
+  // carried by `updated` as well as state_changed, as the JSON payload does.
   optional string state = 16;
   optional int64 state_changed_at_ms = 17;
 }
@@ -257,9 +256,9 @@ message InventoryChange {
 // ── Moderation ───────────────────────────────────────────────────────────
 
 // "chat_muted". Named for its unit: this one is Unix *seconds*, not the
-// milliseconds every other timestamp here carries, and the bare `expires_at`
-// it used to be was indistinguishable from the ISO-8601 string the REST API
-// sends under that name. 0 means no expiry.
+// milliseconds every other timestamp here carries, and a bare `expires_at`
+// would be indistinguishable from the ISO-8601 string the REST API sends under
+// that name. 0 means no expiry.
 message ChatMute {
   string scope = 1;
   string scope_ref_id = 2;

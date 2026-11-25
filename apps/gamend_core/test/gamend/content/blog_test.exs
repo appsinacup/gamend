@@ -123,7 +123,7 @@ defmodule Gamend.Content.BlogTest do
     refute html =~ "truncate"
   end
 
-  test "a post with neither keeps the old shape: heading title, first paragraph as lede, body without it" do
+  test "a post with neither has the classic shape: heading title, first paragraph as lede, body without it" do
     post = Content.get_blog_post("classic")
 
     assert post.title == "A classic post"

@@ -3,16 +3,15 @@ defmodule GamendWeb.GroupsLiveSubscriptionTest do
   One group page, one subscription.
 
   `/groups` selects a group with `push_patch/2`, so opening one, going back to
-  the list and opening it again all happen in the SAME LiveView process — and
-  `handle_params/3` used to call `Groups.subscribe_group/1` every time with
-  nothing dropping the previous registration. `Phoenix.PubSub` is a duplicate
-  registry, so the third visit meant `{:member_joined, …}` ran `load_groups/1`
-  three times: three identical queries per event, growing for as long as the
-  reader stayed on the page.
+  the list and opening it again all happen in the SAME LiveView process. A
+  `handle_params/3` calling `Groups.subscribe_group/1` every time with nothing
+  dropping the previous registration would, since `Phoenix.PubSub` is a
+  duplicate registry, make the third visit run `load_groups/1` three times per
+  `{:member_joined, …}`: three identical queries per event, growing for as
+  long as the reader stays on the page.
 
   Counted through the PubSub registry rather than through renders, because a
-  duplicated `load_groups/1` produces byte-identical HTML — which is exactly why
-  this went unnoticed.
+  duplicated `load_groups/1` produces byte-identical HTML.
   """
   use GamendWeb.ConnCase, async: false
 

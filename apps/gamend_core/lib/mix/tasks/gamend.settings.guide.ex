@@ -8,10 +8,9 @@ defmodule Mix.Tasks.Gamend.Settings.Guide do
       mix gamend.settings.guide --check  # fail if it is out of date
       mix gamend.settings.guide -o PATH  # write somewhere else
 
-  Sibling of `mix gamend.settings.env_example`, for the same reason: the
-  guides used to hand-list environment variables, and every rename left them
-  describing variables the server no longer read. A declared setting is now
-  documented for readers of the docs site the moment it exists.
+  Sibling of `mix gamend.settings.env_example`, for the same reason: a
+  declared setting is documented for readers of the docs site the moment it
+  exists, and a renamed one leaves no stale variable behind.
 
   **Only for hosts that have a docs site.** When `priv/docs/60-operations`
   does not exist the task says so and does nothing, including under `--check`

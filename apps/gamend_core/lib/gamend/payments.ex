@@ -1361,13 +1361,13 @@ defmodule Gamend.Payments do
           event_type: event_type,
           payload: payload,
           metadata: metadata,
-          # Deliberately nil. This used to be stamped at insert, *before* the
-          # handler ran, so a handler that failed (a database blip, an upstream
-          # timeout while fetching the subscription) returned an error to the
-          # provider, and the provider's retry then matched this row and was
-          # dismissed as a duplicate. The event was lost for good: the customer
-          # had paid and was never fulfilled, or a refund never withdrew the
-          # entitlement, with no path to recovery.
+          # Deliberately nil. Stamped at insert, *before* the handler runs, a
+          # handler that failed (a database blip, an upstream timeout while
+          # fetching the subscription) would return an error to the provider,
+          # and the provider's retry would match this row and be dismissed as
+          # a duplicate. The event would be lost for good (a customer who paid
+          # and is never fulfilled, a refund that never withdraws the
+          # entitlement) with no path to recovery.
           processed_at: nil
         })
         |> Repo.insert()
@@ -1393,14 +1393,13 @@ defmodule Gamend.Payments do
   # Decide whether a webhook delivery should run, and stamp it when it does.
   #
   # `record_provider_event/5` answers "have I seen this event id before?".
-  # That is not the same question as "has it been handled?", and treating it as
-  # such lost events: the row used to be written with `processed_at` already
-  # set, *before* the handler ran, so a handler that failed returned an error to
-  # the provider and the provider's retry was then dismissed as a duplicate.
-  # A paid checkout could go permanently unfulfilled, a refund permanently
-  # un-revoked, with nothing to recover from.
+  # That is not the same question as "has it been handled?": a row written
+  # with `processed_at` already set, *before* the handler runs, means a handler
+  # that failed returns an error to the provider and the provider's retry is
+  # dismissed as a duplicate. A paid checkout could go permanently unfulfilled,
+  # a refund permanently un-revoked, with nothing to recover from.
   #
-  # Now the row is written unprocessed, and only a *completed* delivery counts
+  # So the row is written unprocessed, and only a *completed* delivery counts
   # as a duplicate. A retry of an event we recorded but never finished runs
   # again — webhook handlers are idempotent (`fulfill_purchase/2` locks the row
   # and returns `:already_fulfilled`), so re-running one is safe and losing one

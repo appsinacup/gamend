@@ -6,12 +6,10 @@ defmodule Gamend.Theme.Translatable do
   extractor (`mix gamend.theme.extract`), so the strings a translator is shown
   and the strings the server translates cannot drift apart.
 
-  This is also the guard that keeps configuration out of translations. The
-  theme used to be one whole JSON file per locale, and a config field added to
-  English never reached the other 29 — every one of them silently lost
-  `theme_color`, so non-English visitors got the fallback colour. A key that
-  is not on this list is configuration: it is never extracted, never
-  translated, and cannot vary by locale.
+  This is also the guard that keeps configuration out of translations. A key
+  that is not on this list is configuration: it is never extracted, never
+  translated, and cannot vary by locale, so a config field such as
+  `theme_color` is the same for every visitor.
   """
 
   @keys ~w(label title text tagline description alt cta subtitle question answer)

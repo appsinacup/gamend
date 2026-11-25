@@ -743,13 +743,17 @@ defmodule Gamend.Accounts do
   @doc ~S"""
     Deletes a user and associated resources.
     
+    `by` says who or what asked (a `Gamend.Accounts.DeletedBy`), counted as the
+    `by` of the `accounts.deleted` event once the row is gone. It has no user
+    id, so it is a count and never a row: nothing kept names the account.
+    
     Returns `{:ok, user}` on success, `{:error, :not_found}` when the user was
     deleted first, or `{:error, changeset}` on failure.
     
   """
-  @spec delete_user(Gamend.Accounts.User.t()) ::
+  @spec delete_user(Gamend.Accounts.User.t(), String.t()) ::
           {:ok, Gamend.Accounts.User.t()} | {:error, :not_found | Ecto.Changeset.t()}
-  def delete_user(_user) do
+  def delete_user(_user, _by \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         if reason = Application.get_env(:gamend_sdk, :stub_error),
@@ -767,7 +771,7 @@ defmodule Gamend.Accounts do
              }}
 
       _ ->
-        raise "Gamend.Accounts.delete_user/1 is a stub - only available at runtime on Gamend"
+        raise "Gamend.Accounts.delete_user/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -2237,10 +2241,15 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    A player deleting their own account.
+    A player deleting their own account, with the `reason` they picked (a
+    `Gamend.Accounts.DeletionReason`, or nil when they picked none).
+    
+    Counted as `accounts.deletion_requested` (its `reason` dimension) whatever
+    happens next: a request the player later cancels by signing in still
+    counts, since the reason is what they said when they asked.
     
     With `auth.deletion_grace_days` at 0 the account is deleted now, by
-    `delete_user/1`. Otherwise it is scheduled that many days out and signed out
+    `delete_user/2`. Otherwise it is scheduled that many days out and signed out
     everywhere (every session, access, refresh and personal API token), and
     `Gamend.Retention` deletes it on the day unless its owner signs in on the
     website first (`cancel_deletion/1`). An account already scheduled keeps its
@@ -2248,14 +2257,14 @@ defmodule Gamend.Accounts do
     their LiveViews. `{:error, :not_found}` when another delete took the
     account first.
     
-    Admin deletions and the retention sweeps call `delete_user/1` and never wait.
+    Admin deletions and the retention sweeps call `delete_user/2` and never wait.
     
   """
-  @spec request_deletion(Gamend.Accounts.User.t()) ::
+  @spec request_deletion(Gamend.Accounts.User.t(), String.t() | nil) ::
           {:ok, :deleted}
           | {:ok, {:scheduled, Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
           | {:error, :not_found | Ecto.Changeset.t()}
-  def request_deletion(_user) do
+  def request_deletion(_user, _reason \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         if reason = Application.get_env(:gamend_sdk, :stub_error),
@@ -2263,7 +2272,7 @@ defmodule Gamend.Accounts do
           else: {:ok, nil}
 
       _ ->
-        raise "Gamend.Accounts.request_deletion/1 is a stub - only available at runtime on Gamend"
+        raise "Gamend.Accounts.request_deletion/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -2632,8 +2641,12 @@ defmodule Gamend.Accounts do
   @doc ~S"""
     Lightweight version of `touch_last_seen/1` that accepts a user ID directly.
     Performs a single UPDATE without loading the full struct first, setting
-    `last_seen_at` to now and `is_online` to true, then invalidates the cache.
-    Fire-and-forget — errors are ignored.
+    `last_seen_at` to now. Fire-and-forget — errors are ignored.
+    
+    `is_online` is not touched: an offline to online move is `set_user_online/1`'s,
+    which tells the user's lobby, party and friends and runs `after_user_online`.
+    Written here, the flag came back with none of that, and a game's offline
+    mark (a voyage's "disconnected" card) stayed up on a player back online.
     
   """
   @spec touch_last_seen_by_id(Ecto.UUID.t()) :: :ok

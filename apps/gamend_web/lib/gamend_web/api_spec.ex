@@ -154,7 +154,7 @@ defmodule GamendWeb.ApiSpec do
         ## **11. Quests / Progression**
         One event-driven progression engine covering achievements, daily/weekly quests, time-boxed event quests, chains, and groups:
 
-        - **Kinds**: `achievement` (permanent one-shot — the replacement for the old achievements system), `daily`/`weekly` (reset per UTC period), `event` (starts_at/ends_at window), `chain` (requires a prerequisite quest)
+        - **Kinds**: `achievement` (permanent one-shot), `daily`/`weekly` (reset per UTC period), `event` (starts_at/ends_at window), `chain` (requires a prerequisite quest)
         - **Objectives**: each quest lists objectives `{event, target, params}`; server-side `report_event` advances every matching active quest — there is **no public endpoint to advance progress** (server-authoritative)
         - **Rewards**: currencies (Economy) and items (Inventory), paid **exactly once** per period via idempotent grants; `auto_claim` quests pay on completion, others via `POST /me/quests/:key/claim`
         - **My quests**: `GET /me/quests` returns active quests, per-period progress, and a claimable flag; hidden quests appear once completed
@@ -347,12 +347,10 @@ defmodule GamendWeb.ApiSpec do
     |> RequestTitles.put_titles()
   end
 
-  # The same resolution `GamendWeb.Endpoint.dispatch_router/2` uses. It read
-  # `GamendWeb.Router` directly, so a host that adds its own API routes served
-  # them and documented none of them: they were missing from `/api/docs`, from
-  # the generated SDKs, and from the route existence checks in
-  # `mix gamend.api.lint`. Core's own default is unchanged, since that is what
-  # the config falls back to.
+  # The same resolution `GamendWeb.Endpoint.dispatch_router/2` uses, so a host
+  # that adds its own API routes documents them too: in `/api/docs`, in the
+  # generated SDKs, and in the route existence checks in `mix gamend.api.lint`.
+  # Core's own router is what the config falls back to.
   defp router, do: Application.get_env(:gamend_web, :router, GamendWeb.Router)
 
   defp api_version do

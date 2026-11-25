@@ -2,8 +2,8 @@ defmodule GamendWeb.RoadmapLive do
   @moduledoc """
   `/roadmap`, rendered from the registered `:roadmap` markdown file.
 
-  See `GamendWeb.ChangelogLive` for why this is no longer a shim looking up a
-  host module by name. The page itself is `GamendWeb.ContentPages.roadmap/1`.
+  The page is `GamendWeb.ContentPages.roadmap/1`; a host that wants something
+  else routes its own module, as for `GamendWeb.ChangelogLive`.
   """
 
   use GamendWeb, :live_view

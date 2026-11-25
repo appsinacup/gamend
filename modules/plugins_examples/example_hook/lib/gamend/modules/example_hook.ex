@@ -172,9 +172,8 @@ defmodule Gamend.Modules.ExampleHook do
   # the orthogonal flags (auto-claim, chained, hidden, time-windowed).
   #
   # `category` is a free-form display label, so it is written the way it should
-  # read on the page. It used to be passed as `kind:`, which is not a Quest
-  # field — the changeset dropped it silently and every quest here was created
-  # with no category at all.
+  # read on the page. `kind:` is not a Quest field: the changeset would drop
+  # it silently and create the quest with no category at all.
   defp ensure_quests do
     now = DateTime.utc_now(:second)
 

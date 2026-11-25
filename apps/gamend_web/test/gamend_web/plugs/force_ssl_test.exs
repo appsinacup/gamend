@@ -1,9 +1,9 @@
 defmodule GamendWeb.Plugs.ForceSSLTest do
   @moduledoc """
-  `GAMEND_TLS_FORCE=true` used to do nothing at all: it was wired to Phoenix's
-  `:force_ssl` endpoint option, which is read with `Application.compile_env/2`
-  and so is decided when the endpoint is compiled, not when it boots. Every
-  page kept a live plain-HTTP twin and Search Console indexed `http://` URLs.
+  `GAMEND_TLS_FORCE=true` is read at boot. Phoenix's `:force_ssl` endpoint
+  option is read with `Application.compile_env/2` and so is decided when the
+  endpoint is compiled, which would leave every page a live plain-HTTP twin
+  for Search Console to index.
 
   These pin the redirect to the runtime setting, and pin the two paths that
   must survive it.

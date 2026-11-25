@@ -68,8 +68,8 @@ defmodule GamendWeb.SearchPaletteShellTest do
 
   # `search_palette.js` closes on "the click did not land in the panel", so the
   # panel has to be findable. It is also the reason nothing may cover this
-  # dialog's `::backdrop`: daisyUI's `.modal-backdrop` div used to sit over it
-  # and swallow every click aimed at closing the palette.
+  # dialog's `::backdrop`: daisyUI's `.modal-backdrop` div over it would
+  # swallow every click aimed at closing the palette.
   #
   # Scoped to the dialog, because the language sheet on the same page is a real
   # daisyUI modal and brings a `.modal-backdrop` of its own.

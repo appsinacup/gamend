@@ -4,8 +4,7 @@ defmodule Gamend.SignalingTest do
 
   The property that matters is that nothing is stored: config comes off the
   lobby and membership comes off `Gamend.Presence`, so any node can serve
-  any room. The old version kept rooms in a node-local GenServer, where a room
-  created on one node did not exist on another.
+  any room, and a room created on one node exists on every other.
   """
   use Gamend.DataCase, async: false
 
@@ -74,7 +73,7 @@ defmodule Gamend.SignalingTest do
       assert {:error, :room_not_found} = Signaling.config(lobby.id)
     end
 
-    # The bug that shipped: `|| true` read an explicit false as "unset".
+    # `|| true` would read an explicit false as "unset".
     test "late_join false is honoured" do
       owner = AccountsFixtures.unconfirmed_user_fixture()
 

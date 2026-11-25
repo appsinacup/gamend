@@ -480,9 +480,8 @@ defmodule GamendWeb.UserLive.SettingsTest do
       # No conflict was proven, so no delete control is offered...
       refute has_element?(lv, "button[phx-click=\"delete_conflicting_account\"]")
 
-      # ...and pushing the event anyway does nothing. This is the whole finding:
-      # the id used to come straight from the URL, so any signed-in user could
-      # delete any account without a password.
+      # ...and pushing the event anyway does nothing: an id straight from the
+      # URL would let any signed-in user delete any account without a password.
       render_click(lv, "delete_conflicting_account", %{"id" => other_user.id})
 
       assert Repo.get(User, other_user.id)

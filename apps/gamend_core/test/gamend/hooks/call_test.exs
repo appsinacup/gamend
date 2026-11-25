@@ -235,8 +235,8 @@ defmodule Gamend.Hooks.CallTest do
   end
 
   test "exported_functions lists a module from another BEAM language" do
-    # A Gleam or Erlang plugin has no `__info__/1`; listing it used to crash
-    # `GET /api/v1/hooks` with an UndefinedFunctionError.
+    # A Gleam or Erlang plugin has no `__info__/1`, and listing it must not
+    # crash `GET /api/v1/hooks` with an UndefinedFunctionError.
     names = :math |> Gamend.Hooks.exported_functions() |> Enum.map(& &1.name)
 
     assert "sqrt" in names

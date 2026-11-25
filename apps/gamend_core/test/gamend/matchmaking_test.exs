@@ -139,8 +139,8 @@ defmodule Gamend.MatchmakingTest do
     test "queue order is chronological across a second boundary" do
       # `sort_by` without a sorter falls back to Erlang term order, which walks
       # a DateTime struct in alphabetical key order — `microsecond` before
-      # `second`. These three then sorted 3.000000, 2.000001, 1.999999: exactly
-      # backwards, so the longest-waiting player lost the anchor position.
+      # `second`. These three would sort 3.000000, 2.000001, 1.999999: exactly
+      # backwards, so the longest-waiting player would lose the anchor position.
       # `fake_ticket/4` gives every ticket the same microsecond, which is why
       # the other tests here could never see it.
       base = ~U[2026-01-01 10:00:00.000000Z]

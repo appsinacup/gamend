@@ -3,11 +3,11 @@ defmodule Gamend.Payments.RevokeRaceTest do
   One refund reaching the server as several events at once
   (`charge.refunded`, `refund.created`, `refund.updated`).
 
-  Each revoked the purchase again, whatever it already was, so
-  `after_purchase_revoked` ran once per event: a host taking the bought
-  coins back on it took them three times. The revocation is now a
-  transition decided on the locked row, and only the event that makes it
-  runs the hook. The repeat shows on both adapters; the overlap on Postgres.
+  Each revoking the purchase again, whatever it already was, would run
+  `after_purchase_revoked` once per event: a host taking the bought coins
+  back on it would take them three times. The revocation is a transition
+  decided on the locked row, and only the event that makes it runs the
+  hook. The repeat shows on both adapters; the overlap on Postgres.
   """
 
   use Gamend.RaceCase

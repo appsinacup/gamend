@@ -48,8 +48,7 @@ export const SIDE_STAGES = STAGES.map(([name, words]) => [`side-${name}`, `side 
 
 export const SIDE_MENU = `side ${MENU}`
 
-// The bar from this width while nothing is measured: the `xl` breakpoint it
-// had before it was measured.
+// The bar from this width while nothing is measured: the `xl` breakpoint.
 export const UNMEASURED_BAR = 1280
 
 const KEY = "gamend:nav"

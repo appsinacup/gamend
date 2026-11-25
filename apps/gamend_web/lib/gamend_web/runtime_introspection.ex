@@ -365,8 +365,8 @@ defmodule GamendWeb.RuntimeIntrospection do
           do: {mod, schema_domain(mod), @server_source}
 
     # The host app (:gamend_host) is the running game; its own Ecto schemas
-    # (a game's custom tables) live here, not in core or a plugin, so they were
-    # previously missing from the model entirely.
+    # (a game's custom tables) live here, not in core or a plugin, so the model
+    # reads them from this app.
     host =
       for mod <- ecto_schemas(app_modules(:gamend_host)),
           do: {mod, schema_domain(mod), "host"}

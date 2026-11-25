@@ -167,9 +167,9 @@ defmodule GamendHost.MixProject do
       dialyzer: ["dialyzer --force-check"],
       # The slow checks CI runs and `precommit` leaves out: a cold PLT is
       # minutes, and `hex.outdated` hits the network. Both also run INSIDE each
-      # app, the way CI's dialyzer does: from the root, dialyzer reported 0
-      # errors while CI was red on two real warnings in gamend_web, and each
-      # app has its own mix.lock, which the root's `hex.outdated` does not read.
+      # app, the way CI's dialyzer does: from the root, dialyzer can report 0
+      # errors while CI is red on real warnings in gamend_web, and each app has
+      # its own mix.lock, which the root's `hex.outdated` does not read.
       check:
         [
           "lint",
@@ -205,8 +205,8 @@ defmodule GamendHost.MixProject do
           # The Balaur SDK (`balaur_addons/addons/gamend`), from the OpenAPI
           # document, after `test` so the app the document needs is already up.
           # The document is gitignored, so a local copy older than the last API
-          # change kept a stale SDK passing here while CI's `sdkgen balaur
-          # --check` failed on it (the reports endpoints).
+          # change would keep a stale SDK passing here while CI's `sdkgen
+          # balaur --check` fails on it.
           "openapi.spec.json --spec GamendWeb.ApiSpec --filename clients/godot/openapi.json --pretty=true",
           # The realtime table every SDK reads, from the event registry; then
           # the Balaur SDK, which is generated from both.

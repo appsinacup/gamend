@@ -493,10 +493,9 @@ defmodule GamendWeb.ContentPages do
   attr :year, :integer, required: true
   attr :month, :integer, required: true
 
-  # The month in the reader's language. This used to pass `Calendar.strftime`'s
-  # English name through `dgettext` — but no catalog carries month names, so it
-  # always came back in English while its comment said otherwise. The browser's
-  # `Intl` already knows every locale's months: `local_time.js` translates this
+  # The month in the reader's language. No gettext catalog carries month names,
+  # so `Calendar.strftime`'s English name through `dgettext` would stay English.
+  # The browser's `Intl` already knows every locale's months: `local_time.js` translates this
   # with the zone pinned to UTC. Without JS the English name stands.
   defp month_heading(assigns) do
     assigns =

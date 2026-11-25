@@ -30,15 +30,10 @@ defmodule GamendWeb.FileLogHandler do
   | bytes per file | `:log_file_max_bytes` | `GAMEND_OBSERVABILITY_LOG_FILE_MAX_BYTES` |
   | files kept | `:log_file_max_files` | `GAMEND_OBSERVABILITY_LOG_FILE_MAX_FILES` |
 
-  Both columns used to read differently — a flat `:gamend_web, :log_file` key
-  and a bare `LOG_FILE_PATH`, from before these moved behind
-  `Gamend.Settings`. Neither has resolved to anything since, and because an
-  unconfigured path disables the handler *silently*, a host carrying the old
-  line logged to stdout only and lost every run to terminal scrollback. The
-  polyglot host was doing exactly that, undetected, until a client-side bug
-  needed the server's account of a run and there was none to read.
+  An unconfigured path disables the handler *silently*: the host logs to
+  stdout only and loses every run to terminal scrollback.
 
-  A misconfigured path is still silent by design — this handler must never be
+  A misconfigured path is silent by design — this handler must never be
   the reason a boot fails — so when adding a knob here, prefer one whose
   absence is visible in `GamendWeb.Observability` rather than only at runtime.
   """

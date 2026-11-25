@@ -192,8 +192,8 @@ defmodule GamendWeb.PageControllerTest do
 
   test "unconfigured page path returns the 404 page", %{conn: conn} do
     # This path decides for itself that the request is a 404, so it never
-    # reaches `render_errors`. It used to answer with nine bytes of plain text
-    # — "Not Found" — which reads as though the whole site is down.
+    # reaches `render_errors`, and still answers with the page, not nine bytes
+    # of plain "Not Found", which reads as though the whole site is down.
     conn = get(conn, "/missing-page")
     body = html_response(conn, 404)
 

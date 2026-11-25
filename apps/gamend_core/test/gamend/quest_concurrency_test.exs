@@ -4,9 +4,8 @@ defmodule Gamend.QuestConcurrencyTest do
   together on one row can each read the same map and the second write can drop
   the first's increment.
 
-  It used to be serialized with a per-(user, quest) advisory lock. It is now
-  guarded by `lock_version`: the loser of a race matches no row, re-reads and
-  merges again. The tests below are what says that holds — a lost increment is
+  It is guarded by `lock_version`: the loser of a race matches no row,
+  re-reads and merges again. The tests below are what says that holds — a lost increment is
   invisible from the outside, which is exactly why it needs asserting.
   """
 

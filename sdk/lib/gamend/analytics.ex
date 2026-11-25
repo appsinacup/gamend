@@ -217,6 +217,20 @@ defmodule Gamend.Analytics do
   end
 
   @doc ~S"""
+    On how many different days `user_id` was seen, ever.
+  """
+  @spec days_seen(Ecto.UUID.t()) :: non_neg_integer()
+  def days_seen(_user_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Analytics.days_seen/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Currency granted and spent per UTC day per ledger `reason` over the last
     `days` days: `[%{day, currency, reason, granted, spent, entries}]`, newest
     first. `granted`/`spent` are positive integers (spent is the absolute
@@ -608,6 +622,23 @@ defmodule Gamend.Analytics do
 
       _ ->
         raise "Gamend.Analytics.trait_options/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The accounts seen on `min_days` different days or more, ever (their
+    `user_activity_days` rows): a host's "regular players", asked something
+    only they can answer.
+    
+  """
+  @spec users_seen_on(pos_integer()) :: [Ecto.UUID.t()]
+  def users_seen_on(_min_days) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Analytics.users_seen_on/1 is a stub - only available at runtime on Gamend"
     end
   end
 

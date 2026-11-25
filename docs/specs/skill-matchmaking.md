@@ -159,7 +159,7 @@ caps), `@limit_categories`. `skill_matchmaking_enabled` toggle.
 - [ ] Migration adds `matchmaking_tickets.rating` + creates `player_ratings`,
       applies on SQLite **and** `GAMEND_DB_ADAPTER=postgres`; indexes as above.
 - [ ] `Matcher.form_matches/2` skill-aware (bands passed in, stays pure);
-      timeout guarantee preserved; parties still indivisible; unrated ⇒ legacy
+      timeout guarantee preserved; parties still indivisible; unrated ⇒ plain
       FIFO.
 - [ ] `record_result/3` updates ratings under a `:rating` lock; sweep still under
       `:matchmaking_sweep`.

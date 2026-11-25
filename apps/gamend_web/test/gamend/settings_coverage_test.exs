@@ -130,7 +130,7 @@ defmodule Gamend.SettingsCoverageTest do
   defp sample(%{type: :float}), do: {"1.5", 1.5}
   # An `:atom` setting that declares `:values` accepts only those, so sample a
   # declared one — preferring any that is not the default, so the assertion
-  # still cannot pass by accident. This is now the check that would have caught
+  # still cannot pass by accident. This is the check that catches
   # `GAMEND_PAYMENTS_ENVIRONMENT=sandbox` resolving to `:production`.
   defp sample(%{type: :atom, values: [_ | _] = values, default: default}) do
     value = Enum.find(values, List.first(values), &(&1 != default))

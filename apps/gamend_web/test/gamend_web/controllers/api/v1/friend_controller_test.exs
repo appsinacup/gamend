@@ -135,7 +135,7 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
 
     # cancel as a
     conn_cancel = conn_a |> delete("/api/v1/friends/#{f.id}")
-    # cancel/delete now returns 200 with empty object
+    # cancel/delete returns 200 with empty object
     assert conn_cancel.status == 200
 
     # create again and accept

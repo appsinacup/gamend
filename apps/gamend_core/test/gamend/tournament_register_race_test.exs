@@ -3,15 +3,15 @@ defmodule Gamend.TournamentRegisterRaceTest do
   Registrations landing together, with `before_tournament_register` charging
   the entry fee as the guides tell games to.
 
-  The hook used to run before the seat was taken, after only a read of the
-  field: a double tap passed that read twice and charged twice (one seat then
-  failed `:already_registered`), and two players reaching the last seat were
-  both charged while one was answered `:tournament_full`. The seat is now
-  taken first, so a request that cannot have one never reaches the hook.
+  With the hook before the seat, after only a read of the field, a double tap
+  would pass that read twice and be charged twice (one seat then failing
+  `:already_registered`), and two players reaching the last seat would both be
+  charged while one was answered `:tournament_full`. The seat is taken first,
+  so a request that cannot have one never reaches the hook.
 
   The hook holds the first caller until the second has reached the hook too,
-  or has been answered, so the old order interleaves on every run and on both
-  adapters.
+  or has been answered, so a hook-first order would interleave on every run
+  and on both adapters.
   """
 
   use Gamend.DataCase, async: false

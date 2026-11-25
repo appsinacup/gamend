@@ -24,7 +24,7 @@ defmodule Gamend.Payments.Provider do
   The rest are per-provider. Steam has a two-step init/finalize flow that the
   others do not; Apple verifies signed notifications where Google verifies a
   bearer token on the webhook. Declare only what your store actually does —
-  `Gamend.Payments` checks before calling, and now checks against this list.
+  `Gamend.Payments` checks against this list before calling.
   """
 
   @type attrs :: map()

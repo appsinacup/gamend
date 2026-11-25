@@ -25,9 +25,8 @@ mkdir -p "$OUT_DIR"
 # Prune previously generated apis/models so a renamed or removed operation does
 # not leave an orphan file behind. The generator only writes/overwrites the
 # files for the current spec — it never deletes stale ones — so a renamed
-# operationId (e.g. tournaments gaining explicit ids) would otherwise leave the
-# old, now-unreferenced model class sitting there with a broken denormalize
-# reference the post-processing can't fix. These dirs are 100% generated; the
+# operationId would otherwise leave an unreferenced model class sitting there
+# with a broken denormalize reference the post-processing can't fix. These dirs are 100% generated; the
 # hand-maintained wrappers live in gamend_template, so clearing them is safe.
 rm -rf "$OUT_DIR/apis" "$OUT_DIR/models"
 
@@ -110,8 +109,7 @@ find "$OUT_DIR" -type f -iname "*.gd" -print0 | xargs -0 -r perl -0777 -pe 's/\@
 # Other fixes
 # Fix the placeholder polling default: BEE_DEFAULT_POLLING_INTERVAL_MS is emitted
 # as 333 but should be 16ms. Scoped to that const so unrelated "333" values
-# anywhere else in the generated code are never corrupted (the old blanket
-# s/333/16/g rewrote every 333 in every file).
+# anywhere else in the generated code are never corrupted.
 find "$OUT_DIR" -type f -iname "*.gd" -print0 | xargs -0 -r perl -0777 -pe "s/(BEE_DEFAULT_POLLING_INTERVAL_MS\s*:=\s*)333/\${1}16/g" -i
 # Replace @export var data: Dictionary with var data
 find "$OUT_DIR" -type f -iname "*.gd" -print0 | xargs -0 -r perl -0777 -pe "s/\@export var data: Dictionary/var data/g" -i

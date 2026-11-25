@@ -109,9 +109,9 @@ defmodule GamendWeb.Api.V1.PublicListingGatesTest do
   end
 
   describe "LIST_MATCHMAKING_ENABLED=false" do
-    # Queue stats moved to the public stats surface and are gated by
-    # :public_stats now (see StatsControllerTest); this flag no longer
-    # covers them, only the caller's own ticket endpoints stay unaffected.
+    # Queue stats are on the public stats surface, gated by :public_stats
+    # (see StatsControllerTest); this flag does not cover them, and the
+    # caller's own ticket endpoints stay unaffected.
     test "own-ticket endpoints stay", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
       {:ok, token, _} = Guardian.encode_and_sign(user)

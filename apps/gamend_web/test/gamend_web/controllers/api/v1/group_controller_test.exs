@@ -642,8 +642,8 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(user)
         |> get("/api/v1/groups/me")
 
-      # A string, not the old -1 sentinel: the contract types creator_id as a
-      # string, and a number here failed to assign in typed clients.
+      # A string, not a -1 sentinel: the contract types creator_id as a
+      # string, and a number here would fail to assign in typed clients.
       assert %{"data" => [%{"creator_id" => "", "creator_name" => ""}]} = json_response(conn, 200)
     end
 

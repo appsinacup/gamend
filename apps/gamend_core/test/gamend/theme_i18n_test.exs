@@ -1,12 +1,10 @@
 defmodule Gamend.ThemeI18nTest do
   @moduledoc """
-  The theme used to be one whole JSON file per locale. Two thirds of each copy
-  was structure rather than text, and they drifted: a `theme_color` added to
-  English never reached the other 29, so every non-English visitor silently got
-  the fallback colour.
+  The theme is one config file whose text is translated through gettext, so a
+  field such as `theme_color` reaches every locale.
 
-  These lock in the property that makes that impossible — configuration is not
-  translatable, so it cannot vary by locale at all.
+  These lock in the property that makes a drift impossible: configuration is
+  not translatable, so it cannot vary by locale at all.
   """
 
   use ExUnit.Case, async: false

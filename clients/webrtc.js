@@ -155,7 +155,7 @@ export class GameWebRTC {
    *
    * In protobuf mode replies are correlated by request id, so concurrent
    * calls (including to the same function) are safe. In JSON mode replies
-   * are matched by plugin+fn (legacy protocol), first pending call wins.
+   * are matched by plugin+fn, first pending call wins.
    *
    * @param {string} plugin
    * @param {string} fn

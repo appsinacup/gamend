@@ -5,6 +5,7 @@ defmodule GamendWeb.HostLayouts do
 
   use GamendWeb, :html
 
+  alias Gamend.Accounts.Scope
   alias Gamend.Theme.JSONConfig
   alias GamendWeb.ChangeTracking
   alias GamendWeb.HostLayoutShell
@@ -347,8 +348,7 @@ defmodule GamendWeb.HostLayouts do
 
   @doc "Whether `scope` is a signed-in reader's."
   @spec signed_in?(term()) :: boolean()
-  def signed_in?(%Gamend.Accounts.Scope{} = scope),
-    do: is_binary(Gamend.Accounts.Scope.user_id(scope))
+  def signed_in?(%Scope{} = scope), do: is_binary(Scope.user_id(scope))
 
   def signed_in?(_scope), do: false
 

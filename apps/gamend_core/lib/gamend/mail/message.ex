@@ -50,6 +50,9 @@ defmodule Gamend.Mail.Message do
   @doc "The HTML copy, or nil when there is no website to draw it."
   @spec to_html(t()) :: String.t() | nil
   def to_html(%__MODULE__{} = message) do
+    # apply/3: core is compiled without the web app, so a direct call to its
+    # module warns as undefined.
+    # credo:disable-for-next-line Credo.Check.Refactor.Apply
     if Code.ensure_loaded?(@html_layout), do: apply(@html_layout, :render, [message])
   end
 

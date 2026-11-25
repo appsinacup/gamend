@@ -19,6 +19,7 @@ defmodule GamendWeb.MailLayout do
 
   alias Gamend.Mail.Message
   alias GamendWeb.HostLayouts
+  alias Phoenix.HTML.Safe
 
   require Gamend.UrlScheme, as: UrlScheme
 
@@ -54,7 +55,7 @@ defmodule GamendWeb.MailLayout do
     }
 
     "<!DOCTYPE html>" <>
-      (assigns |> mail() |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary())
+      (assigns |> mail() |> Safe.to_iodata() |> IO.iodata_to_binary())
   end
 
   defp mail(assigns) do

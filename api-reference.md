@@ -1,4 +1,4 @@
-# gamend_core v1.1.1520 - API Reference
+# gamend_core v1.1.1521 - API Reference
 
 ## Modules
 
@@ -107,6 +107,9 @@ out wherever it is used. `mix gamend.literal.lint` runs it.
 - [Gamend.LocaleCode](Gamend.LocaleCode.md): A locale spoken in code: the default language.
 
 - [Gamend.Mail](Gamend.Mail.md): Outbound email transport.
+- [Gamend.Mail.Message](Gamend.Mail.Message.md): What an email says, before it has a look: every email core sends
+(`Gamend.Accounts.UserNotifier`) is one of these, so they all share one
+layout and read as the same site's.
 - [Gamend.MatchSeating](Gamend.MatchSeating.md): What a game decides for a formed match: where its players sit, and whether
 they are asked first. `matchmaking_seat_match/1` answers with one
 - [Gamend.Names](Gamend.Names.md): Names a closed set of strings: a macro for each value, so a pattern or a
@@ -223,8 +226,11 @@ goes back to automatic: the browser no longer overwrites it
 
   - [Gamend.Accounts.User](Gamend.Accounts.User.md): The User schema and associated changeset functions used across the
 application (registration, OAuth, and admin changes).
-  - [Gamend.Accounts.UserNotifier](Gamend.Accounts.UserNotifier.md): Small helpers used to deliver transactional emails for the Accounts flow
-(confirmation, magic link, and email change instructions).
+  - [Gamend.Accounts.UserNotifier](Gamend.Accounts.UserNotifier.md): Every email core sends: the account's (confirmation, magic link, email
+change, codes, deletion warning) and the notifications a user chose to get
+by email. Each is a `Gamend.Mail.Message`, sent as plain text and, with the
+website there, as HTML in the site's one look (`GamendWeb.MailLayout`).
+
   - [Gamend.Accounts.UserToken](Gamend.Accounts.UserToken.md): Functions and schema for persistent user tokens used by sessions, magic links,
 email confirmation (a link and a code) and email-change workflows.
   - [Gamend.Accounts.Username](Gamend.Accounts.Username.md): The username handle's rules, in one place for the changeset and the
@@ -566,7 +572,7 @@ once: the job is unique per user and group.
   - [Gamend.Notifications.PreferenceSwitch](Gamend.Notifications.PreferenceSwitch.md): The switches that turn a channel off for every group.
 
   - [Gamend.Notifications.Preferences](Gamend.Notifications.Preferences.md): Which notifications a user wants, and how: per GROUP (a row on the
-settings page: "Friends and groups", a host's "Streak about to end") and
+settings page: "Friends", a host's "Daily streak") and
 per CHANNEL (`in_app`, `email`, `push`), plus three switches that win over
 everything: all email off, all push off, everything off.
   - [Gamend.Notifications.Types](Gamend.Notifications.Types.md): The `metadata["type"]` codes a notification may carry.

@@ -2,7 +2,7 @@
 [🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L1)
 
 Which notifications a user wants, and how: per GROUP (a row on the
-settings page: "Friends and groups", a host's "Streak about to end") and
+settings page: "Friends", a host's "Daily streak") and
 per CHANNEL (`in_app`, `email`, `push`), plus three switches that win over
 everything: all email off, all push off, everything off.
 
@@ -11,7 +11,7 @@ everything: all email off, all push off, everything off.
 Core declares its own; a host adds its own in config:
 
     config :gamend_core, :notification_groups, [
-      %{key: "streak", label: "Streak about to end",
+      %{key: "streak", label: "Daily streak",
         defaults: %{"in_app" => true, "email" => false, "push" => false},
         types: ["streak_ending"]}
     ]
@@ -26,6 +26,18 @@ how the account works.
 through): nobody else sees its row (`groups_for/1`) or gets it
 (`enabled?/3`).
 
+`shown_to: {module, function}` shows a group's row only to a user for whom
+`module.function(user)` is true (a host's translators): everyone else's
+settings page leaves it out (`groups_for/1`). What is sent is not changed.
+
+A host entry with a core group's key changes that group's `defaults`
+(`%{key: "announcements", defaults: %{"email" => true}}`: news by email
+unless the player turns it off); its other fields are core's.
+
+`includes: ["payments"]` on a host's group folds core groups into it: their
+rows go, and a notice sent in one of them (`notify/3`) goes out in the host's
+group, under its choices (`group/1` answers the host's group for either key).
+
 `email_every` (`:day`, `:week`, `:month`) sends the group's email as a digest
 (`Gamend.Notifications.Digest`) rather than one per notice, for a group whose
 notices come in runs. The site's row and the push stay instant. `email_now`
@@ -37,10 +49,10 @@ Which channel a group defaults to follows one rule (2026-10-28):
   * **email on**: what the person asked for and waits on, a queue an admin
     must work through, or what they lose if they miss it: "Your reports"
     (a report's answer, a moderator's warning), "Reports to review";
-  * **email off, theirs to turn on**: news and nudges ("Friends and
-    groups", "News and announcements", a host's streak reminder);
+  * **email off, theirs to turn on**: news and nudges ("Friends",
+    "News", a host's streak reminder);
   * **on the site only**: what comes often and matters in the moment
-    ("Chat messages", "Quests and rewards").
+    ("Chat messages", "Quests").
 
 Stored in the user's private preferences (`Gamend.Accounts.Preferences`)
 under `"notifications"`:
@@ -92,7 +104,7 @@ else.
 @spec group(String.t()) :: map() | nil
 ```
 
-One group, or nil.
+One group, or nil. A core key a host's group `includes` answers that group.
 
 # `group_for_type`
 
@@ -112,7 +124,8 @@ nil for a type in no group (a moderator's notice), which is always sent.
 
 Every group, core's first then the host's: `%{key, label, defaults,
 configurable, types, admin}`, `configurable` a list of channels, plus
-`email_every` and `email_now` on those that have them.
+`email_every`, `email_now`, `shown_to` and `includes` on those that have
+them. A core group a host's `includes` names is left out.
 
 # `groups_for`
 
@@ -120,7 +133,8 @@ configurable, types, admin}`, `configurable` a list of channels, plus
 @spec groups_for(Gamend.Accounts.User.t() | nil) :: [map()]
 ```
 
-The groups `user` may get: every one but the admins' (`admin: true`) for anyone else.
+The groups whose rows `user` sees: every one but the admins' (`admin:
+true`) for anyone else, and a `shown_to` group only for those it names.
 
 # `off?`
 

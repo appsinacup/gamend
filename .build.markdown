@@ -165,6 +165,7 @@ Gamend.LocaleCode.md
 Gamend.Lock.Local.md
 Gamend.Lock.Queue.md
 Gamend.Lock.md
+Gamend.Mail.Message.md
 Gamend.Mail.md
 Gamend.Mailer.md
 Gamend.MatchSeating.md

@@ -1,10 +1,10 @@
 # `Gamend.Accounts.UserNotifier`
 [🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_notifier.ex#L1)
 
-Small helpers used to deliver transactional emails for the Accounts flow
-(confirmation, magic link, and email change instructions).
-
-These functions are thin wrappers over the configured application Mailer.
+Every email core sends: the account's (confirmation, magic link, email
+change, codes, deletion warning) and the notifications a user chose to get
+by email. Each is a `Gamend.Mail.Message`, sent as plain text and, with the
+website there, as HTML in the site's one look (`GamendWeb.MailLayout`).
 
 # `deliver_account_activated`
 
@@ -37,7 +37,7 @@ Deliver instructions to log in with a magic link.
 # `deliver_notification`
 
 A notification the user chose to get by email
-(`Gamend.Notifications.notify/3`). `unsubscribe_url` ends the body and goes
+(`Gamend.Notifications.notify/3`). `unsubscribe_url` is in the footer and
 in the `List-Unsubscribe` headers too (RFC 8058 one-click), so a mail
 client's own "Unsubscribe" button works without opening the site.
 

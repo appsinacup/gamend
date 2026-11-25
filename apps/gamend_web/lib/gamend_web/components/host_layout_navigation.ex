@@ -1473,10 +1473,18 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   defp resolve_entry_status(%{"status" => "{" <> _ = token} = entry, scope) do
     {icon, label} =
-      case call_token(token |> String.trim() |> String.trim_leading("{") |> String.trim_trailing("}"), [scope]) do
-        {icon, label} when is_binary(icon) and is_binary(label) -> {status_icon(icon), translate_label(label)}
-        icon when is_binary(icon) -> {status_icon(icon), nil}
-        _ -> {"", nil}
+      case call_token(
+             token |> String.trim() |> String.trim_leading("{") |> String.trim_trailing("}"),
+             [scope]
+           ) do
+        {icon, label} when is_binary(icon) and is_binary(label) ->
+          {status_icon(icon), translate_label(label)}
+
+        icon when is_binary(icon) ->
+          {status_icon(icon), nil}
+
+        _ ->
+          {"", nil}
       end
 
     Map.put(entry, "status", %{"key" => entry["label"], "icon" => icon, "label" => label})
@@ -1696,7 +1704,11 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   attr :count, :any, default: 0
-  attr :status, :map, default: nil, doc: "`%{\"key\", \"icon\", \"label\"}` (`resolve_entry_status/2`)"
+
+  attr :status, :map,
+    default: nil,
+    doc: "`%{\"key\", \"icon\", \"label\"}` (`resolve_entry_status/2`)"
+
   attr :class, :string, default: nil
 
   # The red number on the nav: unread notifications, an entry's `"count"`

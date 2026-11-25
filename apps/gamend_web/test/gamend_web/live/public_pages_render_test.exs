@@ -3,7 +3,11 @@ defmodule GamendWeb.PublicPagesRenderTest do
   Basic render tests for public LiveView pages (live_session :current_user).
   These catch crashes like missing assigns or template errors.
   """
-  use GamendWeb.ConnCase, async: true
+  # One group with every other async module that makes a quest: making one
+  # takes the quest definitions' Postgres lock, held to the end of the test's
+  # sandbox transaction, so two such modules at once wait on each other past
+  # the 15 s DB timeout (CI, 2026-11-25). The group runs them one at a time.
+  use GamendWeb.ConnCase, async: true, group: :quest_definitions
   import Phoenix.LiveViewTest
 
   @pages ~w(/leaderboards /quests /groups /roadmap /changelog /blog)

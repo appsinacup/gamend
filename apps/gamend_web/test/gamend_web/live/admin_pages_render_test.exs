@@ -7,7 +7,11 @@ defmodule GamendWeb.AdminPagesRenderTest do
   Also verifies pages render correctly when data exists (catches
   struct field access errors in templates).
   """
-  use GamendWeb.ConnCase, async: true
+  # One group with every other async module that makes a quest: making one
+  # takes the quest definitions' Postgres lock, held to the end of the test's
+  # sandbox transaction, so two such modules at once wait on each other past
+  # the 15 s DB timeout (CI, 2026-11-25). The group runs them one at a time.
+  use GamendWeb.ConnCase, async: true, group: :quest_definitions
   import Phoenix.LiveViewTest
 
   alias Gamend.Accounts.User

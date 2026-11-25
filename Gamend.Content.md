@@ -395,9 +395,9 @@ the way out, per request, and takes `%{"tag" => {class_suffix, label}}` with
 the label already translated.
 
 Both spellings are handled: a marker that reached the cache is already a
-neutral `<span>`, while one written after the fact is still `[Tag]` — the
-roadmap has had both, and handling only the first left `[Beta]` printed
-verbatim in the middle of a heading.
+neutral `<span>`, while one written after the fact is still `[Tag]`, and
+handling only the first would leave `[Beta]` printed verbatim in the middle
+of a heading.
 
 # `reload`
 

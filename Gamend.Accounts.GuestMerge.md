@@ -4,10 +4,10 @@
 A guest's progress joins the account they log in to.
 
 A guest (`Gamend.Accounts.User.anonymous?/1`: no email, no provider) who
-signs in to an account they already have used to lose everything they did:
-the session moved to the account and the guest account was deleted. Before
-it is deleted now, its progress is merged into the account
-(`GamendWeb.UserAuth.log_in_user/3` calls `merge/2`).
+signs in to an account they already have keeps what they did: the session
+moves to the account, and before the guest account is deleted its progress
+is merged into the account (`GamendWeb.UserAuth.log_in_user/3` calls
+`merge/2`).
 
 One rule throughout: **the account's own data is never overwritten or
 deleted.** The guest's is added where it fits, and what cannot be combined

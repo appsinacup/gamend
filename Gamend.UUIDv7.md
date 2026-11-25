@@ -20,8 +20,8 @@ key, so a row written that way sets `id: Gamend.UUIDv7.generate()` itself.
 
 Casts a value to a UUID string, returning `nil` when invalid.
 
-Convenience for boundary code (channel topics, URL params) that previously
-used `Integer.parse/1` to validate ids.
+Convenience for boundary code (channel topics, URL params) that validates
+an id it was handed.
 
 # `generate`
 

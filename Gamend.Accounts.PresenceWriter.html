@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1519">
+    <meta name="project" content="gamend_core v1.1.1520">
 
 
-    <title>Gamend.Accounts.PresenceWriter — gamend_core v1.1.1519</title>
+    <title>Gamend.Accounts.PresenceWriter — gamend_core v1.1.1520</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1519
+          v1.1.1520
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />PresenceWriter</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1520)</small>
 
     </h1>
 
@@ -128,7 +128,7 @@ is what reaches the database. Routing that read through the process would put
 a <code class="inline">GenServer.call</code> on every socket join — the exact serialization this module
 exists to remove — so the buffer is a public ETS table and the process only
 owns the timer.</p><h2 id="module-configuration" class="section-heading"><a href="#module-configuration" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Configuration</span></h2><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w"> </span><span class="nc">Gamend.Accounts.PresenceWriter</span><span class="p">,</span><span class="w">
-  </span><span class="ss">flush_ms</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w">      </span><span class="c1"># 0 writes through synchronously</span></code></pre><p><code class="inline">flush_ms: 0</code> is exactly the old behaviour and is what the test environment
+  </span><span class="ss">flush_ms</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w">      </span><span class="c1"># 0 writes through synchronously</span></code></pre><p><code class="inline">flush_ms: 0</code> writes each change as it comes and is what the test environment
 runs, so a test can assert on <code class="inline">is_online</code> immediately after the call. In
 production the flag lags by at most one window — <code class="inline">StalePresenceSweeper</code> is
 the backstop that already tolerates far more drift than that, and realtime
@@ -393,9 +393,9 @@ buffered for them.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1520">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1520">Hex Preview</a>
 
             </span>
 

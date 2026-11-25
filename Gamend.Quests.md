@@ -109,10 +109,10 @@ All active quest definitions (cached — this backs event dispatch).
 
 The active quests with an objective listening to `event`.
 
-`report_event/4` is the hottest write a player makes, and it used to scan
-every active quest to find the handful that care. That is linear in the size
+`report_event/4` is the hottest write a player makes, and scanning every
+active quest to find the handful that care would be linear in the size
 of the whole catalogue, so a host that adds a large family of quests — one
-per language, say — pays for all of them on every unrelated event.
+per language, say — would pay for all of them on every unrelated event.
 
 Cached **per event**, not as one grouped map. Nebulex copies a value out on
 read, so a single map of every event's quests would copy the entire

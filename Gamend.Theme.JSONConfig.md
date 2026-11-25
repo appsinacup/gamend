@@ -5,12 +5,10 @@ JSON-backed Theme provider. Reads **one** config file — from the
 `GAMEND_CONTENT_THEME_CONFIG` setting or the host-owned default path — and
 translates its text through gettext at read time.
 
-There used to be one whole JSON file per locale. Two thirds of each copy was
-structure (urls, icons, layout) rather than text, and they drifted: a
-`theme_color` added to English never reached the other 29, so non-English
-visitors silently got the fallback colour. Structure now lives once, and only
-the leaves `Gamend.Theme.Translatable` names as text vary by locale —
-through the `theme` gettext domain, like every other string in the UI.
+Structure (urls, icons, layout) lives once, so a field added to the config
+reaches every locale, and only the leaves `Gamend.Theme.Translatable` names
+as text vary by locale, through the `theme` gettext domain like every other
+string in the UI.
 
 A missing translation falls back to the source string, so a config with no
 `.po` at all still renders exactly as written.

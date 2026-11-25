@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1519">
+    <meta name="project" content="gamend_core v1.1.1520">
 
 
-    <title>Gamend.Theme.JSONConfig — gamend_core v1.1.1519</title>
+    <title>Gamend.Theme.JSONConfig — gamend_core v1.1.1520</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1519
+          v1.1.1520
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Theme.<wbr />JSONConfig</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1520)</small>
 
     </h1>
 
@@ -116,12 +116,10 @@ gamend_core
     <section id="moduledoc">
 <p>JSON-backed Theme provider. Reads <strong>one</strong> config file — from the
 <code class="inline">GAMEND_CONTENT_THEME_CONFIG</code> setting or the host-owned default path — and
-translates its text through gettext at read time.</p><p>There used to be one whole JSON file per locale. Two thirds of each copy was
-structure (urls, icons, layout) rather than text, and they drifted: a
-<code class="inline">theme_color</code> added to English never reached the other 29, so non-English
-visitors silently got the fallback colour. Structure now lives once, and only
-the leaves <a href="Gamend.Theme.Translatable.html"><code class="inline">Gamend.Theme.Translatable</code></a> names as text vary by locale —
-through the <code class="inline">theme</code> gettext domain, like every other string in the UI.</p><p>A missing translation falls back to the source string, so a config with no
+translates its text through gettext at read time.</p><p>Structure (urls, icons, layout) lives once, so a field added to the config
+reaches every locale, and only the leaves <a href="Gamend.Theme.Translatable.html"><code class="inline">Gamend.Theme.Translatable</code></a> names
+as text vary by locale, through the <code class="inline">theme</code> gettext domain like every other
+string in the UI.</p><p>A missing translation falls back to the source string, so a config with no
 <code class="inline">.po</code> at all still renders exactly as written.</p><p>The decoded file is cached in <code class="inline">:persistent_term</code>; translation happens per
 read, against the caller's current locale. Call <code class="inline">reload/0</code> after editing the
 file at runtime.</p><p><code class="inline">reload/0</code> emits the telemetry event <code class="inline">[:gamend, :theme, :reload]</code> once the
@@ -212,7 +210,7 @@ diagnostics can distinguish explicit overrides from host defaults.</p></div>
       <h1 class="signature" translate="no">active_path()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L220" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L218" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -235,7 +233,7 @@ otherwise falling back to the host-owned default path.</p>
       <h1 class="signature" translate="no">get_theme(locale)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L47" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -265,7 +263,7 @@ to the source string, so this never has to hunt for a file that might exist.</p>
       <h1 class="signature" translate="no">raw_theme()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -294,7 +292,7 @@ disk rather than what a viewer would see.</p>
       <h1 class="signature" translate="no">runtime_path()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L212" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme/json_config.ex#L210" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -317,9 +315,9 @@ diagnostics can distinguish explicit overrides from host defaults.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1520">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1520">Hex Preview</a>
 
             </span>
 

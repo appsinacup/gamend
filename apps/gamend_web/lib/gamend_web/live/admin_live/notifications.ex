@@ -4,8 +4,12 @@ defmodule GamendWeb.AdminLive.Notifications do
   alias Gamend.Accounts.Scope
   alias Gamend.Notifications
   alias Gamend.Notifications.Announcements
+  alias Gamend.Notifications.Preferences
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.NotificationsTab
+
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+  require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
 
   @filter_keys ~w(sender_id title user_id)
 
@@ -29,6 +33,7 @@ defmodule GamendWeb.AdminLive.Notifications do
       |> assign(:selected_ids, MapSet.new())
       |> assign(:show_create, false)
       |> assign(:audience_count, Announcements.count_audience())
+      |> assign(:news_defaults, news_defaults())
       |> assign(:announce_form, announce_form(%{}))
       |> assign(
         :create_form,
@@ -76,7 +81,7 @@ defmodule GamendWeb.AdminLive.Notifications do
               <p class="text-sm text-muted">
                 One notification to every player ({@audience_count} accounts; banned ones are skipped).
                 It is always on the site; by phone and email as each player chose for
-                "News and announcements" (phone on, email off until they turn it on).
+                "News" ({@news_defaults} unless they turn it off).
               </p>
             </div>
             <.form
@@ -603,4 +608,15 @@ defmodule GamendWeb.AdminLive.Notifications do
 
   defp created_message(_notification),
     do: "Notification updated: one with the same sender, recipient and title already existed"
+
+  # What News sends a player who never chose, as the group says (a host may
+  # change core's defaults): "phone and email on", "phone on, email off".
+  defp news_defaults do
+    defaults = Preferences.group(PreferenceGroup.announcements()).defaults
+
+    [{"phone", NotificationChannel.push()}, {"email", NotificationChannel.email()}]
+    |> Enum.map_join(", ", fn {word, channel} ->
+      word <> if(defaults[channel], do: " on", else: " off")
+    end)
+  end
 end

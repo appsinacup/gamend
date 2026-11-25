@@ -6,7 +6,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   everything off) and the time zone reminders use.
 
   A box the group does not let users change is shown, ticked or not, and
-  disabled: "Account and security" email is how the account works.
+  disabled: "Account" email is how the account works.
 
   An admins' group (`admin: true`, "Reports to review") is not here: it is
   the admin's work, not their account's, so its row is on

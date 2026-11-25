@@ -3145,11 +3145,6 @@ msgstr "通过此链接确认会删除注册此账户时设置的密码，请在
 msgid "%{count} min read"
 msgstr "阅读时间 %{count} 分钟"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "账户与安全"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3204,11 +3199,6 @@ msgstr "邮件设置"
 msgid "Emails about: %{group}"
 msgstr "关于以下内容的邮件：%{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "好友与群组"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3218,11 +3208,6 @@ msgstr "在网站上"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "手机"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "任务与奖励"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3300,11 +3285,6 @@ msgstr "重新开启手机通知"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "你不会收到这些邮件。"
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "你收到这封邮件，是因为你开启了以下内容的邮件：%{group}。"
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4191,8 +4171,8 @@ msgstr "结束"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "新闻与公告"
+msgid "News"
+msgstr "动态"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

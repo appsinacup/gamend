@@ -3145,11 +3145,6 @@ msgstr "このリンクで確認すると、このアカウントの登録時に
 msgid "%{count} min read"
 msgstr "%{count}分で読めます"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "アカウントとセキュリティ"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3204,11 +3199,6 @@ msgstr "メール設定"
 msgid "Emails about: %{group}"
 msgstr "次に関するメール: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "フレンドとグループ"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3218,11 +3208,6 @@ msgstr "サイト上"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "スマホ"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "クエストと報酬"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3300,11 +3285,6 @@ msgstr "スマホの通知を再びオン"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "これらのメールは届いていません。"
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "このメールは、次のメールをオンにしているため送信されています: %{group}。"
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4191,8 +4171,8 @@ msgstr "終了"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "ニュースとお知らせ"
+msgid "News"
+msgstr "お知らせ"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

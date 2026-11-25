@@ -3189,11 +3189,6 @@ msgstr "Bekrefter du med denne lenken, fjernes passordet kontoen ble registrert 
 msgid "%{count} min read"
 msgstr "%{count} min lesetid"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Konto og sikkerhet"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3248,11 +3243,6 @@ msgstr "E-postinnstillinger"
 msgid "Emails about: %{group}"
 msgstr "E-poster om: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Venner og grupper"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3262,11 +3252,6 @@ msgstr "På nettstedet"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Telefon"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Oppdrag og belønninger"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3344,11 +3329,6 @@ msgstr "Slå på telefonvarsler igjen"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Du får ingen av disse e-postene."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Du får denne e-posten fordi du har slått på e-post for: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4241,8 +4221,8 @@ msgstr "Slutter"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Nyheter og kunngjøringer"
+msgid "News"
+msgstr "Nyheter"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

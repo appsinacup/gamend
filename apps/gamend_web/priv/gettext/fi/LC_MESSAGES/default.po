@@ -3189,11 +3189,6 @@ msgstr "Tällä linkillä vahvistaminen poistaa salasanan, jolla tili rekisterö
 msgid "%{count} min read"
 msgstr "%{count} min lukuaika"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Tili ja turvallisuus"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3248,11 +3243,6 @@ msgstr "Sähköpostiasetukset"
 msgid "Emails about: %{group}"
 msgstr "Sähköpostit aiheesta: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Kaverit ja ryhmät"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3262,11 +3252,6 @@ msgstr "Sivustolla"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Puhelin"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Tehtävät ja palkinnot"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3344,11 +3329,6 @@ msgstr "Ota puhelinilmoitukset taas käyttöön"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Et saa mitään näistä sähköposteista."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Saat tämän sähköpostin, koska laitoit sähköpostit päälle aiheesta: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4241,8 +4221,8 @@ msgstr "Päättyy"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Uutiset ja tiedotteet"
+msgid "News"
+msgstr "Uutiset"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

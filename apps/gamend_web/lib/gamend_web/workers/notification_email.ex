@@ -33,7 +33,12 @@ defmodule GamendWeb.Workers.NotificationEmail do
          true <- Preferences.enabled?(user, group, NotificationChannel.email()) do
       body =
         NotificationEmail.in_locale(AccountPreferences.locale(user), fn ->
-          NotificationEmail.body(user.id, group, args["text"] || "", args["url"])
+          NotificationEmail.body(user.id, group, %{
+            title: args["subject"],
+            text: args["text"],
+            image: args["image"],
+            url: args["url"]
+          })
         end)
 
       subject = args["subject"] || ""

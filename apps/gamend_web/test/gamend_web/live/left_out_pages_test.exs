@@ -176,9 +176,9 @@ defmodule GamendWeb.LeftOutPagesTest do
           "metadata" => %{"type" => "friend_request"}
         })
 
-      {:ok, view, html} = live(conn, "/users/settings?tab=notifications")
+      {:ok, view, _html} = live(conn, "/users/settings?tab=notifications")
       assert has_element?(view, ~s([phx-value-tab="friends"]))
-      assert html =~ "Friends and groups"
+      assert has_element?(view, "#notify-social-push")
       {:ok, view, _html} = live(conn, "/notifications")
       assert has_element?(view, ~s(a[href*="tab=friends"]))
 
@@ -188,8 +188,8 @@ defmodule GamendWeb.LeftOutPagesTest do
       refute has_element?(view, ~s([phx-value-tab="friends"]))
       assert has_element?(view, ~s([phx-value-tab="account"]))
 
-      {:ok, _view, html} = live(conn, "/users/settings?tab=notifications")
-      refute html =~ "Friends and groups"
+      {:ok, view, html} = live(conn, "/users/settings?tab=notifications")
+      refute has_element?(view, "#notify-social-push")
       refute html =~ "Chat messages"
 
       {:ok, view, html} = live(conn, "/notifications")

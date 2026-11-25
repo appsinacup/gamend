@@ -15,6 +15,7 @@ reload — the page painted at the top and glided down to where it had been. --%
   data-theme={assigns[:color_mode]}
   data-theme-saved={assigns[:theme_saved]}
   data-side-nav={GamendWeb.HostLayouts.side_nav_layout()}
+  data-nav-sizes={GamendWeb.HostLayouts.nav_sizes()}
   data-nudge={GamendWeb.HostLayouts.nudge().move}
   data-nudge-rhythm={GamendWeb.HostLayouts.nudge().rhythm}
 >
@@ -313,5 +314,16 @@ reload — the page painted at the top and glided down to where it had been. --%
         </div>
       </form>
     </dialog>
+    <%!-- The host's view of a signed-in reader on every page (`online_view/0`,
+          `config :gamend_web, :online_view`): a page with no LiveView gets
+          one socket for it, one with a LiveView shares that page's, and a
+          move between LiveViews keeps it, outside the page's view. --%>
+    <%= if (view = GamendWeb.HostLayouts.online_view()) && assigns[:conn] &&
+             GamendWeb.HostLayouts.signed_in?(assigns[:current_scope]) do %>
+      {live_render(GamendWeb.HostLayouts.online_conn(@conn), view,
+        id: "gamend-online",
+        session: %{}
+      )}
+    <% end %>
   </body>
 </html>

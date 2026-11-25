@@ -66,9 +66,10 @@ const Hooks = {
         const select = () => { field.focus(); field.select() }
         if (!navigator.clipboard) return select()
         navigator.clipboard.writeText(field.value).then(() => {
-          const label = this.el.textContent
-          this.el.textContent = this.el.dataset.copied || label
-          setTimeout(() => { this.el.textContent = label }, 1500)
+          // The whole button kept, its icon too, and put back after.
+          const label = this.el.innerHTML
+          this.el.textContent = this.el.dataset.copied || this.el.textContent
+          setTimeout(() => { this.el.innerHTML = label }, 1500)
         }, select)
       })
     },
@@ -518,6 +519,19 @@ startAnonymousSession({getLiveSocket: () => window.liveSocket})
 const BAR_DELAY_MS = {initial: 1000, redirect: 1000, patch: 1000}
 window.addEventListener("phx:page-loading-start", info => topbar.show(BAR_DELAY_MS[info.detail?.kind] ?? 300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+
+// A nav link's `"status"` changed (`HostLayoutNavigation.count_pill/1`'s
+// `data-nav-status`): a host's view pushes `nav_status` with the heroicon,
+// or "" for none, and every copy of the link (bar, sidebar, tab bar, menu)
+// shows it, with no redraw of the nav.
+window.addEventListener("phx:nav_status", ({detail}) => {
+  const icon = typeof detail?.icon === "string" && detail.icon.startsWith("hero-") ? detail.icon : ""
+  for (const chip of document.querySelectorAll("[data-nav-status]")) {
+    chip.hidden = icon === ""
+    const glyph = chip.firstElementChild
+    if (glyph && icon) glyph.className = `${icon} size-3.5`
+  }
+})
 
 // Timestamps render as UTC server-side and are rewritten in the viewer's zone.
 // Started before the socket so static (non-LiveView) pages are covered too.

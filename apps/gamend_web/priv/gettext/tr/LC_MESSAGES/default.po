@@ -3189,11 +3189,6 @@ msgstr "Bu bağlantıyla onaylamak, hesabın kaydedildiği parolayı kaldırır;
 msgid "%{count} min read"
 msgstr "%{count} dk okuma"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Hesap ve güvenlik"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3248,11 +3243,6 @@ msgstr "E-posta ayarları"
 msgid "Emails about: %{group}"
 msgstr "Şu konudaki e-postalar: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Arkadaşlar ve gruplar"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3262,11 +3252,6 @@ msgstr "Sitede"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Telefon"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Görevler ve ödüller"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3344,11 +3329,6 @@ msgstr "Telefon bildirimlerini yeniden aç"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Bu e-postaların hiçbirini almıyorsun."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Bu e-postayı, şunun için e-postaları açtığın için alıyorsun: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4241,8 +4221,8 @@ msgstr "Bitiyor"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Haberler ve duyurular"
+msgid "News"
+msgstr "Haberler"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

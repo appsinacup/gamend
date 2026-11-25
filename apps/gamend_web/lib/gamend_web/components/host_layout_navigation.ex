@@ -11,6 +11,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   require GamendWeb.NavLinkGroup, as: NavLinkGroup
   require Gamend.LocaleCode, as: LocaleCode
   require GamendWeb.NavLayout, as: NavLayout
+  alias GamendWeb.NavSize
 
   @ro "ro"
   @id "id"
@@ -522,10 +523,16 @@ defmodule GamendWeb.HostLayoutNavigation do
         :if={!@flush}
         type="button"
         data-side-toggle
-        class={[
-          "mt-auto flex items-center justify-center rounded-field px-1 py-2 max-xl:hidden",
-          "text-muted hover:bg-base-100 @min-[8rem]/side:justify-start @min-[8rem]/side:px-3"
-        ]}
+        class={
+          [
+            "mt-auto flex items-center justify-center rounded-field px-1 py-2",
+            # Not drawn where the sidebar cannot open: under `xl`, or with a
+            # fixed table (`nav_sizes/1`) where the width's mode is `rail`
+            # (`side_nav.js` sets `data-side-fixed`).
+            if(@sizes?, do: "[[data-side-fixed]_&]:hidden", else: "max-xl:hidden"),
+            "text-muted hover:bg-base-100 @min-[8rem]/side:justify-start @min-[8rem]/side:px-3"
+          ]
+        }
       >
         <.icon
           name="hero-chevron-left-solid"
@@ -638,6 +645,7 @@ defmodule GamendWeb.HostLayoutNavigation do
       <span class="hidden @min-[8rem]/side:contents"><.nav_badge entry={@link} /></span>
       <.count_pill
         count={@link["count"]}
+        status={@link["status"]}
         class="absolute top-0.5 end-1 @min-[8rem]/side:static"
       />
     </a>
@@ -930,7 +938,7 @@ defmodule GamendWeb.HostLayoutNavigation do
             {translate_label(link["label"])}
           </span>
           <.nav_badge entry={link} />
-          <.count_pill count={link["count"]} />
+          <.count_pill count={link["count"]} status={link["status"]} />
         </a>
       <% end %>
     <% end %>
@@ -1092,7 +1100,7 @@ defmodule GamendWeb.HostLayoutNavigation do
         >
           <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link)} />
           <span class={@label_class}>{translate_label(@link["label"])}</span>
-          <.count_pill count={@link["count"]} />
+          <.count_pill count={@link["count"]} status={@link["status"]} />
           <.icon name="hero-chevron-down-solid" class="w-3 h-3" />
         </summary>
         <ul class="menu menu-sm dropdown-content mt-2 z-[1] p-2 shadow-lg bg-base-100 rounded-box w-64">
@@ -1127,7 +1135,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link)} />
           <span class={@label_class}>{translate_label(@link["label"])}</span>
           <.nav_badge entry={@link} />
-          <.count_pill count={@link["count"]} />
+          <.count_pill count={@link["count"]} status={@link["status"]} />
         </a>
       <% end %>
     <% end %>
@@ -1159,7 +1167,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <span class="flex items-center gap-2">
             <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link)} />
             <span>{translate_label(@link["label"])}</span>
-            <.count_pill count={@link["count"]} />
+            <.count_pill count={@link["count"]} status={@link["status"]} />
           </span>
           <.icon
             name="hero-chevron-down-solid"
@@ -1204,7 +1212,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link)} />
           {translate_label(@link["label"])}
           <.nav_badge entry={@link} />
-          <.count_pill count={@link["count"]} />
+          <.count_pill count={@link["count"]} status={@link["status"]} />
         </a>
       <% end %>
     <% end %>
@@ -1236,7 +1244,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <summary data-tone={tone(@entry)} class={[if(@active?, do: "menu-active", else: "")]}>
             <.icon :if={@entry["icon"]} name={@entry["icon"]} class={icon_class(@entry)} />
             {translate_label(@entry["label"])}
-            <.count_pill count={@entry["count"]} />
+            <.count_pill count={@entry["count"]} status={@entry["status"]} />
           </summary>
           <ul>
             <.dropdown_menu_entries entries={@entry["items"]} current_path={@current_path} />
@@ -1260,7 +1268,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <.icon :if={@entry["icon"]} name={@entry["icon"]} class={icon_class(@entry)} />
           {translate_label(@entry["label"])}
           <.nav_badge entry={@entry} />
-          <.count_pill count={@entry["count"]} />
+          <.count_pill count={@entry["count"]} status={@entry["status"]} />
         </a>
       </li>
     <% end %>
@@ -1274,6 +1282,7 @@ defmodule GamendWeb.HostLayoutNavigation do
     :account_links,
     :side?,
     :auto?,
+    :sizes?,
     :menu_button
   ]
 
@@ -1306,6 +1315,7 @@ defmodule GamendWeb.HostLayoutNavigation do
       assigns.navigation
       |> section_entries(key, auth_level, default_auth, scope)
       |> Enum.map(&resolve_entry_count(&1, scope))
+      |> Enum.map(&resolve_entry_status(&1, scope))
       |> Enum.map(&resolve_entry_href(&1, scope, assigns[:current_path], assigns[:locale]))
       |> Enum.map(&resolve_entry_render(&1, scope, assigns[:current_path], assigns[:nav_key]))
     end
@@ -1317,6 +1327,7 @@ defmodule GamendWeb.HostLayoutNavigation do
       account_links: entries.(NavLinkGroup.account_links(), NavAuth.authenticated()),
       side?: side_layout?(assigns.navigation),
       auto?: auto_layout?(assigns.navigation),
+      sizes?: nav_sizes(assigns.navigation) != nil,
       menu_button: Map.get(assigns.navigation, "menu_button", "menu")
     )
   end
@@ -1342,6 +1353,38 @@ defmodule GamendWeb.HostLayoutNavigation do
     do: Map.get(navigation, "layout") == NavLayout.auto()
 
   def auto_layout?(_navigation), do: false
+
+  @doc """
+  The auto layout's fixed table (`"sizes"`, 2026-11-25): what the
+  navigation is from each window width on, as `<html data-nav-sizes>`
+  carries it to the scripts that run before the first paint
+  (`"0:rail 1536:sidebar"`), widths ascending. The window's width then
+  decides between the bar and the sidebar, and whether the sidebar opens
+  (`GamendWeb.NavSize`), instead of a measure of whether the bar fits;
+  the bar still fits its own stages. nil without a table, or in another
+  layout. In the config JSON:
+
+      "layout": "auto",
+      "sizes": {"0": "rail", "1536": "sidebar"}
+
+  A width that is not a whole number, or a mode that is not one of
+  `NavSize`'s, is left out.
+  """
+  def nav_sizes(%{"sizes" => sizes} = navigation) when is_map(sizes) do
+    rows =
+      for {from, mode} <- sizes,
+          mode in NavSize.all(),
+          {width, ""} <- [Integer.parse(to_string(from))],
+          width >= 0 do
+        {width, mode}
+      end
+
+    if auto_layout?(navigation) and rows != [] do
+      rows |> Enum.sort() |> Enum.map_join(" ", fn {width, mode} -> "#{width}:#{mode}" end)
+    end
+  end
+
+  def nav_sizes(_navigation), do: nil
 
   @doc """
   The icons of the sidebar's links (and the tab bar's, its phone form), as
@@ -1410,6 +1453,24 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   defp resolve_entry_count(entry, _scope), do: Map.delete(entry, "count")
+
+  # An entry's `"status"`: a `{Module.fun}` token that resolves to a heroicon
+  # name (`"hero-..."`) saying what goes on there for the viewer (a game's
+  # search running), drawn where a count would be, while there is none. A
+  # blank answer, or anything not a heroicon, is `""`: the place kept,
+  # hidden, so a page's `nav_status` event (`app.js`, pushed by a host's
+  # view) can fill it without a redraw.
+  defp resolve_entry_status(%{"items" => items} = entry, scope) when is_list(items),
+    do: Map.put(entry, "items", Enum.map(items, &resolve_entry_status(&1, scope)))
+
+  defp resolve_entry_status(%{"status" => token} = entry, scope) when is_binary(token) do
+    case token |> resolve_dynamic_tokens(scope) |> String.trim() do
+      "hero-" <> _ = icon -> Map.put(entry, "status", icon)
+      _ -> Map.put(entry, "status", "")
+    end
+  end
+
+  defp resolve_entry_status(entry, _scope), do: Map.delete(entry, "status")
 
   # An entry's `"href"` as a `{Module.fun}` token: the function is given the
   # scope and the current path (arity 2) and answers the path to link, which
@@ -1606,10 +1667,13 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   attr :count, :any, default: 0
+  attr :status, :string, default: nil
   attr :class, :string, default: nil
 
   # The red number on the nav: unread notifications, an entry's `"count"`
-  # (quests to claim). Nothing at zero.
+  # (quests to claim). Nothing at zero. With no number, an entry's
+  # `"status"` icon in the same place, in the link's own tone (its
+  # `data-nav-status`, hidden while empty).
   defp count_pill(assigns) do
     ~H"""
     <span
@@ -1620,6 +1684,14 @@ defmodule GamendWeb.HostLayoutNavigation do
       ]}
     >
       {@count}
+    </span>
+    <span
+      :if={!(is_integer(@count) and @count > 0) and is_binary(@status)}
+      data-nav-status
+      hidden={@status == ""}
+      class={["nav-status inline-flex items-center justify-center size-5 rounded-full", @class]}
+    >
+      <span class={[@status, "size-3.5"]}></span>
     </span>
     """
   end

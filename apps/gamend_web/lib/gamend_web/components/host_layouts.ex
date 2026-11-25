@@ -179,6 +179,15 @@ defmodule GamendWeb.HostLayouts do
   end
 
   @doc false
+  # `<html data-nav-sizes>`: the auto layout's fixed table of modes by
+  # window width (`HostLayoutNavigation.nav_sizes/1`), nil without one.
+  # The scripts that run before the page has a header read it
+  # (`navbar_fit.js`, `side_nav.js`).
+  def nav_sizes do
+    GamendWeb.HostLayoutNavigation.nav_sizes(resolve_theme(LocaleCode.en())["navigation"])
+  end
+
+  @doc false
   # `<html data-side-nav>`: the host's navigation is the sidebar
   # (`"sidebar"`), or the sidebar where the bar does not fit (`"auto"`).
   # The scripts that run before the page has a header read it
@@ -316,6 +325,32 @@ defmodule GamendWeb.HostLayouts do
   def home_banner_link do
     Application.get_env(:gamend_web, :home_banner_link)
   end
+
+  @doc """
+  The LiveView a host mounts on every page for a signed-in reader (`config
+  :gamend_web, :online_view`), outside the page's own: what is theirs on any
+  page (online for friends and games, a notice that pops wherever they are).
+  nil for none.
+  """
+  @spec online_view() :: module() | nil
+  def online_view, do: Application.get_env(:gamend_web, :online_view)
+
+  @doc """
+  `conn` for the online view's render: without the page's `live_session`.
+  A page served by a LiveView route carries it (`:phoenix_live_view`), and
+  a view rendered with it takes that session's `on_mount` hooks, which
+  need a router this view has not (`GamendWeb.LiveNav`), and counts as
+  that page (a page view counted twice).
+  """
+  @spec online_conn(Plug.Conn.t()) :: Plug.Conn.t()
+  def online_conn(%Plug.Conn{} = conn), do: Plug.Conn.put_private(conn, :phoenix_live_view, nil)
+
+  @doc "Whether `scope` is a signed-in reader's."
+  @spec signed_in?(term()) :: boolean()
+  def signed_in?(%Gamend.Accounts.Scope{} = scope),
+    do: is_binary(Gamend.Accounts.Scope.user_id(scope))
+
+  def signed_in?(_scope), do: false
 
   @doc false
   def extra_hook_modules do
@@ -846,9 +881,10 @@ defmodule GamendWeb.HostLayouts do
         )
     }
     # Settings, not words: from the English theme, where no translation
-    # has touched them. `"layout": "sidebar"` (`side_nav/1`) and
-    # `"menu_button": "account"` (`mobile_nav/1`).
-    |> Map.merge(Map.take(en_navigation, ["layout", "menu_button"]))
+    # has touched them. `"layout": "sidebar"` (`side_nav/1`), its fixed
+    # `"sizes"` (`nav_sizes/1`) and `"menu_button": "account"`
+    # (`mobile_nav/1`).
+    |> Map.merge(Map.take(en_navigation, ["layout", "sizes", "menu_button"]))
   end
 
   defp navigation_links(provider_navigation, en_navigation, key, default \\ []) do

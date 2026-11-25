@@ -3145,11 +3145,6 @@ msgstr "이 링크로 인증하면 이 계정을 등록할 때 설정한 비밀�
 msgid "%{count} min read"
 msgstr "%{count}분 읽기"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "계정 및 보안"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3204,11 +3199,6 @@ msgstr "이메일 설정"
 msgid "Emails about: %{group}"
 msgstr "이메일 주제: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "친구 및 그룹"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3218,11 +3208,6 @@ msgstr "사이트에서"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "휴대폰"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "퀘스트 및 보상"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3300,11 +3285,6 @@ msgstr "휴대폰 알림 다시 켜기"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "이 이메일은 하나도 받지 않습니다."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "다음에 대한 이메일을 켜 두었기 때문에 이 이메일을 받았습니다: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4191,8 +4171,8 @@ msgstr "종료"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "뉴스 및 공지사항"
+msgid "News"
+msgstr "소식"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

@@ -3190,11 +3190,6 @@ msgstr "Az ezzel a linkkel történő megerősítés törli a jelszót, amellyel
 msgid "%{count} min read"
 msgstr "%{count} perc olvasás"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Fiók és biztonság"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3249,11 +3244,6 @@ msgstr "E-mail-beállítások"
 msgid "Emails about: %{group}"
 msgstr "E-mailek erről: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Barátok és csoportok"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3263,11 +3253,6 @@ msgstr "Az oldalon"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Telefon"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Küldetések és jutalmak"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3345,11 +3330,6 @@ msgstr "Telefonos értesítések visszakapcsolása"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Egyik ilyen e-mailt sem kapod."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Azért kapod ezt az e-mailt, mert bekapcsoltad az e-maileket ehhez: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4242,8 +4222,8 @@ msgstr "Véget ér"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Hírek és közlemények"
+msgid "News"
+msgstr "Hírek"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

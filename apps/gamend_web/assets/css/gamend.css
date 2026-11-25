@@ -89,6 +89,12 @@
 @utility nav-tone-ring {
   @apply ring-1 ring-[color-mix(in_oklab,var(--nav-tone)_45%,transparent)];
 }
+/* A nav link's `"status"` icon (`HostLayoutNavigation.count_pill/1`), where
+   its count would be: the link's tone, else the primary. */
+.nav-status {
+  background: var(--nav-tone, var(--color-primary));
+  color: var(--color-primary-content);
+}
 
 .summary-no-marker {
   list-style: none;

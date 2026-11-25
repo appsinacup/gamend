@@ -12,11 +12,13 @@ defmodule GamendWeb.NotificationEmail do
   # :html for the host's catalogue (as every page) and verified routes.
   use GamendWeb, :html
 
+  alias Gamend.Mail.Message
   alias Gamend.Notifications.DigestItem
   alias Gamend.Notifications.Preferences
 
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
   require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
+  require Gamend.UrlScheme, as: UrlScheme
 
   @salt "notification unsubscribe"
 
@@ -28,15 +30,14 @@ defmodule GamendWeb.NotificationEmail do
   def group_label(key) when is_binary(key),
     do: key |> Preferences.group() |> Kernel.||(%{key: key, label: key}) |> group_label()
 
-  def group_label(%{key: PreferenceGroup.account()}), do: gettext("Account and security")
-  def group_label(%{key: PreferenceGroup.social()}), do: gettext("Friends and groups")
+  def group_label(%{key: PreferenceGroup.account()}), do: gettext("Account")
+  def group_label(%{key: PreferenceGroup.social()}), do: gettext("Friends")
   def group_label(%{key: PreferenceGroup.chat()}), do: gettext("Chat messages")
-  def group_label(%{key: PreferenceGroup.quests()}), do: gettext("Quests and rewards")
+  def group_label(%{key: PreferenceGroup.quests()}), do: gettext("Quests")
   def group_label(%{key: PreferenceGroup.reports()}), do: gettext("Your reports")
   def group_label(%{key: PreferenceGroup.payments()}), do: gettext("Payments")
 
-  def group_label(%{key: PreferenceGroup.announcements()}),
-    do: gettext("News and announcements")
+  def group_label(%{key: PreferenceGroup.announcements()}), do: gettext("News")
 
   def group_label(%{label: label}) when is_binary(label),
     do: GamendWeb.HostLayouts.translate(label)
@@ -77,12 +78,19 @@ defmodule GamendWeb.NotificationEmail do
     do: url(~p"/notifications/unsubscribe/#{token(user_id, group)}")
 
   @doc """
-  The body: the notification's text, its link, then why the reader gets it
-  and how to stop it.
+  The email (`Gamend.Mail.Message`): the notification's title, its picture
+  (`image`, a path on the site or a URL), its text, its link as the button,
+  then why the reader gets it and how to stop it.
   """
-  @spec body(String.t(), String.t(), String.t(), String.t() | nil) :: String.t()
-  def body(user_id, group, text, path) do
-    join([text, site_url(path) | footer(user_id, group)])
+  @spec body(String.t(), String.t(), map()) :: Message.t()
+  def body(user_id, group, %{} = notice) do
+    %Message{
+      title: notice[:title] || group_label(group),
+      paragraphs: paragraphs(notice[:text]),
+      image: site_url(notice[:image]),
+      button: open_button(notice[:url]),
+      footer: footer(user_id, group)
+    }
   end
 
   @doc "A digest's subject: a lone notice's own, else the group's."
@@ -92,24 +100,29 @@ defmodule GamendWeb.NotificationEmail do
   def digest_subject(group, _items),
     do: gettext("%{group}: what is new", group: group_label(group))
 
-  @doc "A digest's body: its notices under their subjects, oldest first, then the footer."
-  @spec digest_body(String.t(), String.t(), [DigestItem.t()]) :: String.t()
-  def digest_body(user_id, group, [%DigestItem{text: text, url: url}]),
-    do: body(user_id, group, text, url)
+  @doc "A digest's email: its notices, oldest first, each under its subject, then the footer."
+  @spec digest_body(String.t(), String.t(), [DigestItem.t()]) :: Message.t()
+  def digest_body(user_id, group, [%DigestItem{subject: subject, text: text, url: url}]),
+    do: body(user_id, group, %{title: subject, text: text, url: url})
 
   def digest_body(user_id, group, items) do
-    notices =
-      items
-      |> Enum.chunk_by(& &1.subject)
-      |> Enum.map(fn [%DigestItem{subject: subject} | _] = run ->
-        join([subject | Enum.map(run, &notice/1)])
-      end)
-
-    join(notices ++ footer(user_id, group))
+    %Message{
+      title: digest_subject(group, items),
+      items: Enum.map(items, &%{title: &1.subject, text: &1.text, url: site_url(&1.url)}),
+      footer: footer(user_id, group)
+    }
   end
 
-  defp notice(%DigestItem{text: text, url: url}) do
-    [text, site_url(url)] |> Enum.reject(&(&1 in [nil, ""])) |> Enum.join("\n")
+  defp paragraphs(text) when is_binary(text) and text != "",
+    do: text |> String.split(~r/\n\s*\n/) |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+
+  defp paragraphs(_none), do: []
+
+  defp open_button(path) do
+    case site_url(path) do
+      nil -> nil
+      url -> {gettext("Open"), url}
+    end
   end
 
   @doc "Run `fun` in the reader's language: an email goes out from a job, with no page's."
@@ -119,21 +132,19 @@ defmodule GamendWeb.NotificationEmail do
 
   def in_locale(_locale, fun), do: fun.()
 
-  defp site_url(path) do
-    if is_binary(path) and String.starts_with?(path, "/"),
-      do: String.trim_trailing(url(~p"/"), "/") <> path
+  defp site_url("/" <> _ = path), do: String.trim_trailing(url(~p"/"), "/") <> path
+
+  defp site_url(url) when is_binary(url) do
+    if URI.parse(url).scheme in [UrlScheme.http(), UrlScheme.https()], do: url
   end
+
+  defp site_url(_none), do: nil
 
   defp footer(user_id, group) do
     [
-      "--",
-      gettext("You get this email because you turned on emails for: %{group}.",
-        group: group_label(group)
-      ),
+      gettext("Emails about: %{group}", group: group_label(group)),
       gettext("Stop these emails: %{url}", url: unsubscribe_url(user_id, group)),
       gettext("Choose what we send you: %{url}", url: url(~p"/users/settings?tab=notifications"))
     ]
   end
-
-  defp join(parts), do: parts |> Enum.reject(&(&1 in [nil, ""])) |> Enum.join("\n\n")
 end

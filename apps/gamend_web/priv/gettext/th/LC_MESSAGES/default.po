@@ -3145,11 +3145,6 @@ msgstr "การยืนยันด้วยลิงก์นี้จะล
 msgid "%{count} min read"
 msgstr "อ่าน %{count} นาที"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "บัญชีและความปลอดภัย"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3204,11 +3199,6 @@ msgstr "การตั้งค่าอีเมล"
 msgid "Emails about: %{group}"
 msgstr "อีเมลเกี่ยวกับ: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "เพื่อนและกลุ่ม"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3218,11 +3208,6 @@ msgstr "บนเว็บไซต์"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "โทรศัพท์"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "ภารกิจและรางวัล"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3300,11 +3285,6 @@ msgstr "เปิดการแจ้งเตือนบนโทรศัพ
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "คุณไม่ได้รับอีเมลเหล่านี้เลย"
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "คุณได้รับอีเมลนี้เพราะคุณเปิดอีเมลสำหรับ: %{group}"
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4191,8 +4171,8 @@ msgstr "สิ้นสุด"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "ข่าวสารและประกาศ"
+msgid "News"
+msgstr "ข่าวสาร"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

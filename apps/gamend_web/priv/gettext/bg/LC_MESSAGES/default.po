@@ -3189,11 +3189,6 @@ msgstr "Потвърждаването с тази връзка премахва
 msgid "%{count} min read"
 msgstr "%{count} мин. четене"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Профил и сигурност"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3248,11 +3243,6 @@ msgstr "Настройки за имейли"
 msgid "Emails about: %{group}"
 msgstr "Имейли за: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Приятели и групи"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3262,11 +3252,6 @@ msgstr "На сайта"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Телефон"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Мисии и награди"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3344,11 +3329,6 @@ msgstr "Включи отново известията на телефона"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Не получаваш нито един от тези имейли."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Получаваш този имейл, защото си включил имейлите за: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4241,8 +4221,8 @@ msgstr "Приключва"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Новини и съобщения"
+msgid "News"
+msgstr "Новини"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

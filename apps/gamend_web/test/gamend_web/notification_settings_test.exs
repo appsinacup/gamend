@@ -53,7 +53,7 @@ defmodule GamendWeb.NotificationSettingsTest do
     test "a box turns a group's channel on and off", %{conn: conn, user: user} do
       {:ok, lv, html} = live(conn, ~p"/users/settings?tab=notifications")
       assert html =~ "Streak about to end"
-      assert html =~ "Friends and groups"
+      assert html =~ "Friends"
       assert has_element?(lv, "#notify-account-email[disabled]")
 
       lv |> element("#notify-streak-email") |> render_click()

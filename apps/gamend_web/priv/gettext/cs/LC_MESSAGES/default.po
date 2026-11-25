@@ -3233,11 +3233,6 @@ msgstr "Potvrzení tímto odkazem odstraní heslo, se kterým byl účet zaregis
 msgid "%{count} min read"
 msgstr "%{count} min čtení"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Účet a zabezpečení"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3292,11 +3287,6 @@ msgstr "Nastavení e-mailů"
 msgid "Emails about: %{group}"
 msgstr "E-maily o: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Přátelé a skupiny"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3306,11 +3296,6 @@ msgstr "Na webu"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Telefon"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Úkoly a odměny"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3388,11 +3373,6 @@ msgstr "Znovu zapnout oznámení na telefonu"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Žádný z těchto e-mailů nedostáváš."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Tento e-mail dostáváš, protože sis zapnul e-maily pro: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4291,8 +4271,8 @@ msgstr "Končí"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Novinky a oznámení"
+msgid "News"
+msgstr "Novinky"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

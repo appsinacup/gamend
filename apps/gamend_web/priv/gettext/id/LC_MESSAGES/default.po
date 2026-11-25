@@ -3145,11 +3145,6 @@ msgstr "Mengonfirmasi dengan tautan ini akan menghapus kata sandi yang dipakai s
 msgid "%{count} min read"
 msgstr "%{count} menit baca"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Akun dan keamanan"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3204,11 +3199,6 @@ msgstr "Pengaturan email"
 msgid "Emails about: %{group}"
 msgstr "Email tentang: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Teman dan grup"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3218,11 +3208,6 @@ msgstr "Di situs"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Ponsel"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Misi dan hadiah"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3300,11 +3285,6 @@ msgstr "Nyalakan lagi notifikasi ponsel"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Kamu tidak menerima satu pun email ini."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Kamu menerima email ini karena mengaktifkan email untuk: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4191,8 +4171,8 @@ msgstr "Berakhir"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Berita dan pengumuman"
+msgid "News"
+msgstr "Berita"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

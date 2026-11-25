@@ -54,7 +54,7 @@ defmodule GamendWeb.Features do
   setting(:list_quests, :boolean,
     default: true,
     doc:
-      "Public GET /api/v1/quests*, the /quests page and the \"Quests and rewards\" row on the Notifications tab. Achievements are quests of kind `achievement`, so this is them too."
+      "Public GET /api/v1/quests*, the /quests page and the \"Quests\" row on the Notifications tab. Achievements are quests of kind `achievement`, so this is them too."
   )
 
   setting(:list_tournaments, :boolean,

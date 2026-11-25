@@ -403,9 +403,10 @@ defmodule Gamend.Notifications do
     # declares, or not a string at all.
     case metadata["group"] do
       group when is_binary(group) and group != "" ->
-        if Preferences.group(group),
-          do: group,
-          else: Preferences.group_for_type(metadata["type"])
+        case Preferences.group(group) do
+          %{key: key} -> key
+          nil -> Preferences.group_for_type(metadata["type"])
+        end
 
       _none ->
         Preferences.group_for_type(metadata["type"])
@@ -433,13 +434,21 @@ defmodule Gamend.Notifications do
   @spec notify(user_id() | User.t(), String.t(), map()) ::
           {:ok, [String.t()]} | {:error, :not_found}
   def notify(%User{} = user, group, attrs) when is_binary(group) and is_map(attrs),
-    do: {:ok, deliver_notice(user, group, attrs)}
+    do: {:ok, deliver_notice(user, group_key(group), attrs)}
 
   def notify(user_id, group, attrs)
       when is_binary(user_id) and is_binary(group) and is_map(attrs) do
     case Gamend.Accounts.get_user(user_id) do
       nil -> {:error, :not_found}
-      user -> {:ok, deliver_notice(user, group, attrs)}
+      user -> {:ok, deliver_notice(user, group_key(group), attrs)}
+    end
+  end
+
+  # A core group a host's group `includes` goes out in the host's.
+  defp group_key(group) do
+    case Preferences.group(group) do
+      %{key: key} -> key
+      nil -> group
     end
   end
 
@@ -482,7 +491,7 @@ defmodule Gamend.Notifications do
   @doc """
   Admin: tell every player the same thing at once (`attrs` as `notify/3`
   takes them: `"title"`, `"content"`, `"url"`, `"site_only"`), in the
-  "News and announcements" group, so each player's choices for it apply.
+  "News" group, so each player's choices for it apply.
   Delivery runs in the background (`Gamend.Notifications.Announcements`);
   answers how many accounts it is going to.
   """
@@ -516,6 +525,7 @@ defmodule Gamend.Notifications do
           "group" => group,
           "subject" => attrs["subject"] || attrs["title"],
           "text" => attrs["text"] || attrs["content"] || "",
+          "image" => attrs["image"],
           "url" => attrs["url"]
         },
         fn {_k, v} -> is_nil(v) end

@@ -33,6 +33,8 @@
 // phone) with the bar's other entries at the first of the same stages that
 // fits beside it (`SIDE_STAGES`), else its menu.
 
+import {sizeMode} from "./side_nav.js"
+
 export const STAGES = [
   ["full", "bar labels name"],
   ["icons", "bar name"],
@@ -56,17 +58,25 @@ const KEY = "gamend:nav"
 // The first stage whose width fits, else the menu. `side` is the auto
 // layout's sidebar (`sideRoom/0`): how wide it is where it shows, and
 // whether this is a phone, where it is the tab bar and the bar is the menu.
+// With a host's fixed table (`side.mode`, `side_nav.js` `sizeMode/2`) the
+// width's row says bar or sidebar, and only the stages of that one are
+// tried: `bar` its spelled-out stages, else its menu; `rail` or
+// `sidebar` the sidebar's.
 export function stageFor(needs, width, side = null) {
+  const mode = side?.mode || null
   if (!needs) {
+    if (mode === "bar") return width >= UNMEASURED_BAR ? AUTO_STAGES[0][1] : MENU
+    if (mode) return SIDE_MENU
     if (width >= UNMEASURED_BAR) return STAGES[0][1]
     return side ? SIDE_MENU : MENU
   }
   // What the page keeps of the header's row for its own (`reserve/0`).
   const kept = side?.reserve || 0
-  for (const [name, words] of side ? AUTO_STAGES : STAGES) {
+  const barStages = mode && mode !== "bar" ? [] : side ? AUTO_STAGES : STAGES
+  for (const [name, words] of barStages) {
     if (needs[name] <= width - kept) return words
   }
-  if (!side) return MENU
+  if (!side || mode === "bar") return MENU
   if (side.phone) return SIDE_MENU
   for (const [name, words] of SIDE_STAGES) {
     if (needs[name] <= width - side.width - kept) return words
@@ -88,7 +98,12 @@ function sideRoom() {
   const root = document.documentElement
   const rem = parseFloat(getComputedStyle(root).fontSize) || 16
   const open = root.dataset.side !== "rail" && !document.getElementById("navbar-autohide")
-  return {width: rem * (open ? 14 : 6), phone: !matchMedia("(min-width: 48rem)").matches, reserve: reserve()}
+  return {
+    width: rem * (open ? 14 : 6),
+    phone: !matchMedia("(min-width: 48rem)").matches,
+    reserve: reserve(),
+    mode: sizeMode(root),
+  }
 }
 
 // The room a page keeps in the header's row for its own (a heading the bar

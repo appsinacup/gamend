@@ -3365,11 +3365,6 @@ msgstr "التأكيد عبر هذا الرابط يزيل كلمة المرور
 msgid "%{count} min read"
 msgstr "وقت القراءة: %{count} د"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "الحساب والأمان"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3424,11 +3419,6 @@ msgstr "إعدادات البريد الإلكتروني"
 msgid "Emails about: %{group}"
 msgstr "رسائل عن: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "الأصدقاء والمجموعات"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3438,11 +3428,6 @@ msgstr "على الموقع"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "الهاتف"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "المهام والمكافآت"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3520,11 +3505,6 @@ msgstr "إعادة تشغيل إشعارات الهاتف"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "لا تصلك أي من هذه الرسائل."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "تصلك هذه الرسالة لأنك فعّلت الرسائل من أجل: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4441,8 +4421,8 @@ msgstr "ينتهي"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "الأخبار والإعلانات"
+msgid "News"
+msgstr "الأخبار"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

@@ -3145,11 +3145,6 @@ msgstr "Xác nhận bằng liên kết này sẽ xóa mật khẩu mà tài kho�
 msgid "%{count} min read"
 msgstr "%{count} phút đọc"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Tài khoản và bảo mật"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3204,11 +3199,6 @@ msgstr "Cài đặt email"
 msgid "Emails about: %{group}"
 msgstr "Email về: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Bạn bè và nhóm"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3218,11 +3208,6 @@ msgstr "Trên trang web"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Điện thoại"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Nhiệm vụ và phần thưởng"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3300,11 +3285,6 @@ msgstr "Bật lại thông báo trên điện thoại"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Bạn không nhận email nào trong số này."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Bạn nhận email này vì đã bật email cho: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4191,8 +4171,8 @@ msgstr "Kết thúc"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Tin tức và thông báo"
+msgid "News"
+msgstr "Tin tức"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

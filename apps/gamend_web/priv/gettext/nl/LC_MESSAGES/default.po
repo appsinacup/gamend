@@ -3189,11 +3189,6 @@ msgstr "Bevestigen met deze link verwijdert het wachtwoord waarmee dit account i
 msgid "%{count} min read"
 msgstr "%{count} min leestijd"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr "Account en beveiliging"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3248,11 +3243,6 @@ msgstr "E-mailinstellingen"
 msgid "Emails about: %{group}"
 msgstr "E-mails over: %{group}"
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr "Vrienden en groepen"
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3262,11 +3252,6 @@ msgstr "Op de site"
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Telefoon"
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
-msgstr "Quests en beloningen"
 
 #: lib/gamend_web/notification_email.ex:28
 #, elixir-autogen, elixir-format
@@ -3344,11 +3329,6 @@ msgstr "Telefoonmeldingen weer aanzetten"
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Je krijgt geen van deze e-mails."
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
-msgstr "Je krijgt deze e-mail omdat je e-mails hebt aangezet voor: %{group}."
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
 #, elixir-autogen, elixir-format
@@ -4241,8 +4221,8 @@ msgstr "Eindigt"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
-msgstr "Nieuws en aankondigingen"
+msgid "News"
+msgstr "Nieuws"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex
 #, elixir-autogen, elixir-format

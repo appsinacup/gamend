@@ -158,7 +158,7 @@ Chat notifications include a message_count field in metadata indicating how many
 
 Admin → Notifications → **Send to everyone** (or `POST /api/v1/admin/notifications/announce`, `Gamend.Notifications.announce_to_all/1`) sends one notification to every activated account that is not banned, guests included. It takes `title`, an optional `content`, an optional `url` (a path on this site, such as `/news`) and `site_only`.
 
-Each player gets it in the `announcements` group: on the site always, by phone unless they turned it off, by email only if they turned it on. `site_only` sends neither. Delivery runs in the background, one `AnnouncementWorker` job per 500 accounts, so the answer is how many accounts it is going to, not how many it reached. The row is the player's own (sender = recipient): the same title again refreshes it instead of adding a second.
+Each player gets it in the `announcements` group: on the site always, by phone unless they turned it off, by email only if they turned it on (a host may make email the default, see below). `site_only` sends neither. Delivery runs in the background, one `AnnouncementWorker` job per 500 accounts, so the answer is how many accounts it is going to, not how many it reached. The row is the player's own (sender = recipient): the same title again refreshes it instead of adding a second.
 
 ## Behaviour notes
 
@@ -186,7 +186,7 @@ A type in no group (a moderator's notice) is always pushed. A host adds its own 
 
 ```elixir
 config :gamend_core, :notification_groups, [
-  %{key: "streak", label: "Streak about to end",
+  %{key: "streak", label: "Daily streak",
     defaults: %{"in_app" => true, "email" => false, "push" => false},
     types: []}
 ]
@@ -194,7 +194,17 @@ config :gamend_core, :notification_groups, [
 
 `configurable` (default: all three channels) limits what the user may change.
 
-To send one, the server calls `Gamend.Notifications.notify(user_id, group, attrs)` with `"title"`, `"content"`, an optional `"url"` (a path on the site, shown as the notification's Open button) and optional `"subject"`/`"text"` for the email. Each channel the user left on gets it: the in-app row (sender = recipient, so a repeated title refreshes one row), a push, and an email job (`GamendWeb.Workers.NotificationEmail`, on the `mailers` queue). The email ends with a one-click unsubscribe link and carries `List-Unsubscribe` + `List-Unsubscribe-Post` headers, so a mail client's own Unsubscribe button works.
+`shown_to: {MyHost.Translators, :translator?}` shows the group's row only to a user for whom that function answers true. Everyone else's settings page leaves it out; what is sent is unchanged.
+
+`includes: ["payments"]` folds core groups into the host's: their rows go, and a notice sent in one of them goes out in the host's group, under the user's choices for it.
+
+An entry with a core group's key changes only that group's defaults: `%{key: "announcements", defaults: %{"email" => true}}` emails news to every player who has not turned it off.
+
+To send one, the server calls `Gamend.Notifications.notify(user_id, group, attrs)` with `"title"`, `"content"`, an optional `"url"` (a path on the site, shown as the notification's Open button), an optional `"image"` (a path on the site or a URL, drawn in the email) and optional `"subject"`/`"text"` for the email. Each channel the user left on gets it: the in-app row (sender = recipient, so a repeated title refreshes one row), a push, and an email job (`GamendWeb.Workers.NotificationEmail`, on the `mailers` queue). The email ends with a one-click unsubscribe link and carries `List-Unsubscribe` + `List-Unsubscribe-Post` headers, so a mail client's own Unsubscribe button works.
+
+### How an email looks
+
+Every email core sends, a sign-in link as much as a notification or a digest, is a `Gamend.Mail.Message` (title, paragraphs, an optional picture, button, code, digest items, footer) sent as plain text and as HTML in one layout (`GamendWeb.MailLayout`): the site's logo and name on its brand colour, the heading, the picture, the text, one button, then the small print. The brand is the site's theme, nothing more to set: `title`, `logo` and `brand_color`. Mail clients drop SVG and WebP: a theme whose `logo` is one adds `"email_logo": "/images/logo.png"` (a PNG or JPEG), or the header shows the name alone. Text on the brand colour is white or near-black, whichever reads.
 
 A group whose notices come in runs batches its email: `email_every: :day`, `:week` or `:month` keeps each notice (`Gamend.Notifications.Digest`, table `notification_digest_items`) until that long after the oldest one, and one email lists them (`GamendWeb.Workers.NotificationDigest`, queued by an hourly sweep). A lone notice keeps its own subject. The in-app row and the push stay instant. `email_now: ["chat_warning"]` lists the types that keep their own email; a `notify/3` call says the same with `"email_now" => true`.
 

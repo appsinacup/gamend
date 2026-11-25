@@ -3191,11 +3191,6 @@ msgstr ""
 msgid "%{count} min read"
 msgstr "%{count} min read"
 
-#: lib/gamend_web/notification_email.ex:24
-#, elixir-autogen, elixir-format
-msgid "Account and security"
-msgstr ""
-
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:81
 #, elixir-autogen, elixir-format
@@ -3250,11 +3245,6 @@ msgstr ""
 msgid "Emails about: %{group}"
 msgstr ""
 
-#: lib/gamend_web/notification_email.ex:25
-#, elixir-autogen, elixir-format
-msgid "Friends and groups"
-msgstr ""
-
 #: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "On the site"
@@ -3263,11 +3253,6 @@ msgstr ""
 #: lib/gamend_web/notification_email.ex:35
 #, elixir-autogen, elixir-format
 msgid "Phone"
-msgstr ""
-
-#: lib/gamend_web/notification_email.ex:27
-#, elixir-autogen, elixir-format
-msgid "Quests and rewards"
 msgstr ""
 
 #: lib/gamend_web/notification_email.ex:28
@@ -3345,11 +3330,6 @@ msgstr ""
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:46
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
-msgstr ""
-
-#: lib/gamend_web/notification_email.ex:78
-#, elixir-autogen, elixir-format
-msgid "You get this email because you turned on emails for: %{group}."
 msgstr ""
 
 #: lib/gamend_web/live/user_live/settings/notifications_tab.ex:105
@@ -4243,7 +4223,7 @@ msgstr "Ends"
 
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
-msgid "News and announcements"
+msgid "News"
 msgstr ""
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex

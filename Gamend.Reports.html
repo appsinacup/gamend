@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Reports — gamend_core v1.1.1516</title>
+    <title>Gamend.Reports — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Reports</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -300,6 +300,18 @@ subject key are not grouped.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#kinds/1" data-no-tooltip="" translate="no">kinds(source)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The kinds <code class="inline">source</code> may file (<a href="Gamend.Reports.Kind.html#c:sources/0"><code class="inline">Gamend.Reports.Kind.sources/0</code></a>): what core's
+report page offers (<code class="inline">ReportSource.web()</code>) and what the API lists
+(<code class="inline">ReportSource.api()</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#list/2" data-no-tooltip="" translate="no">list(filters \\ %{}, opts \\ [])</a>
 
       </div>
@@ -319,6 +331,17 @@ key). Opts: <code class="inline">:page</code> and <code class="inline">:page_siz
 
         <div class="summary-synopsis"><p>The retention class: closed reports <code class="inline">retention_days</code> after they were
 closed, images included. Answers how many were deleted.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#reply_title/1" data-no-tooltip="" translate="no">reply_title(report)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The title of the reply <code class="inline">report</code>'s reporter gets: its kind's
+(<a href="Gamend.Reports.Kind.html#c:reply_title/1"><code class="inline">Gamend.Reports.Kind.reply_title/1</code></a>), else core's.</p></div>
 
     </div>
 
@@ -350,6 +373,16 @@ closed, images included. Answers how many were deleted.</p></div>
       </div>
 
         <div class="summary-synopsis"><p>What the host says a fixed report earns, or nil when it says nothing.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sources/1" data-no-tooltip="" translate="no">sources(kind)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Where a report of <code class="inline">kind</code> may come from: its <code class="inline">sources/0</code>, else the page and the API.</p></div>
 
     </div>
 
@@ -387,7 +420,7 @@ closed, images included. Answers how many were deleted.</p></div>
       <h1 class="signature" translate="no">attachment(report, index)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L473" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L490" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -418,7 +451,7 @@ closed, images included. Answers how many were deleted.</p></div>
       <h1 class="signature" translate="no">count(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L431" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L448" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -446,7 +479,7 @@ closed, images included. Answers how many were deleted.</p></div>
       <h1 class="signature" translate="no">count_by_status()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L439" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L456" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -474,7 +507,7 @@ closed, images included. Answers how many were deleted.</p></div>
       <h1 class="signature" translate="no">count_open()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L435" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L452" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -504,7 +537,7 @@ closed, images included. Answers how many were deleted.</p></div>
       <h1 class="signature" translate="no">create(params, context \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L182" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L198" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -541,7 +574,7 @@ changeset. <code class="inline">{:ok, :taken}</code> when the kind took the repo
       <h1 class="signature" translate="no">delete(report)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L600" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L632" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -570,7 +603,7 @@ changeset. <code class="inline">{:ok, :taken}</code> when the kind took the repo
       <h1 class="signature" translate="no">description_required?(kind, topic)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L131" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -598,7 +631,7 @@ changeset. <code class="inline">{:ok, :taken}</code> when the kind took the repo
       <h1 class="signature" translate="no">forget_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L614" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L646" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -628,7 +661,7 @@ and an erased account must not leave either behind.</p>
       <h1 class="signature" translate="no">get(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L406" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L423" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -656,7 +689,7 @@ and an erased account must not leave either behind.</p>
       <h1 class="signature" translate="no">group_counts(reports)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L451" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L468" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -688,7 +721,7 @@ subject key are not grouped.</p>
       <h1 class="signature" translate="no">group_key(report)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L469" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L486" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -716,7 +749,7 @@ subject key are not grouped.</p>
       <h1 class="signature" translate="no">image_types()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L139" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -744,7 +777,7 @@ subject key are not grouped.</p>
       <h1 class="signature" translate="no">kind(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L136" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -790,6 +823,36 @@ subject key are not grouped.</p>
 <p>Every kind, configured ones first, core's <code class="inline">page</code> last unless replaced.</p>
   </section>
 </section>
+<section class="detail" id="kinds/1">
+
+  <div class="detail-header">
+    <a href="#kinds/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">kinds(source)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L124" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> kinds(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: [<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">module</a>()]</pre>
+
+      </div>
+
+<p>The kinds <code class="inline">source</code> may file (<a href="Gamend.Reports.Kind.html#c:sources/0"><code class="inline">Gamend.Reports.Kind.sources/0</code></a>): what core's
+report page offers (<code class="inline">ReportSource.web()</code>) and what the API lists
+(<code class="inline">ReportSource.api()</code>).</p>
+  </section>
+</section>
 <section class="detail" id="list/2">
 
     <span id="list/0"></span>
@@ -804,7 +867,7 @@ subject key are not grouped.</p>
       <h1 class="signature" translate="no">list(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L420" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L437" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -835,7 +898,7 @@ key). Opts: <code class="inline">:page</code> and <code class="inline">:page_siz
       <h1 class="signature" translate="no">prune()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L623" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L655" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -854,6 +917,35 @@ key). Opts: <code class="inline">:page</code> and <code class="inline">:page_siz
 closed, images included. Answers how many were deleted.</p>
   </section>
 </section>
+<section class="detail" id="reply_title/1">
+
+  <div class="detail-header">
+    <a href="#reply_title/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">reply_title(report)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L621" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> reply_title(<a href="Gamend.Reports.Report.html#t:t/0">Gamend.Reports.Report.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>The title of the reply <code class="inline">report</code>'s reporter gets: its kind's
+(<a href="Gamend.Reports.Kind.html#c:reply_title/1"><code class="inline">Gamend.Reports.Kind.reply_title/1</code></a>), else core's.</p>
+  </section>
+</section>
 <section class="detail" id="resolve/3">
 
     <span id="resolve/2"></span>
@@ -866,7 +958,7 @@ closed, images included. Answers how many were deleted.</p>
       <h1 class="signature" translate="no">resolve(report, status, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L535" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L552" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -902,7 +994,7 @@ nothing is written, nothing is sent and the answer is
       <h1 class="signature" translate="no">resolved_config(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -930,7 +1022,7 @@ nothing is written, nothing is sent and the answer is
       <h1 class="signature" translate="no">reward_text(which)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -952,6 +1044,34 @@ come from <code class="inline">config :gamend_core, :report_reward, {module, fun
 <code class="inline">fun.(which)</code>; a blank answer is nil.</p>
   </section>
 </section>
+<section class="detail" id="sources/1">
+
+  <div class="detail-header">
+    <a href="#sources/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sources(kind)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L128" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> sources(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">module</a>()) :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>Where a report of <code class="inline">kind</code> may come from: its <code class="inline">sources/0</code>, else the page and the API.</p>
+  </section>
+</section>
 <section class="detail" id="ui/1">
 
   <div class="detail-header">
@@ -962,7 +1082,7 @@ come from <code class="inline">config :gamend_core, :report_reward, {module, fun
       <h1 class="signature" translate="no">ui(kind)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L141" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -989,9 +1109,9 @@ come from <code class="inline">config :gamend_core, :report_reward, {module, fun
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

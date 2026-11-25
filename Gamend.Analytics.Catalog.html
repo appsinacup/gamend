@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Analytics.Catalog — gamend_core v1.1.1516</title>
+    <title>Gamend.Analytics.Catalog — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Analytics.<wbr />Catalog</span> <small>behaviour</small>
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -135,7 +135,7 @@ and offer filters; nothing is stored by it.</p><p>A host declares its own with a
       </span><span class="ss">rates</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-9">[</span><span class="p" data-group-id="group-10">{</span><span class="s">&quot;score&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;total&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Score&quot;</span><span class="p" data-group-id="group-10">}</span><span class="p" data-group-id="group-9">]</span><span class="w">
     </span><span class="p" data-group-id="group-6">}</span><span class="w">
   </span><span class="p" data-group-id="group-5">]</span><span class="w">
-</span><span class="k" data-group-id="group-4">end</span></code></pre><p>Core adds its own group (Payments, <code class="inline">payments.</code>). A name nobody declared
+</span><span class="k" data-group-id="group-4">end</span></code></pre><p>Core adds its own groups (Payments, <code class="inline">payments.</code>; Accounts, <code class="inline">accounts.</code>). A name nobody declared
 still shows: in the group whose prefix it starts with, else in a group of
 its own made of its first two segments (<code class="inline">web.game.started</code> →
 <code class="inline">web.game</code>), labelled with the name itself. With no host catalogue that
@@ -215,7 +215,9 @@ A host page draws the same bar with
 
         <div class="summary-synopsis"><p>A funnel step's count: a counter's (or several counters') total over the
 window, the accounts made in it, those of them registered now, the people
-given an entitlement key in it, or the payers in it.</p></div>
+given an entitlement key in it, those of them who paid after it
+(<code class="inline">:entitlement_paid</code>, the step after an <code class="inline">:entitlement</code> one, so its share
+is a trial's conversion), or the payers in it (whatever came before).</p></div>
 
     </div>
 
@@ -389,7 +391,7 @@ a core group's id replaces it.</p></div>
       <h1 class="signature" translate="no">groups()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -430,7 +432,7 @@ a core group's id replaces it.</p></div>
       <h1 class="signature" translate="no">band()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -496,7 +498,7 @@ a core group's id replaces it.</p></div>
       <h1 class="signature" translate="no">funnel_source()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -512,13 +514,16 @@ a core group's id replaces it.</p></div>
   | :new_accounts
   | :registered
   | {:entitlement, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]}
+  | {:entitlement_paid, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]}
   | :payers</pre>
 
       </div>
 
 <p>A funnel step's count: a counter's (or several counters') total over the
 window, the accounts made in it, those of them registered now, the people
-given an entitlement key in it, or the payers in it.</p>
+given an entitlement key in it, those of them who paid after it
+(<code class="inline">:entitlement_paid</code>, the step after an <code class="inline">:entitlement</code> one, so its share
+is a trial's conversion), or the payers in it (whatever came before).</p>
   </section>
 </section>
 <section class="detail" id="t:group/0">
@@ -564,7 +569,7 @@ given an entitlement key in it, or the payers in it.</p>
       <h1 class="signature" translate="no">overview()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -580,6 +585,7 @@ given an entitlement key in it, or the payers in it.</p>
   activation: %{label: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), events: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]} | nil,
   funnel: [%{label: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), source: <a href="#t:funnel_source/0">funnel_source</a>()}],
   trial_keys: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()],
+  traits: [%{field: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), label: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}],
   bands: %{required(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()) =&gt; <a href="#t:band/0">band</a>()},
   time: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()
 }</pre>
@@ -640,7 +646,7 @@ given an entitlement key in it, or the payers in it.</p>
       <h1 class="signature" translate="no">events()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L110" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -670,7 +676,7 @@ given an entitlement key in it, or the payers in it.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L116" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -700,7 +706,7 @@ given an entitlement key in it, or the payers in it.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L111" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L115" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -741,7 +747,7 @@ given an entitlement key in it, or the payers in it.</p>
       <h1 class="signature" translate="no">event(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L253" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L273" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -769,7 +775,7 @@ given an entitlement key in it, or the payers in it.</p>
       <h1 class="signature" translate="no">events()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L162" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L175" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -797,7 +803,7 @@ given an entitlement key in it, or the payers in it.</p>
       <h1 class="signature" translate="no">group(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L295" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L315" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -827,7 +833,7 @@ given an entitlement key in it, or the payers in it.</p>
       <h1 class="signature" translate="no">grouped(names, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L265" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L285" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -859,7 +865,7 @@ declared entries; a name seen is always kept.</p>
       <h1 class="signature" translate="no">groups()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L165" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -888,7 +894,7 @@ a core group's id replaces it.</p>
       <h1 class="signature" translate="no">host()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L145" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L158" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -916,7 +922,7 @@ a core group's id replaces it.</p>
       <h1 class="signature" translate="no">overview()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L215" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -937,7 +943,9 @@ full (<a href="Gamend.Analytics.html#record_activity/2"><code class="inline">Gam
 and are left out of D1 / D7 / D30 and the weekly cohorts. nil: every
 cohort counts.</li><li><code class="inline">activation</code> — <code class="inline">%{label, events}</code>: a new account is activated when it
 reports one of <code class="inline">events</code> on the day it was made. nil: no card.</li><li><code class="inline">funnel</code> — the steps, in order (<a href="#t:funnel_source/0"><code class="inline">funnel_source/0</code></a>). Default:
-accounts made, registered, paid.</li><li><code class="inline">trial_keys</code> — the entitlement keys that are a free trial. Default none.</li><li><code class="inline">bands</code> — per rate (<code class="inline">:stickiness</code>, <code class="inline">:d1</code>, <code class="inline">:d7</code>, <code class="inline">:d30</code>), <code class="inline">{fair, good}</code>;
+accounts made, registered, paid.</li><li><code class="inline">trial_keys</code> — the entitlement keys that are a free trial. Default none.</li><li><code class="inline">traits</code> — <code class="inline">[%{field, label}]</code>: the event fields the Overview, Time and
+Features tabs filter accounts by (<a href="Gamend.Analytics.Segment.html#with_trait/2"><code class="inline">Gamend.Analytics.Segment.with_trait/2</code></a>:
+&quot;Device: phone&quot;), in the order they are listed. Default none.</li><li><code class="inline">bands</code> — per rate (<code class="inline">:stickiness</code>, <code class="inline">:d1</code>, <code class="inline">:d7</code>, <code class="inline">:d30</code>), <code class="inline">{fair, good}</code>;
 the host's replace core's one by one.</li><li><code class="inline">time</code> — how the Time tab reads the rows (<a href="Gamend.Analytics.TimeSpent.html"><code class="inline">Gamend.Analytics.TimeSpent</code></a>):
 <code class="inline">idle_seconds</code> (300: a longer gap between two moments is time away),
 <code class="inline">spans</code> (<code class="inline">[{first, last}]</code> event names: the time from the first to the
@@ -958,7 +966,7 @@ another area) and <code class="inline">labels</code> (<code class="inline">%{are
       <h1 class="signature" translate="no">tabs()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L166" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/catalog.ex#L179" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -985,9 +993,9 @@ another area) and <code class="inline">labels</code> (<code class="inline">%{are
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

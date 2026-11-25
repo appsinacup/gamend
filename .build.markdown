@@ -5,6 +5,8 @@ Gamend.Accounts.ApiTokens.md
 Gamend.Accounts.AvatarMirror.md
 Gamend.Accounts.Broadcasts.md
 Gamend.Accounts.ConfirmationMailer.md
+Gamend.Accounts.DeletedBy.md
+Gamend.Accounts.DeletionReason.md
 Gamend.Accounts.GuestMerge.md
 Gamend.Accounts.Identities.md
 Gamend.Accounts.InactivityNotifier.md

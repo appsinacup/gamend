@@ -39,10 +39,11 @@ an emptied queue leaves the last alert as it was, read or not.
 # `notify_reporter`
 
 ```elixir
-@spec notify_reporter(Ecto.UUID.t(), String.t()) :: :ok
+@spec notify_reporter(Ecto.UUID.t(), String.t(), String.t()) :: :ok
 ```
 
-Send `message` to the player who filed a report.
+Send `message` to the player who filed a report, under `title` (core's
+"Your report was reviewed", or the kind's: `Gamend.Reports.reply_title/1`).
 
 # `reporter_title`
 

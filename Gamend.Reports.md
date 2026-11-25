@@ -189,6 +189,16 @@ The kind module for `key`, or nil.
 
 Every kind, configured ones first, core's `page` last unless replaced.
 
+# `kinds`
+
+```elixir
+@spec kinds(String.t()) :: [module()]
+```
+
+The kinds `source` may file (`c:Gamend.Reports.Kind.sources/0`): what core's
+report page offers (`ReportSource.web()`) and what the API lists
+(`ReportSource.api()`).
+
 # `list`
 
 ```elixir
@@ -208,6 +218,15 @@ key). Opts: `:page` and `:page_size`; with no `:page`, the first
 
 The retention class: closed reports `retention_days` after they were
 closed, images included. Answers how many were deleted.
+
+# `reply_title`
+
+```elixir
+@spec reply_title(Gamend.Reports.Report.t()) :: String.t()
+```
+
+The title of the reply `report`'s reporter gets: its kind's
+(`c:Gamend.Reports.Kind.reply_title/1`), else core's.
 
 # `resolve`
 
@@ -252,6 +271,14 @@ reader's locale ("When we fix it, you get 25 coins."); `:paid` is the
 sentence the reply to a fixed report ends on ("You got 25 coins."). Both
 come from `config :gamend_core, :report_reward, {module, fun}`, called as
 `fun.(which)`; a blank answer is nil.
+
+# `sources`
+
+```elixir
+@spec sources(module()) :: [String.t()]
+```
+
+Where a report of `kind` may come from: its `sources/0`, else the page and the API.
 
 # `ui`
 

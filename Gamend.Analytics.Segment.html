@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Analytics.Segment — gamend_core v1.1.1516</title>
+    <title>Gamend.Analytics.Segment — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Analytics.<wbr />Segment</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -120,7 +120,11 @@ nothing but a device or a browser, <a href="Gamend.Accounts.User.html#anonymous?
 A visitor with no account is in none of them: the daily counters count
 them, no row does.</p><p>The split is by what the account is NOW, so a guest who registers later
 reads as registered on the days before too: a guest's numbers are the
-guests who stayed guests.</p>
+guests who stayed guests.</p><p>A segment can carry one TRAIT too, <code class="inline">{segment, {field, value}}</code>
+(<a href="#with_trait/2"><code class="inline">with_trait/2</code></a>): the accounts with an event row whose field holds that
+value, any day (<code class="inline">{&quot;device&quot;, &quot;phone&quot;}</code>: an account seen on a phone). The
+fields worth one are the host's (<a href="Gamend.Analytics.Catalog.html#overview/0"><code class="inline">Gamend.Analytics.Catalog.overview/0</code></a>'s
+<code class="inline">traits</code>); an account seen on a phone and on a laptop is in both.</p>
     </section>
 
 </div>
@@ -139,7 +143,23 @@ guests who stayed guests.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#t:base/0" data-no-tooltip="" translate="no">base()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#t:t/0" data-no-tooltip="" translate="no">t()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:trait/0" data-no-tooltip="" translate="no">trait()</a>
 
       </div>
 
@@ -193,6 +213,18 @@ guests who stayed guests.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#parse_trait/1" data-no-tooltip="" translate="no">parse_trait(param)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A trait from a request parameter, <code class="inline">&quot;field:value&quot;</code> (<code class="inline">&quot;device:phone&quot;</code>), or
+nil: a field of letters, digits and <code class="inline">_</code> (32 at most) and a value of 64 at
+most, so nothing else reaches a query.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#restrict/2" data-no-tooltip="" translate="no">restrict(query, segment)</a>
 
       </div>
@@ -200,6 +232,26 @@ guests who stayed guests.</p>
         <div class="summary-synopsis"><p>Restricts <code class="inline">query</code> to one segment: a query on a table with a <code class="inline">user_id</code> is
 joined to <code class="inline">users</code> (as <code class="inline">:user</code>); a query that already has a <code class="inline">:user</code> binding
 (<code class="inline">users</code> itself, <code class="inline">as: :user</code>) is filtered on it.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#trait_param/1" data-no-tooltip="" translate="no">trait_param(arg1)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A trait as its parameter (<a href="#parse_trait/1"><code class="inline">parse_trait/1</code></a>'s); nil for none.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#with_trait/2" data-no-tooltip="" translate="no">with_trait(segment, arg2)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><code class="inline">segment</code> narrowed to the accounts with <code class="inline">trait</code>; nil leaves it as it is.</p></div>
 
     </div>
 
@@ -217,17 +269,17 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
     </h2>
 
     <div class="types-list">
-<section class="detail" id="t:t/0">
+<section class="detail" id="t:base/0">
 
   <div class="detail-header">
-    <a href="#t:t/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+    <a href="#t:base/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">t()</h1>
+      <h1 class="signature" translate="no">base()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L20" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L27" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -238,7 +290,63 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@type</span> t() :: :all | :registered | :guest</pre>
+          <pre translate="no"><span class="attribute">@type</span> base() :: :all | :registered | :guest</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:t/0">
+
+  <div class="detail-header">
+    <a href="#t:t/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">t()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L29" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> t() :: <a href="#t:base/0">base</a>() | {<a href="#t:base/0">base</a>(), <a href="#t:trait/0">trait</a>()}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:trait/0">
+
+  <div class="detail-header">
+    <a href="#t:trait/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">trait()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L28" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> trait() :: {<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
 
       </div>
 
@@ -268,7 +376,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
       <h1 class="signature" translate="no">all()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L26" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L35" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -279,7 +387,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> all() :: [<a href="#t:t/0">t</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> all() :: [<a href="#t:base/0">base</a>()]</pre>
 
       </div>
 
@@ -296,7 +404,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
       <h1 class="signature" translate="no">condition(atom)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -324,7 +432,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
       <h1 class="signature" translate="no">label(atom)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -335,7 +443,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> label(<a href="#t:t/0">t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> label(<a href="#t:base/0">base</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
 
       </div>
 
@@ -352,7 +460,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
       <h1 class="signature" translate="no">parse(segment)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L30" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L39" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -363,11 +471,41 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> parse(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="#t:t/0">t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> parse(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="#t:base/0">base</a>()</pre>
 
       </div>
 
 <p>A segment from a request parameter (<code class="inline">&quot;guest&quot;</code>); anything else is <code class="inline">:all</code>.</p>
+  </section>
+</section>
+<section class="detail" id="parse_trait/1">
+
+  <div class="detail-header">
+    <a href="#parse_trait/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">parse_trait(param)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L50" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> parse_trait(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="#t:trait/0">trait</a>() | nil</pre>
+
+      </div>
+
+<p>A trait from a request parameter, <code class="inline">&quot;field:value&quot;</code> (<code class="inline">&quot;device:phone&quot;</code>), or
+nil: a field of letters, digits and <code class="inline">_</code> (32 at most) and a value of 64 at
+most, so nothing else reaches a query.</p>
   </section>
 </section>
 <section class="detail" id="restrict/2">
@@ -380,7 +518,7 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
       <h1 class="signature" translate="no">restrict(query, segment)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L47" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -400,6 +538,62 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
 (<code class="inline">users</code> itself, <code class="inline">as: :user</code>) is filtered on it.</p>
   </section>
 </section>
+<section class="detail" id="trait_param/1">
+
+  <div class="detail-header">
+    <a href="#trait_param/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">trait_param(arg1)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> trait_param(<a href="#t:trait/0">trait</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>A trait as its parameter (<a href="#parse_trait/1"><code class="inline">parse_trait/1</code></a>'s); nil for none.</p>
+  </section>
+</section>
+<section class="detail" id="with_trait/2">
+
+  <div class="detail-header">
+    <a href="#with_trait/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">with_trait(segment, arg2)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/analytics/segment.ex#L69" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> with_trait(<a href="#t:base/0">base</a>(), <a href="#t:trait/0">trait</a>() | nil) :: <a href="#t:t/0">t</a>()</pre>
+
+      </div>
+
+<p><code class="inline">segment</code> narrowed to the accounts with <code class="inline">trait</code>; nil leaves it as it is.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -409,9 +603,9 @@ joined to <code class="inline">users</code> (as <code class="inline">:user</code
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

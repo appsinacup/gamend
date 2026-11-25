@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Leaderboards — gamend_core v1.1.1516</title>
+    <title>Gamend.Leaderboards — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Leaderboards</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -136,12 +136,15 @@ parts; <a href="#list_records/2"><code class="inline">list_records/2</code></a> 
 (<code class="inline">best_per_user: true</code> keeps each player's best of them). <a href="#list_keys/2"><code class="inline">list_keys/2</code></a>
 names the keys a board holds, and <a href="#list_records_above/3"><code class="inline">list_records_above/3</code></a> the records just
 ahead of a score on one key. A board can show its keys as tabs and
-filters on <code class="inline">/leaderboards</code> (<code class="inline">GamendWeb.LeaderboardViews</code>).</p><h2 id="module-all-time" class="section-heading"><a href="#module-all-time" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">All time</span></h2><p>A <code class="inline">:best</code> board with seasons (<a href="#all_time?/1"><code class="inline">all_time?/1</code></a>: a start or an end date) has
-an all-time ranking too: every season of its slug read as one, each
-player's (or label's) best row of them, ranked. <code class="inline">all_time: true</code> on
+filters on <code class="inline">/leaderboards</code> (<code class="inline">GamendWeb.LeaderboardViews</code>).</p><h2 id="module-all-time" class="section-heading"><a href="#module-all-time" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">All time</span></h2><p>A <code class="inline">:best</code> or <code class="inline">:incr</code> board with seasons (<a href="#all_time?/1"><code class="inline">all_time?/1</code></a>: a start or an end
+date) has an all-time ranking too: every season of its slug read as one,
+ranked. A <code class="inline">:best</code> board's is each player's (or label's) best row of them;
+an <code class="inline">:incr</code> board's, which counts, is the sum of them (a month of km, all
+time the km of every month). <code class="inline">all_time: true</code> on
 <a href="#list_records/2"><code class="inline">list_records/2</code></a>, <a href="#count_records/2"><code class="inline">count_records/2</code></a>, <a href="#get_user_record/3"><code class="inline">get_user_record/3</code></a> and
 <a href="#list_keys/2"><code class="inline">list_keys/2</code></a> reads it, per key, from any season of the slug.</p><p>Those rows are kept on a hidden board of their own, <code class="inline">&lt;slug&gt;__all_time</code>:
-a submit to a season raises it the way a <code class="inline">:best</code> submit does, an edited
+a submit to a season raises it the way a <code class="inline">:best</code> submit does (an <code class="inline">:incr</code>
+season's owner row is summed again), an edited
 or deleted season row reads its owner's best again, and a deleted season
 refills it. So All time reads like any board, indexed and cached, however
 many seasons and players there are. Computing it from the seasons on
@@ -182,8 +185,8 @@ its user took a second a rank at a million rows.</p><pre><code class="makeup eli
 
       </div>
 
-        <div class="summary-synopsis"><p>Whether a board has an all-time ranking: a <code class="inline">:best</code> board with seasons (a
-start or an end date). <em>All time</em> above.</p></div>
+        <div class="summary-synopsis"><p>Whether a board has an all-time ranking: a <code class="inline">:best</code> or <code class="inline">:incr</code> board with
+seasons (a start or an end date). <em>All time</em> above.</p></div>
 
     </div>
 
@@ -618,7 +621,7 @@ under <code class="inline">slug</code> has an all-time ranking.</p></div>
       <h1 class="signature" translate="no">all_time?(leaderboard)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1098" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1104" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -633,8 +636,8 @@ under <code class="inline">slug</code> has an all-time ranking.</p></div>
 
       </div>
 
-<p>Whether a board has an all-time ranking: a <code class="inline">:best</code> board with seasons (a
-start or an end date). <em>All time</em> above.</p>
+<p>Whether a board has an all-time ranking: a <code class="inline">:best</code> or <code class="inline">:incr</code> board with
+seasons (a start or an end date). <em>All time</em> above.</p>
   </section>
 </section>
 <section class="detail" id="change_leaderboard/2">
@@ -649,7 +652,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">change_leaderboard(leaderboard, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L652" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L655" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -680,7 +683,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">change_record(record, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2090" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2134" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -708,7 +711,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">count_all_records()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1682" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1726" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -738,7 +741,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">count_leaderboard_groups(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L465" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L468" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -768,7 +771,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">count_leaderboards(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L551" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L554" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -798,7 +801,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">count_records(leaderboard_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1626" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1670" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -827,7 +830,7 @@ start or an end date). <em>All time</em> above.</p>
       <h1 class="signature" translate="no">count_records_by_board(leaderboard_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1666" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1710" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -859,7 +862,7 @@ without records absent.</p>
       <h1 class="signature" translate="no">create_leaderboard(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L196" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -892,7 +895,7 @@ without records absent.</p>
       <h1 class="signature" translate="no">delete_leaderboard(leaderboard)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L242" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L245" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -921,7 +924,7 @@ without records absent.</p>
       <h1 class="signature" translate="no">delete_record(record)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2039" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2083" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -952,7 +955,7 @@ without records absent.</p>
       <h1 class="signature" translate="no">delete_user_record(id_or_slug, user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2059" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2103" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -982,7 +985,7 @@ Accepts either leaderboard ID or slug (both strings).</p>
       <h1 class="signature" translate="no">end_leaderboard(leaderboard)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L634" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L637" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1012,7 +1015,7 @@ Accepts either leaderboard ID or slug (both strings).</p>
       <h1 class="signature" translate="no">get_active_leaderboard_by_slug(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L305" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L308" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1045,7 +1048,7 @@ returns the most recently created one.</p>
       <h1 class="signature" translate="no">get_label_record(leaderboard_id, label, key \\ &quot;&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L806" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L809" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1074,7 +1077,7 @@ returns the most recently created one.</p>
       <h1 class="signature" translate="no">get_leaderboard(id_or_slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L267" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L270" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1106,7 +1109,7 @@ returns the most recently created one.</p>
       <h1 class="signature" translate="no">get_leaderboard!(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L278" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L281" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1164,7 +1167,7 @@ returns the most recently created one.</p>
       <h1 class="signature" translate="no">get_record(leaderboard_id, user_id, key \\ &quot;&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L978" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L981" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1193,7 +1196,7 @@ returns the most recently created one.</p>
       <h1 class="signature" translate="no">get_record!(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L945" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L948" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1223,7 +1226,7 @@ returns the most recently created one.</p>
       <h1 class="signature" translate="no">get_user_record(leaderboard_id, user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1029" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1032" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1254,7 +1257,7 @@ Returns <code class="inline">{:ok, record_with_rank}</code> or <code class="inli
       <h1 class="signature" translate="no">host_action(slug, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L139" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1287,7 +1290,7 @@ URL or <code class="inline">&quot;//…&quot;</code> is dropped. The page keeps 
       <h1 class="signature" translate="no">invalidate_cache()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L128" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1322,7 +1325,7 @@ the TTL.</p>
       <h1 class="signature" translate="no">list_keys(leaderboard_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1993" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L2037" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1355,7 +1358,7 @@ names the keys of every season of the slug (<em>All time</em> above).</p>
       <h1 class="signature" translate="no">list_leaderboard_groups(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L386" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L389" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1385,7 +1388,7 @@ names the keys of every season of the slug (<em>All time</em> above).</p>
       <h1 class="signature" translate="no">list_leaderboards(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L521" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L524" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1422,7 +1425,7 @@ names the keys of every season of the slug (<em>All time</em> above).</p>
       <h1 class="signature" translate="no">list_leaderboards_by_slug(slug, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L485" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L488" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1454,7 +1457,7 @@ names the keys of every season of the slug (<em>All time</em> above).</p>
       <h1 class="signature" translate="no">list_records(leaderboard_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1452" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1496" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1494,7 +1497,7 @@ without seasons reads as itself.</li></ul>
       <h1 class="signature" translate="no">list_records_above(leaderboard_id, score, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1805" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1849" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1532,7 +1535,7 @@ caller on the board. Labels' records are listed, like any.</p><h2 id="list_recor
       <h1 class="signature" translate="no">list_records_around_user(leaderboard_id, user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1699" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1743" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1564,7 +1567,7 @@ caller on the board. Labels' records are listed, like any.</p><h2 id="list_recor
       <h1 class="signature" translate="no">list_records_beside(leaderboard_id, record, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1879" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1923" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1603,7 +1606,7 @@ numbered as if it stood there. Read off the rank index, as
       <h1 class="signature" translate="no">list_records_last(leaderboard_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1950" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1994" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1632,7 +1635,7 @@ the bottom of the board, where a player with no score yet comes in.</p><h2 id="l
       <h1 class="signature" translate="no">merge_user_records(from_user_id, to_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1002" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1005" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1665,7 +1668,7 @@ records reached the account.</p>
       <h1 class="signature" translate="no">rebuild_all_time(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1111" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L1118" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1697,7 +1700,7 @@ under <code class="inline">slug</code> has an all-time ranking.</p>
       <h1 class="signature" translate="no">resolve_slugs(slugs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L342" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L345" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1736,7 +1739,7 @@ leaderboard. Slugs with no active leaderboard are omitted from the result.</p><h
       <h1 class="signature" translate="no">submit_label_score(leaderboard_id, label, score, metadata \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L728" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L731" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1771,7 +1774,7 @@ This is useful for statistics, rankings by category, etc.</p><h2 id="submit_labe
       <h1 class="signature" translate="no">submit_score(leaderboard_id, user_id, score, metadata \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L695" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L698" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1808,7 +1811,7 @@ the operator applies per key.</p><pre><code class="makeup elixir" translate="no"
       <h1 class="signature" translate="no">update_leaderboard(leaderboard, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L224" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1840,7 +1843,7 @@ the operator applies per key.</p><pre><code class="makeup elixir" translate="no"
       <h1 class="signature" translate="no">update_record(record, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L958" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/leaderboards.ex#L961" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1868,9 +1871,9 @@ the operator applies per key.</p><pre><code class="makeup elixir" translate="no"
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

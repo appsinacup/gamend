@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Accounts.StalePresenceSweeper — gamend_core v1.1.1516</title>
+    <title>Gamend.Accounts.StalePresenceSweeper — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />StalePresenceSweeper</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -119,7 +119,8 @@ gamend_core
 <code class="inline">UserChannel.terminate/2</code> callback never fires. Without this, users would
 remain marked as online indefinitely.</p><h2 id="module-configuration" class="section-heading"><a href="#module-configuration" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Configuration</span></h2><p><code class="inline">interval_ms</code> and <code class="inline">stale_threshold_s</code> are settings (<code class="inline">GAMEND_PRESENCE_*</code>).
 <code class="inline">enabled: false</code> in the app config turns the sweep off entirely (tests).</p><p>A connected socket refreshes <code class="inline">last_seen_at</code> on a heartbeat derived from the
-threshold (<a href="#heartbeat_ms/0"><code class="inline">heartbeat_ms/0</code></a>), so a live player is never swept.</p>
+threshold (<a href="#heartbeat_ms/0"><code class="inline">heartbeat_ms/0</code></a>), and a player with a socket still tracked on
+<a href="Gamend.Presence.html"><code class="inline">Gamend.Presence</code></a> is never swept, only has <code class="inline">last_seen_at</code> refreshed.</p>
     </section>
 
 </div>
@@ -200,7 +201,7 @@ never less often than every 3 minutes.</p></div>
       <h1 class="signature" translate="no">child_spec(init_arg)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L19" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L20" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -222,7 +223,7 @@ never less often than every 3 minutes.</p></div>
       <h1 class="signature" translate="no">config()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -250,7 +251,7 @@ never less often than every 3 minutes.</p></div>
       <h1 class="signature" translate="no">heartbeat_ms()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -282,7 +283,7 @@ never less often than every 3 minutes.</p>
       <h1 class="signature" translate="no">start_link(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -303,9 +304,9 @@ never less often than every 3 minutes.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

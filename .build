@@ -6,6 +6,8 @@ Gamend.Accounts.ApiTokens.html
 Gamend.Accounts.AvatarMirror.html
 Gamend.Accounts.Broadcasts.html
 Gamend.Accounts.ConfirmationMailer.html
+Gamend.Accounts.DeletedBy.html
+Gamend.Accounts.DeletionReason.html
 Gamend.Accounts.GuestMerge.html
 Gamend.Accounts.Identities.html
 Gamend.Accounts.InactivityNotifier.html
@@ -377,8 +379,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-B33F4083.js
-dist/sidebar_items-984C21EC.js
+dist/search_data-DA4A6ECA.js
+dist/sidebar_items-28CC075B.js
 index.html
 readme.html
 search.html

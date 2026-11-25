@@ -54,8 +54,12 @@ for `Gamend.Analytics` (DAU / retention).
 
 Lightweight version of `touch_last_seen/1` that accepts a user ID directly.
 Performs a single UPDATE without loading the full struct first, setting
-`last_seen_at` to now and `is_online` to true, then invalidates the cache.
-Fire-and-forget — errors are ignored.
+`last_seen_at` to now. Fire-and-forget — errors are ignored.
+
+`is_online` is not touched: an offline to online move is `set_user_online/1`'s,
+which tells the user's lobby, party and friends and runs `after_user_online`.
+Written here, the flag came back with none of that, and a game's offline
+mark (a voyage's "disconnected" card) stayed up on a player back online.
 
 ---
 

@@ -14,7 +14,8 @@ remain marked as online indefinitely.
 `enabled: false` in the app config turns the sweep off entirely (tests).
 
 A connected socket refreshes `last_seen_at` on a heartbeat derived from the
-threshold (`heartbeat_ms/0`), so a live player is never swept.
+threshold (`heartbeat_ms/0`), and a player with a socket still tracked on
+`Gamend.Presence` is never swept, only has `last_seen_at` refreshed.
 
 # `child_spec`
 

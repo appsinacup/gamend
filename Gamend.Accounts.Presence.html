@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Accounts.Presence — gamend_core v1.1.1516</title>
+    <title>Gamend.Accounts.Presence — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Presence</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -173,8 +173,7 @@ for <a href="Gamend.Analytics.html"><code class="inline">Gamend.Analytics</code>
 
         <div class="summary-synopsis"><p>Lightweight version of <a href="#touch_last_seen/1"><code class="inline">touch_last_seen/1</code></a> that accepts a user ID directly.
 Performs a single UPDATE without loading the full struct first, setting
-<code class="inline">last_seen_at</code> to now and <code class="inline">is_online</code> to true, then invalidates the cache.
-Fire-and-forget — errors are ignored.</p></div>
+<code class="inline">last_seen_at</code> to now. Fire-and-forget — errors are ignored.</p></div>
 
     </div>
 
@@ -202,7 +201,7 @@ Fire-and-forget — errors are ignored.</p></div>
       <h1 class="signature" translate="no">set_user_offline(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/presence.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/presence.ex#L94" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -231,7 +230,7 @@ Fire-and-forget — errors are ignored.</p></div>
       <h1 class="signature" translate="no">set_user_online(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/presence.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/presence.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -293,7 +292,7 @@ for <a href="Gamend.Analytics.html"><code class="inline">Gamend.Analytics</code>
       <h1 class="signature" translate="no">touch_last_seen_by_id(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/presence.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/presence.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -310,8 +309,10 @@ for <a href="Gamend.Analytics.html"><code class="inline">Gamend.Analytics</code>
 
 <p>Lightweight version of <a href="#touch_last_seen/1"><code class="inline">touch_last_seen/1</code></a> that accepts a user ID directly.
 Performs a single UPDATE without loading the full struct first, setting
-<code class="inline">last_seen_at</code> to now and <code class="inline">is_online</code> to true, then invalidates the cache.
-Fire-and-forget — errors are ignored.</p>
+<code class="inline">last_seen_at</code> to now. Fire-and-forget — errors are ignored.</p><p><code class="inline">is_online</code> is not touched: an offline to online move is <a href="#set_user_online/1"><code class="inline">set_user_online/1</code></a>'s,
+which tells the user's lobby, party and friends and runs <code class="inline">after_user_online</code>.
+Written here, the flag came back with none of that, and a game's offline
+mark (a voyage's &quot;disconnected&quot; card) stayed up on a player back online.</p>
   </section>
 </section>
 
@@ -323,9 +324,9 @@ Fire-and-forget — errors are ignored.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Reports.Notices — gamend_core v1.1.1516</title>
+    <title>Gamend.Reports.Notices — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Reports.<wbr />Notices</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -170,11 +170,12 @@ an emptied queue leaves the last alert as it was, read or not.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#notify_reporter/2" data-no-tooltip="" translate="no">notify_reporter(user_id, message)</a>
+        <a href="#notify_reporter/3" data-no-tooltip="" translate="no">notify_reporter(user_id, message, title \\ &quot;Your report was reviewed&quot;)</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>Send <code class="inline">message</code> to the player who filed a report.</p></div>
+        <div class="summary-synopsis"><p>Send <code class="inline">message</code> to the player who filed a report, under <code class="inline">title</code> (core's
+&quot;Your report was reviewed&quot;, or the kind's: <a href="Gamend.Reports.html#reply_title/1"><code class="inline">Gamend.Reports.reply_title/1</code></a>).</p></div>
 
     </div>
 
@@ -242,7 +243,7 @@ an emptied queue leaves the last alert as it was, read or not.</p></div>
       <h1 class="signature" translate="no">default_reporter_message(status, about \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/notices.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/notices.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -291,17 +292,19 @@ A fixed one ends on what the host pays for it (<a href="Gamend.Reports.html#rewa
 an emptied queue leaves the last alert as it was, read or not.</p>
   </section>
 </section>
-<section class="detail" id="notify_reporter/2">
+<section class="detail" id="notify_reporter/3">
+
+    <span id="notify_reporter/2"></span>
 
   <div class="detail-header">
-    <a href="#notify_reporter/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+    <a href="#notify_reporter/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">notify_reporter(user_id, message)</h1>
+      <h1 class="signature" translate="no">notify_reporter(user_id, message, title \\ &quot;Your report was reviewed&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/notices.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports/notices.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -312,11 +315,12 @@ an emptied queue leaves the last alert as it was, read or not.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> notify_reporter(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok</pre>
+          <pre translate="no"><span class="attribute">@spec</span> notify_reporter(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok</pre>
 
       </div>
 
-<p>Send <code class="inline">message</code> to the player who filed a report.</p>
+<p>Send <code class="inline">message</code> to the player who filed a report, under <code class="inline">title</code> (core's
+&quot;Your report was reviewed&quot;, or the kind's: <a href="Gamend.Reports.html#reply_title/1"><code class="inline">Gamend.Reports.reply_title/1</code></a>).</p>
   </section>
 </section>
 <section class="detail" id="reporter_title/0">
@@ -356,9 +360,9 @@ an emptied queue leaves the last alert as it was, read or not.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

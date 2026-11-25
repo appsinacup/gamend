@@ -63,7 +63,10 @@ cancelled.
 @spec heartbeat(Ecto.UUID.t()) :: :ok
 ```
 
-A socket of `user_id`'s is still open: `last_seen_at` refreshed.
+A socket of `user_id`'s is still open: `last_seen_at` refreshed, and the
+user put back online (`set_user_online/1`, a no-op from the cache while
+they are) if something marked them offline meanwhile, so their lobby,
+party, friends and the game's `after_user_online` hear it.
 
 # `heartbeat_ms`
 

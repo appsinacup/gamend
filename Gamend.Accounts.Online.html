@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1516">
+    <meta name="project" content="gamend_core v1.1.1519">
 
 
-    <title>Gamend.Accounts.Online — gamend_core v1.1.1516</title>
+    <title>Gamend.Accounts.Online — gamend_core v1.1.1519</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-984C21EC.js"></script>
+    <script defer src="dist/sidebar_items-28CC075B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1516
+          v1.1.1519
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Online</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1516)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1519)</small>
 
     </h1>
 
@@ -184,7 +184,10 @@ cancelled.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>A socket of <code class="inline">user_id</code>'s is still open: <code class="inline">last_seen_at</code> refreshed.</p></div>
+        <div class="summary-synopsis"><p>A socket of <code class="inline">user_id</code>'s is still open: <code class="inline">last_seen_at</code> refreshed, and the
+user put back online (<code class="inline">set_user_online/1</code>, a no-op from the cache while
+they are) if something marked them offline meanwhile, so their lobby,
+party, friends and the game's <code class="inline">after_user_online</code> hear it.</p></div>
 
     </div>
 
@@ -271,7 +274,7 @@ written, or <code class="inline">{:error, reason}</code> when the account is gon
       <h1 class="signature" translate="no">disconnected(user_id, pid)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L131" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -303,7 +306,7 @@ cancelled.</p>
       <h1 class="signature" translate="no">heartbeat(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L95" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -318,7 +321,10 @@ cancelled.</p>
 
       </div>
 
-<p>A socket of <code class="inline">user_id</code>'s is still open: <code class="inline">last_seen_at</code> refreshed.</p>
+<p>A socket of <code class="inline">user_id</code>'s is still open: <code class="inline">last_seen_at</code> refreshed, and the
+user put back online (<code class="inline">set_user_online/1</code>, a no-op from the cache while
+they are) if something marked them offline meanwhile, so their lobby,
+party, friends and the game's <code class="inline">after_user_online</code> hear it.</p>
   </section>
 </section>
 <section class="detail" id="heartbeat_ms/0">
@@ -331,7 +337,7 @@ cancelled.</p>
       <h1 class="signature" translate="no">heartbeat_ms()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -359,7 +365,7 @@ cancelled.</p>
       <h1 class="signature" translate="no">watch(pid, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L158" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L177" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -389,9 +395,9 @@ it ends. One watcher process per socket, under its own supervisor.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1516">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1519">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1516">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1519">Hex Preview</a>
 
             </span>
 

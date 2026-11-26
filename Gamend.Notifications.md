@@ -283,7 +283,9 @@ notification leads to), and for the email `"subject"` and `"text"`
 (default: the title and the content). `"email_now" => true` sends the email
 at once in a group that sends digests (`Gamend.Notifications.Digest`).
 `"site_only" => true` writes the row and sends nothing else: no push and no
-email, for what the reader only likes to know (a build done).
+email, for what the reader only likes to know (a build done). `"batch"`
+(an announcement's id) groups its emails and pushes on the admin's Sent
+card (`Gamend.Sent`).
 
 The in-app row is the user's own (sender = recipient), so repeating a title
 refreshes the one row rather than stacking. Returns the channels it went

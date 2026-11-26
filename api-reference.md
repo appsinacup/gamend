@@ -1,4 +1,4 @@
-# gamend_core v1.1.1527 - API Reference
+# gamend_core v1.1.1528 - API Reference
 
 ## Modules
 
@@ -146,6 +146,18 @@ reads a server's after each build, where it asked the running server over
 - [Gamend.Secrets](Gamend.Secrets.md): Somewhere to keep a credential that belongs to a *customer*.
 - [Gamend.Secrets.Secret](Gamend.Secrets.Secret.md): One encrypted value, and the metadata a person needs to manage something
 they can never read back.
+- [Gamend.Sent](Gamend.Sent.md): What went out: one row per email (`Gamend.Accounts.UserNotifier`) and per
+push to a device (`Gamend.Push.DeliveryWorker`), for the admin's Sent card
+on `/admin/notifications`.
+- [Gamend.Sent.SentKind](Gamend.Sent.SentKind.md): What a sent email or push was (`Gamend.Sent`): the account's own emails, a
+notification, a digest of them, an admin's test, or a push a plugin sent
+(`other`).
+
+- [Gamend.Sent.SentMessage](Gamend.Sent.SentMessage.md): One email or push that went out (`sent_messages`), written by `Gamend.Sent`.
+- [Gamend.Sent.SentStatus](Gamend.Sent.SentStatus.md): How a send ended (`Gamend.Sent`): `sent`, `failed` (the relay or the push
+provider refused it, or it ran out of retries), or `invalid` (the device's
+token is dead and was turned off).
+
 - [Gamend.Signaling](Gamend.Signaling.md): WebRTC signaling: who is in a room, and relaying offers between them.
 - [Gamend.Signals](Gamend.Signals.md): Server-side signals: a plugin emits a named event, another part of the plugin
 waits for it.
@@ -230,6 +242,8 @@ application (registration, OAuth, and admin changes).
 change, codes, deletion warning) and the notifications a user chose to get
 by email. Each is a `Gamend.Mail.Message`, sent as plain text and, with the
 website there, as HTML in the site's one look (`GamendWeb.MailLayout`).
+Each send, and each failure, is recorded for the admin (`Gamend.Sent`),
+with its sign-in links and codes hidden.
 
   - [Gamend.Accounts.UserToken](Gamend.Accounts.UserToken.md): Functions and schema for persistent user tokens used by sessions, magic links,
 email confirmation (a link and a code) and email-change workflows.

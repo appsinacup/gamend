@@ -176,6 +176,10 @@ means no jobs, and delivery failures never propagate back to the caller.
 Returns `:ok` or `{:error, errors}` when the message fails validation
 (see `Gamend.Push.Message`).
 
+`opts` say what the push is, for the admin's record of it (`Gamend.Sent`):
+`:kind` (`Gamend.Sent.SentKind`, default `other`), `:group` (the
+notification group) and `:batch` (the announcement it is part of).
+
 # `send_to_users`
 
 ```elixir

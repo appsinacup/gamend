@@ -8,6 +8,8 @@ env vars `GAMEND_RETENTION_*`); `0` or unset keeps data forever:
 
 - `GAMEND_RETENTION_CHAT_MESSAGES_DAYS` — `chat_messages` older than N days
 - `GAMEND_RETENTION_NOTIFICATIONS_DAYS` — `notifications` older than N days
+- `GAMEND_RETENTION_SENT_MESSAGES_DAYS` (30) — the record of emails and pushes
+  sent (`Gamend.Sent`) older than N days
 - `GAMEND_RETENTION_PAYMENT_EVENTS_DAYS` — payment provider webhook events older
   than N days (purchases, entitlements and payment charges are never pruned)
 - `GAMEND_RETENTION_RESULTS_DAYS` — results (`Gamend.Results`) started more

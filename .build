@@ -322,6 +322,10 @@ Gamend.Schema.html
 Gamend.SchemaJSON.html
 Gamend.Secrets.Secret.html
 Gamend.Secrets.html
+Gamend.Sent.SentKind.html
+Gamend.Sent.SentMessage.html
+Gamend.Sent.SentStatus.html
+Gamend.Sent.html
 Gamend.Settings.EnvFile.html
 Gamend.Settings.Provider.html
 Gamend.Settings.html
@@ -380,8 +384,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-AA662094.js
-dist/sidebar_items-D015AE33.js
+dist/search_data-0E7684A1.js
+dist/sidebar_items-A06DC57E.js
 index.html
 readme.html
 search.html

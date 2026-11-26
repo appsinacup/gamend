@@ -8,7 +8,8 @@ duplicates on retry.
 
 Fires `after_push_sent` on every terminal outcome (delivered, token
 disabled, permanent failure, or retries exhausted) — never on a transient
-error that will retry.
+error that will retry — and records it for the admin (`Gamend.Sent`), as
+the job's `"sent"` says (`Gamend.Push.send_to_user/3`'s options).
 
 ---
 

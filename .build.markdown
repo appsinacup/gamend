@@ -321,6 +321,10 @@ Gamend.Schema.md
 Gamend.SchemaJSON.md
 Gamend.Secrets.Secret.md
 Gamend.Secrets.md
+Gamend.Sent.SentKind.md
+Gamend.Sent.SentMessage.md
+Gamend.Sent.SentStatus.md
+Gamend.Sent.md
 Gamend.Settings.EnvFile.md
 Gamend.Settings.Provider.md
 Gamend.Settings.md

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.5">
+    <meta name="project" content="gamend_core v1.1.1528">
+
+
+    <title>Gamend.Sent — gamend_core v1.1.1528</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-A06DC57E.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-LBCGAQQV.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1528
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />Sent</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1528)</small>
+
+    </h1>
+
+<a href="Gamend.Sent.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>What went out: one row per email (<a href="Gamend.Accounts.UserNotifier.html"><code class="inline">Gamend.Accounts.UserNotifier</code></a>) and per
+push to a device (<a href="Gamend.Push.DeliveryWorker.html"><code class="inline">Gamend.Push.DeliveryWorker</code></a>), for the admin's Sent card
+on <code class="inline">/admin/notifications</code>.</p><p>A row keeps what the person got, so the admin can see it in its own look:
+an email's <a href="Gamend.Mail.Message.html"><code class="inline">Gamend.Mail.Message</code></a> (<a href="#message/1"><code class="inline">message/1</code></a> rebuilds it, and
+<a href="Gamend.Mail.Message.html#to_html/1"><code class="inline">Gamend.Mail.Message.to_html/1</code></a> draws it in today's email layout), a push's
+title and text. What would let someone else act as the reader is hidden
+before it is stored: a sign-in or confirmation link, a code, an unsubscribe
+link.</p><p>An announcement's sends share its id (<code class="inline">batch_id</code>), so <a href="#list_lines/2"><code class="inline">list_lines/2</code></a> shows
+one send to everyone as one line, and <a href="#list/2"><code class="inline">list/2</code></a> with <code class="inline">&quot;batch_id&quot;</code> lists who
+got it.</p><p>Recording never stops a send: a row that cannot be written is logged and
+left out. Rows go after <code class="inline">GAMEND_RETENTION_SENT_MESSAGES_DAYS</code> (30), and with
+their user.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-types summary">
+  <h3>
+    <a href="#types">Types</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:line/0" data-no-tooltip="" translate="no">line()</a>
+
+      </div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#count/1" data-no-tooltip="" translate="no">count(filters \\ %{})</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How many rows <a href="#list/2"><code class="inline">list/2</code></a> pages through.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#count_lines/1" data-no-tooltip="" translate="no">count_lines(filters \\ %{})</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How many lines <a href="#list_lines/2"><code class="inline">list_lines/2</code></a> pages through.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get/1" data-no-tooltip="" translate="no">get(id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>One row, with its user.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list/2" data-no-tooltip="" translate="no">list(filters \\ %{}, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Rows, newest first, with their users. <code class="inline">filters</code> (string keys, all optional):
+<code class="inline">&quot;channel&quot;</code>, <code class="inline">&quot;kind&quot;</code>, <code class="inline">&quot;status&quot;</code>, <code class="inline">&quot;failed&quot;</code> (<code class="inline">true</code>: anything not sent),
+<code class="inline">&quot;batch_id&quot;</code>, <code class="inline">&quot;user_id&quot;</code>, <code class="inline">&quot;search&quot;</code> (part of the address or subject).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list_lines/2" data-no-tooltip="" translate="no">list_lines(filters \\ %{}, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The rows as lines, newest first: one per email or push, and one per
+announcement, which carries how many went and how many did not. A line of
+one send carries its row. Same <code class="inline">filters</code> as <a href="#list/2"><code class="inline">list/2</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#message/1" data-no-tooltip="" translate="no">message(sent_message)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>An email row's message, rebuilt from what was stored; nil for a push.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#record_email/5" data-no-tooltip="" translate="no">record_email(kind, address, subject, message, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record an email that was sent (or failed). <code class="inline">opts</code>: <code class="inline">:user_id</code>, <code class="inline">:group</code>,
+<code class="inline">:batch</code>, <code class="inline">:status</code> (<code class="inline">sent</code>), <code class="inline">:reason</code>, and <code class="inline">:secrets</code>, the strings to hide
+wherever they appear (a link that signs in, an unsubscribe link). A code is
+always hidden.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#record_push/6" data-no-tooltip="" translate="no">record_push(kind, user_id, message, device, status, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record one push to one device: <code class="inline">message</code> is the push as it was queued
+(<a href="Gamend.Push.Message.html#to_map/1"><code class="inline">Gamend.Push.Message.to_map/1</code></a>), <code class="inline">device</code> the token's <code class="inline">platform</code> and
+<code class="inline">provider</code>. <code class="inline">opts</code>: <code class="inline">:group</code>, <code class="inline">:batch</code>, <code class="inline">:reason</code>.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h2>
+
+    <div class="types-list">
+<section class="detail" id="t:line/0">
+
+  <div class="detail-header">
+    <a href="#t:line/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">line()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L39" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> line() :: %{
+  key: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(),
+  batch?: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>(),
+  count: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>(),
+  failed: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>(),
+  kind: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  group_key: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  subject: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  last_at: <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>(),
+  row: <a href="Gamend.Sent.SentMessage.html#t:t/0">Gamend.Sent.SentMessage.t</a>() | nil
+}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="count/1">
+
+    <span id="count/0"></span>
+
+  <div class="detail-header">
+    <a href="#count/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count(filters \\ %{})</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>How many rows <a href="#list/2"><code class="inline">list/2</code></a> pages through.</p>
+  </section>
+</section>
+<section class="detail" id="count_lines/1">
+
+    <span id="count_lines/0"></span>
+
+  <div class="detail-header">
+    <a href="#count_lines/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count_lines(filters \\ %{})</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L244" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count_lines(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>How many lines <a href="#list_lines/2"><code class="inline">list_lines/2</code></a> pages through.</p>
+  </section>
+</section>
+<section class="detail" id="get/1">
+
+  <div class="detail-header">
+    <a href="#get/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">get(id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L175" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> get(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="Gamend.Sent.SentMessage.html#t:t/0">Gamend.Sent.SentMessage.t</a>() | nil</pre>
+
+      </div>
+
+<p>One row, with its user.</p>
+  </section>
+</section>
+<section class="detail" id="list/2">
+
+    <span id="list/0"></span>
+
+    <span id="list/1"></span>
+
+  <div class="detail-header">
+    <a href="#list/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list(filters \\ %{}, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L188" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="Gamend.Sent.SentMessage.html#t:t/0">Gamend.Sent.SentMessage.t</a>()]</pre>
+
+      </div>
+
+<p>Rows, newest first, with their users. <code class="inline">filters</code> (string keys, all optional):
+<code class="inline">&quot;channel&quot;</code>, <code class="inline">&quot;kind&quot;</code>, <code class="inline">&quot;status&quot;</code>, <code class="inline">&quot;failed&quot;</code> (<code class="inline">true</code>: anything not sent),
+<code class="inline">&quot;batch_id&quot;</code>, <code class="inline">&quot;user_id&quot;</code>, <code class="inline">&quot;search&quot;</code> (part of the address or subject).</p>
+  </section>
+</section>
+<section class="detail" id="list_lines/2">
+
+    <span id="list_lines/0"></span>
+
+    <span id="list_lines/1"></span>
+
+  <div class="detail-header">
+    <a href="#list_lines/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list_lines(filters \\ %{}, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L207" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list_lines(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="#t:line/0">line</a>()]</pre>
+
+      </div>
+
+<p>The rows as lines, newest first: one per email or push, and one per
+announcement, which carries how many went and how many did not. A line of
+one send carries its row. Same <code class="inline">filters</code> as <a href="#list/2"><code class="inline">list/2</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="message/1">
+
+  <div class="detail-header">
+    <a href="#message/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">message(sent_message)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L154" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> message(<a href="Gamend.Sent.SentMessage.html#t:t/0">Gamend.Sent.SentMessage.t</a>()) :: <a href="Gamend.Mail.Message.html#t:t/0">Gamend.Mail.Message.t</a>() | nil</pre>
+
+      </div>
+
+<p>An email row's message, rebuilt from what was stored; nil for a push.</p>
+  </section>
+</section>
+<section class="detail" id="record_email/5">
+
+    <span id="record_email/4"></span>
+
+  <div class="detail-header">
+    <a href="#record_email/5" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">record_email(kind, address, subject, message, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> record_email(
+  <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  <a href="Gamend.Mail.Message.html#t:t/0">Gamend.Mail.Message.t</a>(),
+  <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()
+) ::
+  {:ok, <a href="Gamend.Sent.SentMessage.html#t:t/0">Gamend.Sent.SentMessage.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Record an email that was sent (or failed). <code class="inline">opts</code>: <code class="inline">:user_id</code>, <code class="inline">:group</code>,
+<code class="inline">:batch</code>, <code class="inline">:status</code> (<code class="inline">sent</code>), <code class="inline">:reason</code>, and <code class="inline">:secrets</code>, the strings to hide
+wherever they appear (a link that signs in, an unsubscribe link). A code is
+always hidden.</p>
+  </section>
+</section>
+<section class="detail" id="record_push/6">
+
+    <span id="record_push/5"></span>
+
+  <div class="detail-header">
+    <a href="#record_push/6" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">record_push(kind, user_id, message, device, status, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/sent.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> record_push(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, <a href="Gamend.Sent.SentMessage.html#t:t/0">Gamend.Sent.SentMessage.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Record one push to one device: <code class="inline">message</code> is the push as it was queued
+(<a href="Gamend.Push.Message.html#to_map/1"><code class="inline">Gamend.Push.Message.to_map/1</code></a>), <code class="inline">device</code> the token's <code class="inline">platform</code> and
+<code class="inline">provider</code>. <code class="inline">opts</code>: <code class="inline">:group</code>, <code class="inline">:batch</code>, <code class="inline">:reason</code>.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1528">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1528">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.5) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

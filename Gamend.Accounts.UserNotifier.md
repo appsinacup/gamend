@@ -5,6 +5,8 @@ Every email core sends: the account's (confirmation, magic link, email
 change, codes, deletion warning) and the notifications a user chose to get
 by email. Each is a `Gamend.Mail.Message`, sent as plain text and, with the
 website there, as HTML in the site's one look (`GamendWeb.MailLayout`).
+Each send, and each failure, is recorded for the admin (`Gamend.Sent`),
+with its sign-in links and codes hidden.
 
 # `deliver_account_activated`
 

@@ -152,7 +152,7 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     refute has_element?(lv, "#avatar_form[data-unsaved]")
 
     # Another icon than the id's: the same one in the same colour is no change.
-    pick = "/icons/" <> Enum.find(Gamend.Icons.names(), &(&1 != own_name)) <> ".svg"
+    pick = "/icons/" <> Enum.find(Gamend.Icons.picks(), &(&1 != own_name)) <> ".svg"
 
     lv
     |> form("#avatar_form", avatar_icon: %{profile_url: pick, profile_url_color: "error"})

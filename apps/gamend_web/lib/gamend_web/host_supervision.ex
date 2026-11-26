@@ -183,6 +183,10 @@ defmodule GamendWeb.HostSupervision do
       {Task.Supervisor, name: Gamend.TaskSupervisor, max_children: 200},
       {DNSCluster, query: Application.get_env(:gamend_web, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Gamend.PubSub, pool_size: pool_size(:pubsub_pool_size)},
+      # Who is online, cluster-wide (`Gamend.Presence`). Right after PubSub, its
+      # only need: the endpoint's sockets track themselves on it, and the stale
+      # sweeper reads it on its first sweep at boot.
+      {Gamend.Presence, pool_size: pool_size(:presence_pool_size)},
       # Apply cache invalidations broadcast by other instances
       Gamend.Cache.Sync,
       GamendWeb.ConnectionTracker,
@@ -234,8 +238,6 @@ defmodule GamendWeb.HostSupervision do
         {Oban, Gamend.Jobs.oban_config()},
         # Worker that drives the matchmaking sweep
         Gamend.Matchmaking.Worker,
-        # Signaling relay for WebRTC user-to-user and client-server topologies
-        {Gamend.Presence, pool_size: pool_size(:presence_pool_size)},
         # Cuts the theme's srcset width variants for a project's own static
         # files, at boot and after a theme reload. Its first pass runs after
         # init returns, so ImageMagick never holds up the boot.

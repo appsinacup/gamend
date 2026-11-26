@@ -3,6 +3,7 @@ defmodule GamendWeb.Api.V1.MeController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.DeletionReason
   alias Gamend.Accounts.Scope
   alias Gamend.Accounts.User
   alias GamendWeb.Schemas
@@ -282,10 +283,11 @@ defmodule GamendWeb.Api.V1.MeController do
         "server keeps a grace period (`GAMEND_AUTH_DELETION_GRACE_DAYS`), the account is " <>
         "instead scheduled for deletion that many days out and signed out everywhere; " <>
         "API sign-ins answer 403 `deletion_scheduled` until then, and signing in on the " <>
-        "website keeps the account.",
+        "website keeps the account. An optional `reason`, one of a fixed list, is counted " <>
+        "with the request and never kept with the account.",
     security: [%{"authorization" => []}],
     request_body: {
-      "Current password, for an account that has one",
+      "Current password, for an account that has one, and why the player leaves",
       "application/json",
       %Schema{
         type: :object,
@@ -294,6 +296,11 @@ defmodule GamendWeb.Api.V1.MeController do
             type: :string,
             format: :password,
             description: "The account's password"
+          },
+          reason: %Schema{
+            type: :string,
+            enum: DeletionReason.all(),
+            description: "Why the player deletes the account, if they said: counted, never stored"
           }
         }
       },
@@ -318,7 +325,7 @@ defmodule GamendWeb.Api.V1.MeController do
     # wallet is the larger of the two actions. Accounts with no password (device
     # and OAuth-only) have nothing to prove, exactly as for setting one.
     if password_change_authorized?(user, params) do
-      case Gamend.Accounts.request_deletion(user) do
+      case Gamend.Accounts.request_deletion(user, params["reason"]) do
         {:ok, :deleted} ->
           reply_ok(conn)
 

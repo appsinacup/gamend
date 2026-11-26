@@ -186,6 +186,44 @@ defmodule GamendWeb.Api.V1.MeControllerTest do
       assert Gamend.Repo.get(Gamend.Accounts.User, user.id) == nil
     end
 
+    test "counts the reason the player gave, none without one, and refuses one off the list",
+         %{conn: conn} do
+      delete_with = fn body ->
+        user = Gamend.AccountsFixtures.user_fixture()
+        {:ok, token, _} = Guardian.encode_and_sign(user)
+
+        sent =
+          conn
+          |> put_req_header("authorization", "Bearer " <> token)
+          |> delete("/api/v1/me", body)
+
+        {sent, user}
+      end
+
+      {listed, _} = delete_with.(%{reason: "privacy"})
+      assert json_response(listed, 200)
+      {unsaid, _} = delete_with.(%{})
+      assert json_response(unsaid, 200)
+      {off_list, kept} = delete_with.(%{reason: "spite"})
+      assert json_response(off_list, 422)["error"] == "validation_failed"
+      assert Gamend.Repo.get(Gamend.Accounts.User, kept.id)
+
+      # Counted, never kept: the requests, and the one reason given.
+      Gamend.Analytics.flush()
+
+      total = fn key ->
+        key
+        |> Gamend.Analytics.counts(1)
+        |> Map.values()
+        |> Enum.flat_map(&Map.values/1)
+        |> Enum.sum()
+      end
+
+      assert total.("accounts.deletion_requested") == 2
+      assert total.("accounts.deletion_requested.reason:*") == 1
+      assert total.("accounts.deletion_requested.reason:privacy") == 1
+    end
+
     test "an account with a password is deleted only with it in the body", %{conn: conn} do
       _admin = Gamend.AccountsFixtures.user_fixture()
 

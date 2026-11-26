@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-332 settings across 31 groups.
+333 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -516,6 +516,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_RETENTION_PAYMENT_EVENTS_DAYS` | integer | `0` | Delete payment provider webhook events older than N days. Purchases are never pruned. |
 | `GAMEND_RETENTION_PUSH_TOKENS_DAYS` | integer | `270` | Delete push tokens untouched for N days. Defaults to Google's stale-token guidance. |
 | `GAMEND_RETENTION_RESULTS_DAYS` | integer | `0` | Delete results (Gamend.Results) started more than N days ago, with their events. |
+| `GAMEND_RETENTION_SENT_MESSAGES_DAYS` | integer | `30` | Delete the record of emails and pushes sent (the admin's Sent card) after N days. |
 | `GAMEND_RETENTION_TOURNAMENTS_DAYS` | integer | `0` | Delete finished tournaments older than N days. 0 keeps forever. |
 | `GAMEND_RETENTION_UNCONFIRMED_USERS_DAYS` | integer | `30` | Delete email accounts that never confirmed their address and have been inactive for N days. 0 keeps forever. Accounts that also have a provider login are kept. |
 

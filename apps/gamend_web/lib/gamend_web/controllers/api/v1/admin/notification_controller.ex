@@ -12,12 +12,15 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
     FreeForm,
     NotificationPage,
     NotificationResponse,
-    OkResponse
+    OkResponse,
+    SentMessagePage,
+    SentMessagePreviewResponse
   }
 
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
   require GamendWeb.UrlParam, as: UrlParam
 
   tags(["Admin – Notifications"])
@@ -156,6 +159,58 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
     ]
   )
 
+  operation(:sent,
+    operation_id: "admin_list_sent_messages",
+    summary: "List the emails and pushes sent (admin)",
+    description:
+      "Every email and push that went out, newest first, kept for " <>
+        "GAMEND_RETENTION_SENT_MESSAGES_DAYS. Sign-in links, codes and unsubscribe links are hidden.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      channel: [
+        in: :query,
+        schema: %Schema{
+          type: :string,
+          enum: [NotificationChannel.email(), NotificationChannel.push()]
+        }
+      ],
+      kind: [in: :query, schema: %Schema{type: :string}, description: "Filter by kind"],
+      status: [in: :query, schema: %Schema{type: :string}, description: "Filter by status"],
+      user_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
+      batch_id: [
+        in: :query,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "One announcement's sends"
+      ],
+      search: [
+        in: :query,
+        schema: %Schema{type: :string},
+        description: "Part of the address or subject"
+      ],
+      page: [in: :query, schema: %Schema{type: :integer}, description: "Page number (1-based)"],
+      page_size: [in: :query, schema: %Schema{type: :integer}, description: "Page size"]
+    ],
+    responses: [
+      ok: {"Paginated list of sent messages", "application/json", SentMessagePage}
+    ]
+  )
+
+  operation(:sent_show,
+    operation_id: "admin_get_sent_message",
+    summary: "One email or push sent, with its copies (admin)",
+    description:
+      "One sent message with its plain-text and HTML copies: the email as its reader saw it, " <>
+        "drawn in today's email layout.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [in: :path, schema: %Schema{type: :string, format: :uuid}, description: "Sent ID"]
+    ],
+    responses: [
+      ok: {"The sent message", "application/json", SentMessagePreviewResponse},
+      not_found: Schemas.error("Not found")
+    ]
+  )
+
   # ---------------------------------------------------------------------------
   # Actions
   # ---------------------------------------------------------------------------
@@ -181,6 +236,28 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
       page_size,
       total_count
     )
+  end
+
+  def sent(conn, params) do
+    {page, page_size} = GamendWeb.Pagination.params(params)
+
+    filters = Map.take(params, ~w(channel kind status user_id batch_id search))
+    rows = Gamend.Sent.list(filters, page: page, page_size: page_size)
+
+    reply_page(
+      conn,
+      Enum.map(rows, &Serializers.serialize_sent_message/1),
+      page,
+      page_size,
+      Gamend.Sent.count(filters)
+    )
+  end
+
+  def sent_show(conn, %{"id" => id}) do
+    case Gamend.Sent.get(id) do
+      nil -> reply_reason(conn, :not_found)
+      sent -> reply_data(conn, :ok, Serializers.serialize_sent_preview(sent))
+    end
   end
 
   def create(conn, params) do

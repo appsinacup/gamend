@@ -715,6 +715,7 @@ defmodule Gamend.GDScript.API do
       "count_tokens" => [1],
       "delete_token" => [2],
       "disable_token" => [1],
+      "enqueue_deliveries" => [2],
       "force_log?" => [0],
       "list_all_tokens" => [0, 1, 2],
       "list_tokens" => [1, 2],

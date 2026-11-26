@@ -18,7 +18,7 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-283 operations in 45 modules, and 100 realtime events, 15 socket commands.
+285 operations in 45 modules, and 100 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -162,7 +162,9 @@ Admin – Notifications.
 | `announce_notification(params)` | `POST /api/v1/admin/notifications/announce` | Send a notification to every player (admin) |
 | `create_notification(params)` | `POST /api/v1/admin/notifications` | Create a notification (admin) |
 | `delete_notification(id)` | `DELETE /api/v1/admin/notifications/{id}` | Delete a notification (admin) |
+| `get_sent_message(id)` | `GET /api/v1/admin/notifications/sent/{id}` | One email or push sent, with its copies (admin) |
 | `list_notifications(options)` | `GET /api/v1/admin/notifications` | List all notifications (admin) |
+| `list_sent_messages(options)` | `GET /api/v1/admin/notifications/sent` | List the emails and pushes sent (admin) |
 
 ## admin_push
 

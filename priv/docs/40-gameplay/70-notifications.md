@@ -210,6 +210,12 @@ A group whose notices come in runs batches its email: `email_every: :day`, `:wee
 
 A user's time zone (taken from the browser) and last site language are saved alongside: `Gamend.Accounts.TimeZone` gives "their day" and "their evening" for a reminder, `Gamend.Accounts.Preferences.locale/1` the language to write it in.
 
+## What was sent
+
+Admin → Notifications → **Sent** lists every email and push that went out, newest first: the account's own emails (sign-in links, codes, warnings), notifications, digests and test sends. A send to everyone is one line with how many it reached; open it to see who got it. An open line shows what the reader saw: an email in its own look (drawn in today's layout) with its plain-text copy, a push as a phone shows it. Sign-in links, codes and unsubscribe links are hidden before anything is stored.
+
+`Gamend.Sent` records each send in `sent_messages`, kept 30 days (`GAMEND_RETENTION_SENT_MESSAGES_DAYS`). The admin API reads the same: `GET /api/v1/admin/notifications/sent` (filters `channel`, `kind`, `status`, `user_id`, `batch_id`, `search`) and `GET /api/v1/admin/notifications/sent/:id` with the `text` and `html` copies. A plugin's push says what it is with `Gamend.Push.send_to_user(user_id, message, kind: ..., group: ...)`; without it, its kind is `other`.
+
 ## Real-time (WebSocket)
 
 Connect to the UserChannel to receive notifications in real time. Each one arrives as a `notification_created` event on the "user:" topic; on join the channel replays the most recent 50, oldest first.

@@ -48,6 +48,7 @@ defmodule Gamend.Notifications do
   alias Gamend.Repo.AdvisoryLock
 
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+  require Gamend.Sent.SentKind, as: SentKind
 
   @type user_id :: Ecto.UUID.t()
 
@@ -425,7 +426,9 @@ defmodule Gamend.Notifications do
   (default: the title and the content). `"email_now" => true` sends the email
   at once in a group that sends digests (`Gamend.Notifications.Digest`).
   `"site_only" => true` writes the row and sends nothing else: no push and no
-  email, for what the reader only likes to know (a build done).
+  email, for what the reader only likes to know (a build done). `"batch"`
+  (an announcement's id) groups its emails and pushes on the admin's Sent
+  card (`Gamend.Sent`).
 
   The in-app row is the user's own (sender = recipient), so repeating a title
   refreshes the one row rather than stacking. Returns the channels it went
@@ -474,7 +477,7 @@ defmodule Gamend.Notifications do
 
     push? =
       not site_only? and Preferences.enabled?(user, group, NotificationChannel.push()) and
-        push_message(user_id, row, "notify-#{group}")
+        push_message(user_id, row, "notify-#{group}", group: group, batch: attrs["batch"])
 
     email? =
       not site_only? and Preferences.enabled?(user, group, NotificationChannel.email()) and
@@ -526,7 +529,8 @@ defmodule Gamend.Notifications do
           "subject" => attrs["subject"] || attrs["title"],
           "text" => attrs["text"] || attrs["content"] || "",
           "image" => attrs["image"],
-          "url" => attrs["url"]
+          "url" => attrs["url"],
+          "batch" => attrs["batch"]
         },
         fn {_k, v} -> is_nil(v) end
       )
@@ -798,12 +802,12 @@ defmodule Gamend.Notifications do
     if is_nil(group) do
       # One collapse id per notification row, so the re-upserted rows (chat
       # previews) replace their earlier push instead of stacking.
-      push_message(recipient_id, row, "notif-#{notification.id}")
+      push_message(recipient_id, row, "notif-#{notification.id}", [])
     else
       user = Gamend.Accounts.get_user(recipient_id)
 
       if Preferences.enabled?(user, group, NotificationChannel.push()),
-        do: push_message(recipient_id, row, "notif-#{notification.id}")
+        do: push_message(recipient_id, row, "notif-#{notification.id}", group: group)
 
       if Preferences.enabled?(user, group, NotificationChannel.email()),
         do:
@@ -819,7 +823,8 @@ defmodule Gamend.Notifications do
   end
 
   # Whether a push went out: false when the user has no device to take it.
-  defp push_message(user_id, %{"title" => title} = row, collapse_key) do
+  # `sent`: the group and announcement the push is recorded under (`Gamend.Sent`).
+  defp push_message(user_id, %{"title" => title} = row, collapse_key, sent) do
     if Gamend.Push.user_has_live_tokens?(user_id) do
       alias Gamend.Push.Message
 
@@ -828,12 +833,16 @@ defmodule Gamend.Notifications do
       # exceed the cap even at equal char limits) — a push must degrade to a
       # shorter preview, never be dropped by validation.
       _ =
-        Gamend.Push.send_to_user(user_id, %{
-          "title" => Message.truncate(title, Gamend.Limits.get(:max_push_title)),
-          "body" => Message.truncate(row["content"] || "", Gamend.Limits.get(:max_push_body)),
-          "data" => Map.take(row["metadata"] || %{}, ["type", "url", "notification_id"]),
-          "collapse_key" => collapse_key
-        })
+        Gamend.Push.send_to_user(
+          user_id,
+          %{
+            "title" => Message.truncate(title, Gamend.Limits.get(:max_push_title)),
+            "body" => Message.truncate(row["content"] || "", Gamend.Limits.get(:max_push_body)),
+            "data" => Map.take(row["metadata"] || %{}, ["type", "url", "notification_id"]),
+            "collapse_key" => collapse_key
+          },
+          Keyword.put(sent, :kind, SentKind.notification())
+        )
 
       true
     else

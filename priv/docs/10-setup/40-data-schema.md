@@ -309,6 +309,24 @@ swept.
 declare their own types via `notification_types/0`; undeclared types are
 rejected at write time.
 
+## sent_messages
+
+One row per email or push that went out (`Gamend.Sent`), for the admin's Sent card.
+
+| Column | Type | Notes |
+|---|---|---|
+| `channel` | string | `email` or `push` |
+| `kind` | string | `Gamend.Sent.SentKind`: `login_link`, `notification`, `digest`, `test`, ... |
+| `group_key` | string | The notification group, if any |
+| `batch_id` | uuid | The announcement it was part of |
+| `user_id` | FK users | Deleted with the user; empty for a bare address (a test email) |
+| `address` | string | The email address, or the device (`ios · apns`) |
+| `subject` | string | Subject or push title |
+| `body` | map | What it said, sign-in links, codes and unsubscribe links hidden |
+| `status` / `reason` | string | `sent`, `failed`, `invalid` (dead device), and why |
+
+Pruned after `sent_messages_days` (30).
+
 ## wallets and inventory
 
 | wallets | Type | Notes |

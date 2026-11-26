@@ -18,8 +18,10 @@ defmodule GamendWeb.Serializers do
   alias Gamend.Leaderboards.Leaderboard
   alias Gamend.Lobbies
   alias Gamend.Lobbies.SpectatorTracker
+  alias Gamend.Mail.Message, as: MailMessage
   alias Gamend.Notifications
   alias Gamend.Parties
+  alias Gamend.Sent
   alias GamendWeb.Features
 
   require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
@@ -142,6 +144,41 @@ defmodule GamendWeb.Serializers do
       metadata: metadata,
       inserted_at: notification.inserted_at
     }
+  end
+
+  @doc "An email or push that went out (`GamendWeb.Schemas.SentMessage`)."
+  @spec serialize_sent_message(Gamend.Sent.SentMessage.t()) :: map()
+  def serialize_sent_message(sent) do
+    %{
+      id: sent.id,
+      channel: sent.channel,
+      kind: sent.kind,
+      group: sent.group_key || "",
+      batch_id: sent.batch_id || "",
+      user_id: sent.user_id || "",
+      user_name: assoc_display_name(loaded_assoc(sent, :user)),
+      address: sent.address || "",
+      subject: sent.subject || "",
+      body: sent.body || %{},
+      status: sent.status,
+      reason: sent.reason || "",
+      inserted_at: sent.inserted_at
+    }
+  end
+
+  @doc """
+  A sent message with its text and HTML copies
+  (`GamendWeb.Schemas.SentMessagePreview`): an email as its reader saw it,
+  drawn in today's layout.
+  """
+  @spec serialize_sent_preview(Gamend.Sent.SentMessage.t()) :: map()
+  def serialize_sent_preview(sent) do
+    message = Sent.message(sent)
+
+    Map.merge(serialize_sent_message(sent), %{
+      text: if(message, do: MailMessage.to_text(message), else: ""),
+      html: (message && MailMessage.to_html(message)) || ""
+    })
   end
 
   @doc """

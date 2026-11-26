@@ -94,7 +94,8 @@ defmodule Gamend.Notifications.Announcements do
           "content" => args["content"],
           "url" => args["url"],
           "site_only" => args["site_only"] == true,
-          "type" => NotificationType.announcement()
+          "type" => NotificationType.announcement(),
+          "batch" => args["id"]
         },
         fn {_key, value} -> is_nil(value) end
       )

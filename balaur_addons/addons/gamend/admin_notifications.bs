@@ -51,10 +51,28 @@ pub async fn delete_notification(id: str) -> any {
     reply
 }
 
+/// One email or push sent, with its copies (admin)
+/// `GET /api/v1/admin/notifications/sent/{id}`
+pub async fn get_sent_message(id: str) -> any {
+    if id == "" {
+        return core::missing("gamend::admin_notifications::get_sent_message", "id");
+    }
+    let reply = await core::rest("GET", "/api/v1/admin/notifications/sent/{id}");
+    reply
+}
+
 /// List all notifications (admin)
 /// `GET /api/v1/admin/notifications`
 pub async fn list_notifications(options: any) -> any {
     let query = core::query(options, ["user_id", "sender_id", "title", "page", "page_size"]);
     let reply = await core::rest("GET", "/api/v1/admin/notifications{query}");
+    reply
+}
+
+/// List the emails and pushes sent (admin)
+/// `GET /api/v1/admin/notifications/sent`
+pub async fn list_sent_messages(options: any) -> any {
+    let query = core::query(options, ["channel", "kind", "status", "user_id", "batch_id", "search", "page", "page_size"]);
+    let reply = await core::rest("GET", "/api/v1/admin/notifications/sent{query}");
     reply
 }

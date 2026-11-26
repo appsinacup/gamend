@@ -151,20 +151,21 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     assert has_element?(lv, ~s(#avatar_form input[value="/icons/#{own_name}.svg"][checked]))
     refute has_element?(lv, "#avatar_form[data-unsaved]")
 
+    # Another icon than the id's: the same one in the same colour is no change.
+    pick = "/icons/" <> Enum.find(Gamend.Icons.names(), &(&1 != own_name)) <> ".svg"
+
     lv
-    |> form("#avatar_form",
-      avatar_icon: %{profile_url: "/icons/rocket-launch.svg", profile_url_color: "error"}
-    )
+    |> form("#avatar_form", avatar_icon: %{profile_url: pick, profile_url_color: "error"})
     |> render_submit()
 
-    assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg?color=error"
+    assert Accounts.get_user(user.id).profile_url == pick <> "?color=error"
     assert has_element?(lv, ~s(#avatar_form input[value="error"][checked]))
 
     lv
     |> form("#avatar_form", avatar_icon: %{profile_url_color: ""})
     |> render_submit()
 
-    assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg"
+    assert Accounts.get_user(user.id).profile_url == pick
   end
 
   test "a name typed is unsaved until it is saved", %{conn: conn} do

@@ -1,6 +1,8 @@
 defmodule GamendWeb.AdminLive.Push do
   use GamendWeb, :live_view
 
+  require Gamend.Sent.SentKind, as: SentKind
+
   alias Gamend.Push
   alias GamendWeb.LiveHelpers
 
@@ -269,10 +271,11 @@ defmodule GamendWeb.AdminLive.Push do
         {:noreply, put_flash(socket, :error, "That user has no live devices")}
 
       true ->
-        case Push.send_to_user(user_id, %{
-               "title" => params["title"],
-               "body" => params["body"]
-             }) do
+        case Push.send_to_user(
+               user_id,
+               %{"title" => params["title"], "body" => params["body"]},
+               kind: SentKind.test()
+             ) do
           :ok ->
             {:noreply,
              socket

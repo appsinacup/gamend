@@ -2,20 +2,36 @@ defmodule GamendWeb.AdminLive.Notifications do
   use GamendWeb, :live_view
 
   alias Gamend.Accounts.Scope
+  alias Gamend.Mail.Message
   alias Gamend.Notifications
   alias Gamend.Notifications.Announcements
   alias Gamend.Notifications.Preferences
+  alias Gamend.Sent
+  alias GamendWeb.AdminLive.SentCard
+  alias GamendWeb.HostLayouts
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.NotificationsTab
 
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
   require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
+  require Gamend.Sent.SentStatus, as: SentStatus
 
   @filter_keys ~w(sender_id title user_id)
 
   use GamendWeb.UrlState,
-    reload: :reload_notifications,
-    keys: [:page, :page_size, filters: [keys: @filter_keys]]
+    reload: :reload_all,
+    keys: [
+      :page,
+      :page_size,
+      filters: [keys: @filter_keys],
+      sent_channel: [in: [NotificationChannel.email(), NotificationChannel.push()]],
+      sent_page: [],
+      sent_search: [],
+      sent_failed: [],
+      sent_open: [],
+      sent_row: [],
+      sent_rows_page: []
+    ]
 
   @impl true
   def mount(params, _session, socket) do
@@ -49,8 +65,18 @@ defmodule GamendWeb.AdminLive.Notifications do
           as: :notification
         )
       )
+      # The Sent card (`SentCard`): its tab, page and filters, the line open
+      # and, in an announcement, whose copy is shown.
+      |> assign(:sent_channel, NotificationChannel.email())
+      |> assign(:sent_page, 1)
+      |> assign(:sent_search, "")
+      |> assign(:sent_failed, false)
+      |> assign(:sent_open, nil)
+      |> assign(:sent_row, nil)
+      |> assign(:sent_rows_page, 1)
+      |> assign(:sent_retention_days, Gamend.Settings.get(Gamend.Retention, :sent_messages_days))
       |> GamendWeb.UrlState.from_url(params)
-      |> reload_notifications()
+      |> reload_all()
 
     {:ok, socket}
   end
@@ -120,6 +146,18 @@ defmodule GamendWeb.AdminLive.Notifications do
             </.form>
           </div>
         </div>
+
+        <SentCard.sent_card
+          channel={@sent_channel}
+          lines={@sent_lines}
+          count={@sent_count}
+          page={@sent_page}
+          total_pages={@sent_total_pages}
+          search={@sent_search}
+          failed={@sent_failed}
+          retention_days={@sent_retention_days}
+          open={@sent_detail}
+        />
 
         <%!-- Create notification form --%>
         <div class="card bg-base-200">
@@ -503,6 +541,157 @@ defmodule GamendWeb.AdminLive.Notifications do
   @impl true
   def handle_event("admin_notifications_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> reload_notifications()}
+
+  event("sent_channel", channel: {:in, [NotificationChannel.email(), NotificationChannel.push()]})
+  @impl true
+  def handle_event("sent_channel", %{"channel" => channel}, socket),
+    do: {:noreply, socket |> close_sent(sent_channel: channel, sent_page: 1) |> reload_sent()}
+
+  event("sent_filter", search: {:optional, :string}, failed: {:optional, :boolean})
+  @impl true
+  def handle_event("sent_filter", params, socket) do
+    failed = params["failed"] in [true, "true"]
+
+    {:noreply,
+     socket
+     |> assign(sent_search: params["search"] || "", sent_failed: failed, sent_page: 1)
+     |> reload_sent()}
+  end
+
+  event("sent_open", key: :uuid)
+  @impl true
+  def handle_event("sent_open", %{"key" => key}, socket),
+    do: {:noreply, socket |> close_sent(sent_open: key) |> reload_sent()}
+
+  event("sent_row", id: :uuid)
+  @impl true
+  def handle_event("sent_row", %{"id" => id}, socket),
+    do: {:noreply, socket |> assign(:sent_row, id) |> reload_sent()}
+
+  event("sent_close")
+  @impl true
+  def handle_event("sent_close", _params, socket),
+    do: {:noreply, socket |> close_sent([]) |> reload_sent()}
+
+  event("sent_prev")
+  @impl true
+  def handle_event("sent_prev", _params, socket),
+    do: {:noreply, socket |> update(:sent_page, &max(&1 - 1, 1)) |> reload_sent()}
+
+  event("sent_next")
+  @impl true
+  def handle_event("sent_next", _params, socket),
+    do: {:noreply, socket |> update(:sent_page, &(&1 + 1)) |> reload_sent()}
+
+  event("sent_rows_prev")
+  @impl true
+  def handle_event("sent_rows_prev", _params, socket),
+    do: {:noreply, socket |> update(:sent_rows_page, &max(&1 - 1, 1)) |> reload_sent()}
+
+  event("sent_rows_next")
+  @impl true
+  def handle_event("sent_rows_next", _params, socket),
+    do: {:noreply, socket |> update(:sent_rows_page, &(&1 + 1)) |> reload_sent()}
+
+  defp reload_all(socket), do: socket |> reload_notifications() |> reload_sent()
+
+  defp close_sent(socket, changes),
+    do: assign(socket, Keyword.merge([sent_open: nil, sent_row: nil, sent_rows_page: 1], changes))
+
+  @sent_page_size 25
+
+  defp sent_filters(assigns) do
+    %{
+      "channel" => assigns.sent_channel,
+      "search" => assigns.sent_search,
+      "failed" => assigns.sent_failed
+    }
+  end
+
+  defp reload_sent(socket) do
+    filters = sent_filters(socket.assigns)
+    count = Sent.count_lines(filters)
+    total_pages = LiveHelpers.total_pages(count, @sent_page_size)
+    page = socket.assigns.sent_page |> min(max(total_pages, 1)) |> max(1)
+    lines = Sent.list_lines(filters, page: page, page_size: @sent_page_size)
+
+    socket
+    |> assign(
+      sent_lines: lines,
+      sent_count: count,
+      sent_total_pages: total_pages,
+      sent_page: page
+    )
+    |> assign(:sent_detail, sent_detail(socket.assigns, filters))
+  end
+
+  # The open line: a single send's row, or an announcement's page of rows
+  # and the one whose copy is shown (the first, unless one was picked).
+  defp sent_detail(%{sent_open: nil}, _filters), do: nil
+
+  defp sent_detail(assigns, filters) do
+    single = Sent.get(assigns.sent_open)
+
+    case single do
+      %{batch_id: nil, channel: channel} = row when channel == assigns.sent_channel ->
+        detail(single_line(row), [], 0, 1, 1, row)
+
+      _batch ->
+        batch_detail(assigns, Map.put(filters, "batch_id", assigns.sent_open))
+    end
+  end
+
+  defp batch_detail(assigns, filters) do
+    count = Sent.count(filters)
+    total_pages = LiveHelpers.total_pages(count, @sent_page_size)
+    page = assigns.sent_rows_page |> min(max(total_pages, 1)) |> max(1)
+    rows = Sent.list(filters, page: page, page_size: @sent_page_size)
+
+    case Sent.list_lines(filters, page: 1, page_size: 1) do
+      [line] -> detail(line, rows, count, page, total_pages, picked_row(assigns, rows))
+      _gone -> nil
+    end
+  end
+
+  # The announcement's row whose copy is shown: the one picked, else the first.
+  defp picked_row(%{sent_row: id, sent_open: batch}, rows) when is_binary(id) do
+    case Sent.get(id) do
+      %{batch_id: ^batch} = picked -> picked
+      _other -> List.first(rows)
+    end
+  end
+
+  defp picked_row(_assigns, rows), do: List.first(rows)
+
+  defp single_line(row) do
+    %{
+      key: row.id,
+      batch?: false,
+      count: 1,
+      failed: if(row.status == SentStatus.sent(), do: 0, else: 1),
+      kind: row.kind,
+      group_key: row.group_key,
+      subject: row.subject,
+      last_at: row.inserted_at,
+      row: row
+    }
+  end
+
+  defp detail(line, rows, count, page, total_pages, row) do
+    message = row && Sent.message(row)
+
+    %{
+      line: line,
+      rows: rows,
+      rows_count: count,
+      rows_page: page,
+      rows_total_pages: total_pages,
+      row: row,
+      html: message && Message.to_html(message),
+      text: if(message, do: Message.to_text(message), else: ""),
+      site: HostLayouts.resolve_theme()["title"] || "Gamend"
+    }
+  end
 
   defp reload_notifications(socket) do
     page = socket.assigns.page

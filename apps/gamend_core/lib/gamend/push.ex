@@ -38,6 +38,7 @@ defmodule Gamend.Push do
   require Gamend.Push.Platform, as: Platform
   require Gamend.Push.PushProvider, as: PushProvider
   require Gamend.Push.TokenFilter, as: TokenFilter
+  require Gamend.Sent.SentKind, as: SentKind
 
   @type user_id :: Ecto.UUID.t()
 
@@ -542,6 +543,10 @@ defmodule Gamend.Push do
 
   Returns `:ok` or `{:error, errors}` when the message fails validation
   (see `Gamend.Push.Message`).
+
+  `opts` say what the push is, for the admin's record of it (`Gamend.Sent`):
+  `:kind` (`Gamend.Sent.SentKind`, default `other`), `:group` (the
+  notification group) and `:batch` (the announcement it is part of).
   """
   @spec send_to_user(user_id(), map(), keyword()) :: :ok | {:error, map()}
   def send_to_user(user_id, message_attrs, opts \\ [])
@@ -557,12 +562,14 @@ defmodule Gamend.Push do
   restart-safe, deduped against identical double-broadcasts).
   """
   @spec send_to_users([user_id()], map(), keyword()) :: :ok | {:error, map() | term()}
-  def send_to_users(user_ids, message_attrs, _opts \\ []) when is_list(user_ids) do
+  def send_to_users(user_ids, message_attrs, opts \\ []) when is_list(user_ids) do
+    sent = sent_args(opts)
+
     with {:ok, message} <- Message.new(message_attrs) do
       if length(user_ids) <= @fanout_inline_threshold do
-        enqueue_deliveries(user_ids, message)
+        enqueue_deliveries(user_ids, message, sent)
       else
-        %{"user_ids" => user_ids, "message" => Message.to_map(message)}
+        %{"user_ids" => user_ids, "message" => Message.to_map(message), "sent" => sent}
         |> FanoutWorker.new()
         |> Oban.insert()
         |> case do
@@ -573,9 +580,19 @@ defmodule Gamend.Push do
     end
   end
 
+  # What `Gamend.Sent` records the push as, carried on each device's job.
+  defp sent_args(opts) do
+    %{
+      "kind" => opts[:kind] || SentKind.other(),
+      "group" => opts[:group],
+      "batch" => opts[:batch]
+    }
+    |> Map.reject(fn {_key, value} -> is_nil(value) end)
+  end
+
   @doc false
-  @spec enqueue_deliveries([user_id()], Message.t()) :: :ok
-  def enqueue_deliveries(user_ids, %Message{} = message) do
+  @spec enqueue_deliveries([user_id()], Message.t(), map()) :: :ok
+  def enqueue_deliveries(user_ids, %Message{} = message, sent \\ %{}) do
     message_map = Message.to_map(message)
 
     user_ids
@@ -594,7 +611,8 @@ defmodule Gamend.Push do
         DeliveryWorker.new(%{
           "token_id" => token_id,
           "user_id" => user_id,
-          "message" => messages[user_id]
+          "message" => messages[user_id],
+          "sent" => sent
         })
       end)
       |> Stream.chunk_every(@fanout_chunk_size)

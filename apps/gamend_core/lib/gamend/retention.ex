@@ -7,6 +7,8 @@ defmodule Gamend.Retention do
 
   - `GAMEND_RETENTION_CHAT_MESSAGES_DAYS` — `chat_messages` older than N days
   - `GAMEND_RETENTION_NOTIFICATIONS_DAYS` — `notifications` older than N days
+  - `GAMEND_RETENTION_SENT_MESSAGES_DAYS` (30) — the record of emails and pushes
+    sent (`Gamend.Sent`) older than N days
   - `GAMEND_RETENTION_PAYMENT_EVENTS_DAYS` — payment provider webhook events older
     than N days (purchases, entitlements and payment charges are never pruned)
   - `GAMEND_RETENTION_RESULTS_DAYS` — results (`Gamend.Results`) started more
@@ -369,6 +371,9 @@ defmodule Gamend.Retention do
       end,
       notifications: fn ->
         prune_older_than(Gamend.Notifications.Notification, config(:notifications_days))
+      end,
+      sent_messages: fn ->
+        prune_older_than(Gamend.Sent.SentMessage, config(:sent_messages_days))
       end,
       payment_events: fn ->
         prune_older_than(Gamend.Payments.ProviderEvent, config(:payment_events_days))
@@ -1077,6 +1082,11 @@ defmodule Gamend.Retention do
   setting(:notifications_days, :integer,
     default: 0,
     doc: "Delete notifications older than N days. 0 keeps forever."
+  )
+
+  setting(:sent_messages_days, :integer,
+    default: 30,
+    doc: "Delete the record of emails and pushes sent (the admin's Sent card) after N days."
   )
 
   setting(:payment_events_days, :integer,

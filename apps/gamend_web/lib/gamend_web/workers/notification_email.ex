@@ -47,7 +47,9 @@ defmodule GamendWeb.Workers.NotificationEmail do
              user,
              subject,
              body,
-             NotificationEmail.unsubscribe_url(user.id, group)
+             NotificationEmail.unsubscribe_url(user.id, group),
+             group: group,
+             batch: args["batch"]
            ) do
         {:ok, _email} -> :ok
         {:error, reason} -> {:error, reason}

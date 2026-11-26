@@ -44,7 +44,7 @@ A user with `is_admin` set can open the console; everyone else gets redirected. 
 | [/admin/chat/reports](/admin/chat/reports) | The player-report review queue — review a report and act on it in place. |
 | [/admin/chat/filter](/admin/chat/filter) | The word blocklist: add and edit words, import the bundled per-language lists, and test a message against the live filter. |
 | [/admin/reports](/admin/reports) | The queue of content reports filed from `/report` or the API — see the [Reports guide](/docs/reports). |
-| [/admin/notifications](/admin/notifications) | Browse, create and delete in-app notifications. |
+| [/admin/notifications](/admin/notifications) | Browse, create and delete in-app notifications; send to everyone; see every email and push sent (Sent). |
 | [/admin/push](/admin/push) | Registered device tokens, with delete for stale ones and a send form for test pushes. |
 
 ## Money

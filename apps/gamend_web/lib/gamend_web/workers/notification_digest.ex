@@ -20,6 +20,7 @@ defmodule GamendWeb.Workers.NotificationDigest do
   alias GamendWeb.NotificationEmail
 
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+  require Gamend.Sent.SentKind, as: SentKind
 
   @impl Oban.Worker
   def timeout(_job), do: :timer.seconds(60)
@@ -54,7 +55,9 @@ defmodule GamendWeb.Workers.NotificationDigest do
            user,
            subject,
            body,
-           NotificationEmail.unsubscribe_url(user.id, group)
+           NotificationEmail.unsubscribe_url(user.id, group),
+           kind: SentKind.digest(),
+           group: group
          ) do
       {:ok, _email} ->
         Digest.delete(items)

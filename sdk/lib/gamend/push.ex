@@ -304,6 +304,10 @@ defmodule Gamend.Push do
     Returns `:ok` or `{:error, errors}` when the message fails validation
     (see `Gamend.Push.Message`).
     
+    `opts` say what the push is, for the admin's record of it (`Gamend.Sent`):
+    `:kind` (`Gamend.Sent.SentKind`, default `other`), `:group` (the
+    notification group) and `:batch` (the announcement it is part of).
+    
   """
   @spec send_to_user(user_id(), map(), keyword()) :: :ok | {:error, map()}
   def send_to_user(_user_id, _message_attrs, _opts \\ []) do

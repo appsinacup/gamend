@@ -1943,6 +1943,36 @@ func admin_notifications_admin_list_notifications(
 	pageSize = null,) -> GamendResult:
 	return await _call_api(AdminNotificationsApi.new(_config), "admin_list_notifications", [userId, senderId, title, page, pageSize])
 
+## One email or push sent, with its copies (admin)
+func admin_notifications_admin_get_sent_message(id: String) -> GamendResult:
+	return await _call_api(AdminNotificationsApi.new(_config), "admin_get_sent_message", [id])
+
+## List the emails and pushes sent (admin)
+func admin_notifications_admin_list_sent_messages(
+	# channel: String = ""   Eg: email
+	channel = "",
+	# kind: String = ""   Eg: login_link
+	# Filter by kind
+	kind = "",
+	# status: String = ""   Eg: sent
+	# Filter by status
+	status = "",
+	# userId: String   Eg: 56
+	userId = null,
+	# batchId: String   Eg: 56
+	# One announcement's sends
+	batchId = null,
+	# search: String = ""   Eg: search_example
+	# Part of the address or subject
+	search = "",
+	# page: int   Eg: 56
+	# Page number (1-based)
+	page = null,
+	# pageSize: int   Eg: 56
+	# Page size
+	pageSize = null,) -> GamendResult:
+	return await _call_api(AdminNotificationsApi.new(_config), "admin_list_sent_messages", [channel, kind, status, userId, batchId, search, page, pageSize])
+
 ## ADMIN GROUPS
 
 ## Delete a group (admin)

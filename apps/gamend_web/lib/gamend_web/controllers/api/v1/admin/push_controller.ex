@@ -6,6 +6,8 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
+  require Gamend.Sent.SentKind, as: SentKind
+
   alias Gamend.Push
   alias Gamend.Push.Platform
   alias Gamend.Push.PushProvider
@@ -116,7 +118,7 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
       message =
         Map.take(params, ["title", "body", "data", "image", "sound", "badge", "collapse_key"])
 
-      case Push.send_to_user(user_id, message) do
+      case Push.send_to_user(user_id, message, kind: SentKind.test()) do
         :ok ->
           reply_ok(conn)
 

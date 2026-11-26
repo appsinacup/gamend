@@ -4,18 +4,44 @@ defmodule Gamend.Accounts.UserNotifier do
   change, codes, deletion warning) and the notifications a user chose to get
   by email. Each is a `Gamend.Mail.Message`, sent as plain text and, with the
   website there, as HTML in the site's one look (`GamendWeb.MailLayout`).
+  Each send, and each failure, is recorded for the admin (`Gamend.Sent`),
+  with its sign-in links and codes hidden.
   """
   import Swoosh.Email
 
   alias Gamend.Accounts.User
   alias Gamend.Mail.Message
   alias Gamend.Mailer
+  alias Gamend.Sent
   require Logger
 
-  defp deliver(recipient, subject, %Message{} = message) do
-    recipient
+  require Gamend.Sent.SentKind, as: SentKind
+  require Gamend.Sent.SentStatus, as: SentStatus
+
+  # `recipient` is a user or a bare address (the admin's test email).
+  # `secrets`: what the stored copy hides (a link that signs in).
+  defp deliver(kind, recipient, subject, %Message{} = message, secrets \\ []) do
+    {address, user_id} =
+      case recipient do
+        %User{email: email, id: id} -> {email, id}
+        address -> {address, nil}
+      end
+
+    address
     |> compose(subject, message)
     |> send_email(subject)
+    |> recorded(kind, address, subject, message, user_id: user_id, secrets: secrets)
+  end
+
+  defp recorded(result, kind, address, subject, message, opts) do
+    status =
+      case result do
+        {:ok, _email} -> [status: SentStatus.sent()]
+        {:error, reason} -> [status: SentStatus.failed(), reason: reason]
+      end
+
+    _ = Sent.record_email(kind, address, subject, message, opts ++ status)
+    result
   end
 
   defp compose(recipient, subject, message) do
@@ -103,16 +129,30 @@ defmodule Gamend.Accounts.UserNotifier do
   in the `List-Unsubscribe` headers too (RFC 8058 one-click), so a mail
   client's own "Unsubscribe" button works without opening the site.
   """
-  def deliver_notification(%User{email: email}, subject, %Message{} = message, unsubscribe_url)
+  def deliver_notification(user, subject, message, unsubscribe_url, opts \\ [])
+
+  def deliver_notification(
+        %User{email: email} = user,
+        subject,
+        %Message{} = message,
+        unsubscribe_url,
+        opts
+      )
       when is_binary(email) and is_binary(unsubscribe_url) do
     email
     |> compose(subject, message)
     |> header("List-Unsubscribe", "<#{unsubscribe_url}>")
     |> header("List-Unsubscribe-Post", "List-Unsubscribe=One-Click")
     |> send_email(subject)
+    |> recorded(opts[:kind] || SentKind.notification(), email, subject, message,
+      user_id: user.id,
+      group: opts[:group],
+      batch: opts[:batch],
+      secrets: [unsubscribe_url]
+    )
   end
 
-  def deliver_notification(_user, _subject, _message, _url), do: {:ok, :no_email}
+  def deliver_notification(_user, _subject, _message, _url, _opts), do: {:ok, :no_email}
 
   @doc """
   Warn a user that their account will be deleted after `days` of inactivity.
@@ -122,7 +162,7 @@ defmodule Gamend.Accounts.UserNotifier do
   "log in".
   """
   def deliver_inactivity_warning(%User{} = user, days) do
-    deliver(user.email, "Your account is scheduled for deletion", %Message{
+    deliver(SentKind.deletion_warning(), user, "Your account is scheduled for deletion", %Message{
       title: "Your account will be deleted",
       paragraphs: [
         "Your account has been inactive for a while. Accounts untouched for #{days} days " <>
@@ -137,12 +177,18 @@ defmodule Gamend.Accounts.UserNotifier do
   Deliver instructions to update a user email.
   """
   def deliver_update_email_instructions(user, url) do
-    deliver(user.email, "Update email instructions", %Message{
-      title: "Change your email",
-      paragraphs: ["Press the button to use this address for your account."],
-      button: {"Change email", url},
-      footer: ["If you didn't ask for this change, ignore this email."]
-    })
+    deliver(
+      SentKind.change_email(),
+      user,
+      "Update email instructions",
+      %Message{
+        title: "Change your email",
+        paragraphs: ["Press the button to use this address for your account."],
+        button: {"Change email", url},
+        footer: ["If you didn't ask for this change, ignore this email."]
+      },
+      [url]
+    )
   end
 
   @doc """
@@ -156,12 +202,18 @@ defmodule Gamend.Accounts.UserNotifier do
   end
 
   defp deliver_magic_link_instructions(user, url) do
-    deliver(user.email, "Log in instructions", %Message{
-      title: "Log in",
-      paragraphs: ["Press the button to log in as #{user.email}."],
-      button: {"Log in", url},
-      footer: ["If you didn't ask for this email, ignore it."]
-    })
+    deliver(
+      SentKind.login_link(),
+      user,
+      "Log in instructions",
+      %Message{
+        title: "Log in",
+        paragraphs: ["Press the button to log in as #{user.email}."],
+        button: {"Log in", url},
+        footer: ["If you didn't ask for this email, ignore it."]
+      },
+      [url]
+    )
   end
 
   @doc """
@@ -170,18 +222,24 @@ defmodule Gamend.Accounts.UserNotifier do
   an account not yet confirmed comes here too, with no code.
   """
   def deliver_confirmation_instructions(user, url, code \\ nil) do
-    deliver(user.email, "Confirmation instructions", %Message{
-      title: "Confirm your account",
-      paragraphs:
-        ["Press the button to confirm #{user.email}."] ++
-          if(code,
-            do: ["Or enter this code in the game, where you also choose your password:"],
-            else: []
-          ),
-      button: {"Confirm account", url},
-      code: code,
-      footer: ["If you didn't create an account with us, ignore this email."]
-    })
+    deliver(
+      SentKind.confirm_account(),
+      user,
+      "Confirmation instructions",
+      %Message{
+        title: "Confirm your account",
+        paragraphs:
+          ["Press the button to confirm #{user.email}."] ++
+            if(code,
+              do: ["Or enter this code in the game, where you also choose your password:"],
+              else: []
+            ),
+        button: {"Confirm account", url},
+        code: code,
+        footer: ["If you didn't create an account with us, ignore this email."]
+      },
+      [url]
+    )
   end
 
   @doc """
@@ -189,7 +247,7 @@ defmodule Gamend.Accounts.UserNotifier do
   forgotten, on a client with no page to open a link in.
   """
   def deliver_reset_code(user, code) do
-    deliver(user.email, "Your code to set a new password", %Message{
+    deliver(SentKind.password_code(), user, "Your code to set a new password", %Message{
       title: "Set a new password",
       paragraphs: ["Enter this code in the game, where you also choose your new password:"],
       code: code,
@@ -202,7 +260,7 @@ defmodule Gamend.Accounts.UserNotifier do
   with no page to open a link in.
   """
   def deliver_login_code(user, code) do
-    deliver(user.email, "Your code to log in", %Message{
+    deliver(SentKind.login_code(), user, "Your code to log in", %Message{
       title: "Log in",
       paragraphs: ["Enter this code in the game to log in:"],
       code: code,
@@ -216,7 +274,7 @@ defmodule Gamend.Accounts.UserNotifier do
   Returns the same shape as `deliver/3`.
   """
   def deliver_test_email(recipient) when is_binary(recipient) do
-    deliver(recipient, "Gamend — test message", %Message{
+    deliver(SentKind.test(), recipient, "Gamend — test message", %Message{
       title: "Test message",
       paragraphs: [
         "This is a test message sent from the admin test-email tool.",
@@ -229,8 +287,9 @@ defmodule Gamend.Accounts.UserNotifier do
   Deliver a notification that the user's account has been activated by an admin.
   Silently returns `{:ok, :no_email}` if the user has no email address.
   """
-  def deliver_account_activated(%User{email: email}) when is_binary(email) and email != "" do
-    deliver(email, "Your account has been approved", %Message{
+  def deliver_account_activated(%User{email: email} = user)
+      when is_binary(email) and email != "" do
+    deliver(SentKind.account_approved(), user, "Your account has been approved", %Message{
       title: "Your account is approved",
       paragraphs: [
         "An administrator reviewed and approved your account.",

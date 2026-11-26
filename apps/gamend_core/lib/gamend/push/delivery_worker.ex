@@ -7,7 +7,8 @@ defmodule Gamend.Push.DeliveryWorker do
 
   Fires `after_push_sent` on every terminal outcome (delivered, token
   disabled, permanent failure, or retries exhausted) — never on a transient
-  error that will retry.
+  error that will retry — and records it for the admin (`Gamend.Sent`), as
+  the job's `"sent"` says (`Gamend.Push.send_to_user/3`'s options).
   """
 
   use Oban.Worker, queue: :push, max_attempts: 5
@@ -18,6 +19,10 @@ defmodule Gamend.Push.DeliveryWorker do
   alias Gamend.Push.Message
   alias Gamend.Push.PushToken
   alias Gamend.Repo
+  alias Gamend.Sent
+
+  require Gamend.Sent.SentKind, as: SentKind
+  require Gamend.Sent.SentStatus, as: SentStatus
 
   @failed "failed"
 
@@ -39,13 +44,13 @@ defmodule Gamend.Push.DeliveryWorker do
     case provider.deliver(message, token) do
       :ok ->
         Push.mark_token_used(token.token)
-        notify_sent(token, message_map, "delivered", nil)
+        notify_sent(token, message_map, "delivered", nil, job)
         :ok
 
       {:invalid, reason} ->
         Logger.info("[push] disabling dead token #{token.id} (#{inspect(reason)})")
         Push.disable_token(token.token)
-        notify_sent(token, message_map, "invalid", reason)
+        notify_sent(token, message_map, "invalid", reason, job)
         :ok
 
       {:error, :permanent, reason} ->
@@ -54,19 +59,19 @@ defmodule Gamend.Push.DeliveryWorker do
             "#{token.id}: #{inspect(reason)} — check the provider configuration"
         )
 
-        notify_sent(token, message_map, @failed, reason)
+        notify_sent(token, message_map, @failed, reason, job)
         {:cancel, reason}
 
       {:error, :transient, reason} ->
         if job.attempt >= job.max_attempts do
-          notify_sent(token, message_map, @failed, reason)
+          notify_sent(token, message_map, @failed, reason, job)
         end
 
         {:error, reason}
     end
   end
 
-  defp notify_sent(token, message_map, status, reason) do
+  defp notify_sent(token, message_map, status, reason, job) do
     result = %{
       "token_id" => token.id,
       "platform" => token.platform,
@@ -75,6 +80,22 @@ defmodule Gamend.Push.DeliveryWorker do
       "reason" => if(reason, do: inspect(reason))
     }
 
+    record(token, message_map, status, reason, job.args["sent"] || %{})
     Gamend.Hooks.internal_call(:after_push_sent, [token.user_id, message_map, result])
+  end
+
+  @sent_status %{"delivered" => SentStatus.sent(), "invalid" => SentStatus.invalid()}
+
+  defp record(token, message_map, status, reason, sent) do
+    Sent.record_push(
+      sent["kind"] || SentKind.other(),
+      token.user_id,
+      message_map,
+      %{platform: token.platform, provider: token.provider},
+      Map.get(@sent_status, status, SentStatus.failed()),
+      group: sent["group"],
+      batch: sent["batch"],
+      reason: reason
+    )
   end
 end

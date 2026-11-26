@@ -16,7 +16,7 @@ defmodule Gamend.Push.FanoutWorker do
   alias Gamend.Push.Message
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"user_ids" => user_ids, "message" => message_map}}) do
-    Push.enqueue_deliveries(user_ids, Message.from_map(message_map))
+  def perform(%Oban.Job{args: %{"user_ids" => user_ids, "message" => message_map} = args}) do
+    Push.enqueue_deliveries(user_ids, Message.from_map(message_map), args["sent"] || %{})
   end
 end

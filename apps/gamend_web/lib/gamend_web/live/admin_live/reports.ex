@@ -248,6 +248,18 @@ defmodule GamendWeb.AdminLive.Reports do
   defp user_label(%{user: %Gamend.Accounts.User{} = user}), do: user_display(user)
   defp user_label(_report), do: gettext("Visitor")
 
+  # A kind's `data` is any JSON it chose (feedback stores its ratings as a
+  # map, `%{"ship" => 5}`), so a value is drawn as text whatever its shape:
+  # a map as `key: value` pairs, a list joined.
+  defp data_value(value) when is_binary(value), do: value
+
+  defp data_value(%{} = value),
+    do: Enum.map_join(value, ", ", fn {key, item} -> "#{key}: #{data_value(item)}" end)
+
+  defp data_value(value) when is_list(value), do: Enum.map_join(value, ", ", &data_value/1)
+  defp data_value(nil), do: ""
+  defp data_value(value), do: to_string(value)
+
   # ── render ───────────────────────────────────────────────────────────────
 
   @impl true
@@ -387,7 +399,7 @@ defmodule GamendWeb.AdminLive.Reports do
               <dl :if={report.data != %{}} class="grid grid-cols-[auto_1fr] gap-x-3 text-sm">
                 <%= for {key, value} <- report.data do %>
                   <dt class="text-muted">{key}</dt>
-                  <dd class="break-words">{value}</dd>
+                  <dd class="break-words">{data_value(value)}</dd>
                 <% end %>
               </dl>
 

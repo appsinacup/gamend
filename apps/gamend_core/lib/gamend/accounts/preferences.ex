@@ -55,8 +55,9 @@ defmodule Gamend.Accounts.Preferences do
   @time_zone "timezone"
 
   @doc """
-  The preferences a page may set (`put_client/3`): core's `theme` and the
-  host's `:client_preferences`, each with its allowed values.
+  The preferences a page may set (`put_client/3`) from a list: core's
+  `theme` and the host's `:client_preferences`, each with its allowed
+  values. The device's `"timezone"` is set there too, from any known zone.
   """
   @spec client_keys() :: %{String.t() => [String.t()]}
   def client_keys do
@@ -73,7 +74,10 @@ defmodule Gamend.Accounts.Preferences do
   @doc """
   Save a preference a page set: `{:ok, user}`, or `{:error, :invalid}` for a
   key or value not in `client_keys/0`. The theme's `"system"` removes the
-  saved theme, so the device decides again.
+  saved theme, so the device decides again. `"timezone"` is no key of
+  `client_keys/0`: its value is any known IANA zone, the device's, saved
+  unless the user picked one by hand (`TimeZone.put_device/2`); a host's
+  `:client_preferences` entry for it is not read.
   """
   @spec put_client(User.t(), String.t(), String.t()) :: {:ok, User.t()} | {:error, term()}
   def put_client(%User{} = user, @time_zone, zone) when is_binary(zone) do

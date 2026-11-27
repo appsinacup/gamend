@@ -650,21 +650,20 @@ defmodule GamendWeb.UserAuth do
       locale = socket.assigns[:locale]
       prefs = Accounts.Preferences.get(user)
 
-      changes =
-        %{}
-        |> then(fn acc ->
-          if zone != prefs["timezone"] and not Accounts.TimeZone.manual?(user) and
-               Accounts.TimeZone.valid?(zone),
-             do: Map.put(acc, "timezone", zone),
-             else: acc
-        end)
-        |> then(fn acc ->
-          if is_binary(locale) and byte_size(locale) <= 16 and locale != prefs["locale"],
-            do: Map.put(acc, "locale", locale),
-            else: acc
-        end)
+      zone = Accounts.TimeZone.device_change(user, zone)
 
-      if changes != %{}, do: Accounts.Preferences.update(user, &Map.merge(&1, changes))
+      changes =
+        if is_binary(locale) and byte_size(locale) <= 16 and locale != prefs["locale"],
+          do: %{"locale" => locale},
+          else: %{}
+
+      # The zone decided again at the write: a pick made meanwhile stays.
+      if zone || changes != %{},
+        do:
+          Accounts.Preferences.update(
+            user,
+            &(&1 |> Map.merge(changes) |> Accounts.TimeZone.with_device(zone))
+          )
     end
   rescue
     # get_connect_params outside mount (a nested live_render) raises.

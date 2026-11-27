@@ -1,7 +1,9 @@
 defmodule Gamend.Accounts.PreferencesTest do
   use Gamend.DataCase, async: false
 
+  alias Gamend.Accounts
   alias Gamend.Accounts.Preferences
+  alias Gamend.Accounts.TimeZone
   alias Gamend.AccountsFixtures
 
   defmodule Host do
@@ -54,5 +56,12 @@ defmodule Gamend.Accounts.PreferencesTest do
     assert Preferences.row(%{user_id: user.id}) == %{"locale" => "fr", "timezone" => "UTC"}
     assert Preferences.row(%{user_id: nil}) == nil
     assert Preferences.row(%{user_id: Ecto.UUID.generate()}) == nil
+  end
+
+  test "a device's zone never replaces a pick made after the user was read", %{user: user} do
+    {:ok, _picked} = TimeZone.choose(user, "Asia/Tokyo")
+    {:ok, _user} = Preferences.put_client(user, "timezone", "Europe/Paris")
+
+    assert Accounts.get_user(user.id) |> TimeZone.of() == "Asia/Tokyo"
   end
 end

@@ -61,6 +61,7 @@ defmodule Gamend.Notifications.Preferences do
   """
 
   alias Gamend.Accounts.Preferences
+  alias Gamend.Accounts.TimeZone
   alias Gamend.Accounts.User
 
   require Gamend.Chat.ChatType, as: ChatType
@@ -378,58 +379,56 @@ defmodule Gamend.Notifications.Preferences do
   @doc "Set one group's channel. A channel the group does not let users change is refused."
   @spec put(User.t(), String.t(), String.t(), boolean()) :: {:ok, User.t()} | {:error, term()}
   def put(%User{} = user, group_key, channel, on?) when is_boolean(on?) do
-    case group(group_key) do
-      nil ->
-        {:error, :unknown_group}
-
-      %{admin: true} when user.is_admin != true ->
-        {:error, :unknown_group}
-
-      %{key: key, configurable: configurable} ->
-        if channel in configurable,
-          do: update(user, &put_choice(&1, key, channel, on?)),
-          else: {:error, :not_configurable}
-    end
+    with {:ok, key} <- changeable(user, group_key, [channel]),
+         do: update(user, &put_choice(&1, key, channel, on?))
   end
-
-  @switches [
-    PreferenceSwitch.off_all(),
-    PreferenceSwitch.off_email(),
-    PreferenceSwitch.off_push()
-  ]
 
   @doc """
   Several choices at once, in one write, as a client sends them
   (`PUT /api/v1/me/notification_settings`): `"groups"`, `%{group =>
-  %{channel => bool}}` (`put/4` each), and the switches `"off_all"`,
-  `"off_email"`, `"off_push"`, each `true` (`turn_off/2`) or `false`
-  (`turn_on/2`); a key left out is left as it is. Refused whole, with
+  %{channel => bool}}` (`put/4` each), the switches (`"off_all"`,
+  `"off_email"`, `"off_push"`), each `true` (`turn_off/2`) or `false`
+  (`turn_on/2`), and `"timezone"`, the user's own pick of the zone
+  reminders follow (`Gamend.Accounts.TimeZone.choose/2`; `""` goes back to
+  the device's). A key left out is left as it is. Refused whole, with
   nothing written: `:unknown_group` for a group the user has no row for
   (an admins' one for anyone else), `:not_configurable` for a channel the
-  group does not let users change.
+  group does not let users change, `:invalid_time_zone`.
   """
   @spec change(User.t(), map()) :: {:ok, User.t()} | {:error, term()}
   def change(%User{} = user, changes) when is_map(changes) do
-    switches = Map.take(changes, @switches)
+    switches = Map.take(changes, PreferenceSwitch.all())
 
-    case choices(user, Map.get(changes, "groups") || %{}) do
-      {:ok, []} when switches == %{} -> {:ok, user}
-      {:ok, choices} -> change(user, choices, switches)
-      error -> error
+    with {:ok, zone} <- zone_change(changes),
+         {:ok, choices} <- choices(user, Map.get(changes, "groups") || %{}) do
+      if choices == [] and switches == %{} and zone == :keep,
+        do: {:ok, user},
+        else: write_change(user, choices, switches, zone)
     end
   end
 
-  defp change(user, choices, switches) do
-    update(user, fn prefs ->
-      prefs =
-        Enum.reduce(choices, prefs, fn {key, channel, on?}, acc ->
+  # `:keep` for a change that names no zone, nil for the device's.
+  defp zone_change(%{"timezone" => ""}), do: {:ok, nil}
+
+  defp zone_change(%{"timezone" => zone}) when is_binary(zone) do
+    if TimeZone.valid?(zone), do: {:ok, zone}, else: {:error, :invalid_time_zone}
+  end
+
+  defp zone_change(_changes), do: {:ok, :keep}
+
+  defp write_change(user, choices, switches, zone) do
+    Preferences.update(user, fn prefs ->
+      notifications =
+        Enum.reduce(choices, prefs[@key] || %{}, fn {key, channel, on?}, acc ->
           put_choice(acc, key, channel, on?)
         end)
 
-      Enum.reduce(switches, prefs, fn
-        {switch, true}, acc -> Map.put(acc, switch, true)
-        {switch, false}, acc -> Map.delete(acc, switch)
-      end)
+      notifications =
+        Enum.reduce(switches, notifications, fn {switch, on?}, acc ->
+          put_switch(acc, switch, on?)
+        end)
+
+      prefs |> Map.put(@key, notifications) |> TimeZone.chosen(zone)
     end)
   end
 
@@ -437,20 +436,35 @@ defmodule Gamend.Notifications.Preferences do
   # checks one.
   defp choices(user, groups) do
     Enum.reduce_while(groups, {:ok, []}, fn {group_key, channels}, {:ok, acc} ->
-      case group(group_key) do
-        %{admin: true} when user.is_admin != true ->
-          {:halt, {:error, :unknown_group}}
-
-        %{key: key, configurable: configurable} ->
-          if Enum.all?(Map.keys(channels), &(&1 in configurable)),
-            do: {:cont, {:ok, acc ++ Enum.map(channels, fn {c, on?} -> {key, c, on?} end)}},
-            else: {:halt, {:error, :not_configurable}}
-
-        nil ->
-          {:halt, {:error, :unknown_group}}
+      case changeable(user, group_key, Map.keys(channels)) do
+        {:ok, key} -> {:cont, {:ok, Enum.map(channels, fn {c, on?} -> {key, c, on?} end) ++ acc}}
+        error -> {:halt, error}
       end
     end)
   end
+
+  # The group's key when `user` may change every one of `channels` of
+  # `group_key`: `:unknown_group` for a group they have no row for
+  # (`groups_for/1`), `:not_configurable` for a channel it keeps at its
+  # default.
+  defp changeable(user, group_key, channels) do
+    case Enum.find(
+           groups_for(user),
+           &(&1.key == group_key or group_key in Map.get(&1, :includes, []))
+         ) do
+      %{key: key, configurable: configurable} ->
+        if Enum.all?(channels, &(&1 in configurable)),
+          do: {:ok, key},
+          else: {:error, :not_configurable}
+
+      nil ->
+        {:error, :unknown_group}
+    end
+  end
+
+  # A switch turned on (`true`: that channel off) or back off.
+  defp put_switch(prefs, switch, true), do: Map.put(prefs, switch, true)
+  defp put_switch(prefs, switch, false), do: Map.delete(prefs, switch)
 
   # A switch (all email off, everything off) still wins over a choice:
   # turning one back on is `turn_on/2`, said in so many words.
@@ -462,15 +476,15 @@ defmodule Gamend.Notifications.Preferences do
 
   @doc "Turn off all email, all push, or everything (`:email | :push | :all`)."
   @spec turn_off(User.t(), :email | :push | :all) :: {:ok, User.t()} | {:error, term()}
-  def turn_off(%User{} = user, :all), do: update(user, &Map.put(&1, "off_all", true))
-  def turn_off(%User{} = user, :email), do: update(user, &Map.put(&1, "off_email", true))
-  def turn_off(%User{} = user, :push), do: update(user, &Map.put(&1, "off_push", true))
+  def turn_off(%User{} = user, which), do: update(user, &put_switch(&1, switch(which), true))
 
   @doc "Undo `turn_off/2`: each group's own choices apply again."
   @spec turn_on(User.t(), :email | :push | :all) :: {:ok, User.t()} | {:error, term()}
-  def turn_on(%User{} = user, :all), do: update(user, &Map.delete(&1, "off_all"))
-  def turn_on(%User{} = user, :email), do: update(user, &Map.delete(&1, "off_email"))
-  def turn_on(%User{} = user, :push), do: update(user, &Map.delete(&1, "off_push"))
+  def turn_on(%User{} = user, which), do: update(user, &put_switch(&1, switch(which), false))
+
+  defp switch(:all), do: PreferenceSwitch.off_all()
+  defp switch(:email), do: PreferenceSwitch.off_email()
+  defp switch(:push), do: PreferenceSwitch.off_push()
 
   @doc ~s(Whether a switch is on: `"off_all"`, `"off_email"`, `"off_push"`.)
   @spec off?(User.t() | nil, String.t()) :: boolean()

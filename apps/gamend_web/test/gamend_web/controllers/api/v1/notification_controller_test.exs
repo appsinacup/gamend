@@ -391,4 +391,15 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
     assert conn |> post("/api/v1/notifications/read_all") |> response(401)
     assert conn |> get("/api/v1/notifications/unread_count") |> response(401)
   end
+
+  test "POST /api/v1/notifications/read refuses more ids than an inbox holds", %{conn: conn} do
+    user = AccountsFixtures.user_fixture()
+    ids = for _ <- 0..Gamend.Limits.get(:max_notifications_per_user), do: Ecto.UUID.generate()
+
+    assert %{"error" => "too_many_ids"} =
+             conn
+             |> auth_conn(user)
+             |> post("/api/v1/notifications/read", %{ids: ids})
+             |> json_response(400)
+  end
 end

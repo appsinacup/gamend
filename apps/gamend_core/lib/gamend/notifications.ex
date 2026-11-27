@@ -261,10 +261,11 @@ defmodule Gamend.Notifications do
   end
 
   @doc """
-  Mark all notifications as read for a user: `{marked, nil}`. Those it
-  marks are told to the user's other connections (`notifications_read`).
+  Mark all notifications as read for a user: `{marked, unread_count}`.
+  Those it marks are told to the user's other connections
+  (`notifications_read`).
   """
-  @spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), nil}
+  @spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), non_neg_integer()}
   def mark_all_notifications_read(user_id) when is_binary(user_id) do
     # The notifications page calls this on every visit: with nothing unread
     # the cached lists and counts are still right, and dropping them made the
@@ -276,9 +277,13 @@ defmodule Gamend.Notifications do
   Mark the user's notifications `ids` read, in one statement: what the
   notifications page does with those that arrive while it is open, and a
   client with those it showed. Others' ids are skipped, and so are those
-  already read.
+  already read. `{marked, unread_count}`.
   """
-  @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
+  @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) ::
+          {non_neg_integer(), non_neg_integer()}
+  def mark_notifications_read(user_id, []) when is_binary(user_id),
+    do: {0, count_unread_notifications(user_id)}
+
   def mark_notifications_read(user_id, ids) when is_binary(user_id) and is_list(ids) do
     mark_read(
       user_id,
@@ -287,7 +292,7 @@ defmodule Gamend.Notifications do
   end
 
   # The unread ones of `query` marked read, and the ids marked said on the
-  # user's topic with what is left unread.
+  # user's topic with what is left unread: `{marked, unread_count}`.
   defp mark_read(user_id, query) do
     {marked, ids} =
       query
@@ -295,18 +300,18 @@ defmodule Gamend.Notifications do
       |> select([n], n.id)
       |> Repo.update_all(set: [read: true, updated_at: DateTime.utc_now(:second)])
 
-    if marked > 0, do: read_moved(user_id, ids)
-    {marked, nil}
+    if marked > 0,
+      do: {marked, read_moved(user_id, ids)},
+      else: {0, count_unread_notifications(user_id)}
   end
 
   # After the cache is dropped, so the count is the one after the write.
+  # Answers it.
   defp read_moved(user_id, ids) do
     invalidate_notifications_cache(user_id)
-
-    broadcast_user(
-      user_id,
-      {:notifications_read, %{ids: ids, unread_count: count_unread_notifications(user_id)}}
-    )
+    unread = count_unread_notifications(user_id)
+    broadcast_user(user_id, {:notifications_read, %{ids: ids, unread_count: unread}})
+    unread
   end
 
   @doc "Get a single notification by ID."

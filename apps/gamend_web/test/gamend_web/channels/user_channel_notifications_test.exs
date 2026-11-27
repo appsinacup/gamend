@@ -82,7 +82,7 @@ defmodule GamendWeb.UserChannelNotificationsTest do
     assert_push "updated", _user_payload
     assert_push "notification_created", %{read: false}
 
-    {1, nil} = Notifications.mark_notifications_read(b.id, [n.id])
+    {1, 0} = Notifications.mark_notifications_read(b.id, [n.id])
 
     assert_push "notifications_read", payload
     assert payload == %{ids: [n.id], unread_count: 0}

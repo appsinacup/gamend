@@ -10,6 +10,7 @@ defmodule GamendWeb.AdminLive.Notifications do
   alias GamendWeb.AdminLive.SentCard
   alias GamendWeb.HostLayouts
   alias GamendWeb.LiveHelpers
+  alias GamendWeb.NotificationSettings
   alias GamendWeb.UserLive.Settings.NotificationsTab
 
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
@@ -42,7 +43,7 @@ defmodule GamendWeb.AdminLive.Notifications do
       # The admins' notification groups ("Reports to review"): the admin's
       # own choices, kept off their account settings (`NotificationsTab`).
       |> assign(:user, user)
-      |> assign(:admin_notify_groups, NotificationsTab.admin_groups(user))
+      |> assign(:admin_notify_groups, NotificationSettings.admin_groups(user))
       |> assign(:page, 1)
       |> assign(:page_size, 25)
       |> assign(:filters, %{})

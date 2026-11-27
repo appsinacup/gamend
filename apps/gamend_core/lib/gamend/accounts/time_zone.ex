@@ -53,33 +53,68 @@ defmodule Gamend.Accounts.TimeZone do
   end
 
   @doc """
-  The zone a device says the user is in: a page's on connect, a client's
-  (`Gamend.Accounts.Preferences.put_client/3`). Saved as `put/2` does,
-  unless the user chose theirs by hand (`manual?/1`), which stays; an
-  unknown name is refused either way.
+  The zone a client's device says the user is in
+  (`Gamend.Accounts.Preferences.put_client/3`), saved when
+  `device_change/2` says so (a page's on connect is saved with its locale
+  in one write); an unknown name is refused.
   """
   @spec put_device(User.t(), String.t()) ::
           {:ok, User.t()} | {:error, :invalid_time_zone | term()}
   def put_device(%User{} = user, name) do
     cond do
       not valid?(name) -> {:error, :invalid_time_zone}
-      manual?(user) -> {:ok, user}
-      true -> put(user, name)
+      device_change(user, name) -> Preferences.update(user, &with_device(&1, name))
+      true -> {:ok, user}
     end
   end
+
+  @doc """
+  The zone worth writing from what a device says (`name`), nil for none: a
+  known zone, not the user's already, and the user picked none by hand
+  (`manual?/1`). Read from `user` as it was, so the write itself goes
+  through `with_device/2`.
+  """
+  @spec device_change(User.t(), term()) :: String.t() | nil
+  def device_change(%User{} = user, name) do
+    if valid?(name) and not manual?(user) and of(user) != name, do: name
+  end
+
+  @doc """
+  The preferences map `prefs` as it is at the write, with a device's
+  `name` (nil for none) unless the user picked a zone by hand: for
+  `Gamend.Accounts.Preferences.update/2`'s function, so a pick made
+  meanwhile stays.
+  """
+  @spec with_device(map(), String.t() | nil) :: map()
+  def with_device(prefs, name) when is_binary(name) do
+    if prefs[@manual] == true, do: prefs, else: Map.put(prefs, @key, name)
+  end
+
+  def with_device(prefs, nil), do: prefs
 
   @doc """
   The user's own pick: `name` is kept and the browser stops replacing it;
   `nil` goes back to automatic (the browser's zone, from the next visit).
   """
   @spec choose(User.t(), String.t() | nil) :: {:ok, User.t()} | {:error, term()}
-  def choose(%User{} = user, nil), do: Preferences.update(user, &Map.delete(&1, @manual))
-
   def choose(%User{} = user, name) do
-    if valid?(name),
-      do: Preferences.update(user, &Map.merge(&1, %{@key => name, @manual => true})),
+    if is_nil(name) or valid?(name),
+      do: Preferences.update(user, &chosen(&1, name)),
       else: {:error, :invalid_time_zone}
   end
+
+  @doc """
+  The preferences map `prefs` with the user's pick (`choose/2`): `name`
+  kept by hand, nil back to automatic (the zone stays until a device
+  sends its own), `:keep` as it is. For a writer that
+  saves it with other preferences at once.
+  """
+  @spec chosen(map(), String.t() | nil | :keep) :: map()
+  def chosen(prefs, :keep), do: prefs
+  def chosen(prefs, nil), do: Map.delete(prefs, @manual)
+
+  def chosen(prefs, name) when is_binary(name),
+    do: Map.merge(prefs, %{@key => name, @manual => true})
 
   @doc "Whether the user picked their time zone by hand (`choose/2`)."
   @spec manual?(User.t() | nil) :: boolean()

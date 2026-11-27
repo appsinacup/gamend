@@ -13,6 +13,9 @@ defmodule Gamend.Notifications do
   This module broadcasts to the `"notifications:user:<user_id>"` topic:
 
   - `{:notification_created, notification}` – a new notification was created
+  - `{:notifications_read, %{ids: ids, unread_count: count}}` – notifications
+    were marked read (`mark_notifications_read/2`, `mark_all_notifications_read/1`,
+    `mark_notification_read/2`): their ids and how many are left unread
 
   ## Usage
 
@@ -365,9 +368,12 @@ defmodule Gamend.Notifications do
   end
 
   @doc ~S"""
-    Mark all notifications as read for a user.
+    Mark all notifications as read for a user: `{marked, unread_count}`.
+    Those it marks are told to the user's other connections
+    (`notifications_read`).
+    
   """
-  @spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), nil}
+  @spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), non_neg_integer()}
   def mark_all_notifications_read(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -379,7 +385,9 @@ defmodule Gamend.Notifications do
   end
 
   @doc ~S"""
-    Mark a single notification as read. Only the recipient can mark it.
+    Mark a single notification as read. Only the recipient can mark it; one
+    already read answers it as it is.
+    
   """
   @spec mark_notification_read(user_id(), Ecto.UUID.t()) ::
           {:ok, Gamend.Notifications.Notification.t()} | {:error, atom()}
@@ -397,11 +405,13 @@ defmodule Gamend.Notifications do
 
   @doc ~S"""
     Mark the user's notifications `ids` read, in one statement: what the
-    notifications page does with those that arrive while it is open. Others'
-    ids are skipped.
+    notifications page does with those that arrive while it is open, and a
+    client with those it showed. Others' ids are skipped, and so are those
+    already read. `{marked, unread_count}`.
     
   """
-  @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
+  @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) ::
+          {non_neg_integer(), non_neg_integer()}
   def mark_notifications_read(_user_id, _ids) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

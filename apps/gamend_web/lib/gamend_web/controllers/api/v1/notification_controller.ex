@@ -2,6 +2,7 @@ defmodule GamendWeb.Api.V1.NotificationController do
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
+  import GamendWeb.ControllerScope
   import GamendWeb.Helpers.ParamParser
 
   alias Gamend.Accounts.Scope
@@ -123,7 +124,8 @@ defmodule GamendWeb.Api.V1.NotificationController do
     },
     responses: [
       ok: {"Deleted count", "application/json", DeletedCountResponse},
-      bad_request: Schemas.error("Bad request"),
+      bad_request:
+        Schemas.error("No ids (missing_param), or more than an inbox holds (too_many_ids)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -153,7 +155,8 @@ defmodule GamendWeb.Api.V1.NotificationController do
     },
     responses: [
       ok: {"Marked, and the unread count", "application/json", NotificationsReadResponse},
-      bad_request: Schemas.error("Bad request"),
+      bad_request:
+        Schemas.error("No ids (missing_param), or more than an inbox holds (too_many_ids)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -231,19 +234,10 @@ defmodule GamendWeb.Api.V1.NotificationController do
   end
 
   def delete(conn, %{"ids" => ids}) when is_list(ids) do
-    case Scope.user(conn.assigns.current_scope) do
-      %User{} = user ->
-        int_ids =
-          ids
-          |> Enum.map(&parse_id/1)
-          |> Enum.reject(&is_nil/1)
-
-        {deleted, _} = Notifications.delete_notifications(user.id, int_ids)
-        reply_data(conn, %{deleted: deleted})
-
-      _ ->
-        reply_error(conn, :unauthorized, "not_authenticated")
-    end
+    with_ids(conn, ids, fn user, ids ->
+      {deleted, _} = Notifications.delete_notifications(user.id, ids)
+      reply_data(conn, %{deleted: deleted})
+    end)
   end
 
   def delete(conn, _params) do
@@ -251,46 +245,33 @@ defmodule GamendWeb.Api.V1.NotificationController do
   end
 
   def mark_read(conn, %{"ids" => ids}) when is_list(ids) do
-    case Scope.user(conn.assigns.current_scope) do
-      %User{} = user ->
-        ids = ids |> Enum.map(&parse_id/1) |> Enum.reject(&is_nil/1)
-        {marked, _} = Notifications.mark_notifications_read(user.id, ids)
-        reply_read(conn, user, marked)
-
-      _ ->
-        reply_error(conn, :unauthorized, "not_authenticated")
-    end
+    with_ids(conn, ids, &reply_read(conn, Notifications.mark_notifications_read(&1.id, &2)))
   end
 
   def mark_read(conn, _params) do
     reply_error(conn, :bad_request, "missing_param", "ids is required (an array)")
   end
 
-  def mark_all_read(conn, _params) do
-    case Scope.user(conn.assigns.current_scope) do
-      %User{} = user ->
-        {marked, _} = Notifications.mark_all_notifications_read(user.id)
-        reply_read(conn, user, marked)
-
-      _ ->
-        reply_error(conn, :unauthorized, "not_authenticated")
-    end
-  end
+  def mark_all_read(conn, _params),
+    do: with_user(conn, &reply_read(conn, Notifications.mark_all_notifications_read(&1.id)))
 
   def unread_count(conn, _params) do
-    case Scope.user(conn.assigns.current_scope) do
-      %User{} = user ->
-        reply_data(conn, %{unread_count: Notifications.count_unread_notifications(user.id)})
-
-      _ ->
-        reply_error(conn, :unauthorized, "not_authenticated")
-    end
+    with_user(conn, fn user ->
+      reply_data(conn, %{unread_count: Notifications.count_unread_notifications(user.id)})
+    end)
   end
 
-  defp reply_read(conn, user, marked) do
-    reply_data(conn, %{
-      marked: marked,
-      unread_count: Notifications.count_unread_notifications(user.id)
-    })
+  defp reply_read(conn, {marked, unread}),
+    do: reply_data(conn, %{marked: marked, unread_count: unread})
+
+  # The signed-in user and the ids they name, those that are ids; more than
+  # an inbox holds (`max_notifications_per_user`) is refused, so one
+  # statement never binds an unbounded list.
+  defp with_ids(conn, ids, fun) do
+    with_user(conn, fn user ->
+      if length(ids) > Gamend.Limits.get(:max_notifications_per_user),
+        do: reply_error(conn, :bad_request, "too_many_ids"),
+        else: fun.(user, ids |> Enum.map(&parse_id/1) |> Enum.reject(&is_nil/1))
+    end)
   end
 end

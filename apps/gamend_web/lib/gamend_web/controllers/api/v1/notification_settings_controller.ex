@@ -1,28 +1,21 @@
 defmodule GamendWeb.Api.V1.NotificationSettingsController do
   @moduledoc """
   `GET` and `PUT /api/v1/me/notification_settings`: the settings page's
-  Notifications tab for a client (`GamendWeb.UserLive.Settings.NotificationsTab`).
-  The groups it has rows for and each one's channels
-  (`Gamend.Notifications.Preferences`), the three switches, and the time
-  zone reminders follow (`Gamend.Accounts.TimeZone`): a zone sent here is
-  the user's own pick, as the tab's select makes it; `""` goes back to the
-  device's.
+  Notifications tab for a client (`GamendWeb.NotificationSettings.view/1`).
+  A change is `Gamend.Notifications.Preferences.change/2`'s, written whole
+  or refused: a zone sent here is the user's own pick, as the tab's select
+  makes it; `""` goes back to the device's, whose next zone is kept.
   """
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
-  alias Gamend.Accounts.Preferences, as: AccountPreferences
-  alias Gamend.Accounts.Scope
-  alias Gamend.Accounts.TimeZone
-  alias Gamend.Accounts.User
+  import GamendWeb.ControllerScope
+
   alias Gamend.Notifications.Preferences
-  alias GamendWeb.NotificationEmail
+  alias GamendWeb.NotificationSettings
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.NotificationSettingsResponse
-  alias GamendWeb.UserLive.Settings.NotificationsTab
   alias OpenApiSpex.Schema
-
-  require Gamend.Notifications.PreferenceSwitch, as: PreferenceSwitch
 
   tags(["Notifications"])
 
@@ -85,67 +78,15 @@ defmodule GamendWeb.Api.V1.NotificationSettingsController do
     ]
   )
 
-  def show(conn, _params) do
-    case Scope.user(conn.assigns.current_scope) do
-      %User{} = user -> reply_data(conn, settings(user))
-      _ -> reply_error(conn, :unauthorized, "not_authenticated")
-    end
-  end
+  def show(conn, _params),
+    do: with_user(conn, &reply_data(conn, NotificationSettings.view(&1)))
 
   def update(conn, params) do
-    case Scope.user(conn.assigns.current_scope) do
-      %User{} = user -> change(conn, user, params)
-      _ -> reply_error(conn, :unauthorized, "not_authenticated")
-    end
-  end
-
-  defp change(conn, user, params) do
-    with {:ok, zone} <- zone(params),
-         {:ok, user} <- Preferences.change(user, params),
-         {:ok, user} <- choose_zone(user, zone) do
-      reply_data(conn, settings(user))
-    else
-      {:error, reason} -> reply_reason(conn, reason)
-    end
-  end
-
-  # `:keep` when the zone is left out, nil for the device's.
-  defp zone(%{"timezone" => ""}), do: {:ok, nil}
-
-  defp zone(%{"timezone" => zone}) when is_binary(zone) do
-    if TimeZone.valid?(zone), do: {:ok, zone}, else: {:error, :invalid_time_zone}
-  end
-
-  defp zone(_params), do: {:ok, :keep}
-
-  defp choose_zone(user, :keep), do: {:ok, user}
-  defp choose_zone(user, zone), do: TimeZone.choose(user, zone)
-
-  # The tab's rows in the user's language, as the page draws them.
-  defp settings(user) do
-    groups = fn -> Enum.map(NotificationsTab.shown_groups(user), &group(user, &1)) end
-
-    %{
-      channels: Preferences.channels(),
-      groups:
-        case AccountPreferences.locale(user) do
-          nil -> groups.()
-          locale -> Gettext.with_locale(locale, groups)
-        end,
-      off_all: Preferences.off?(user, PreferenceSwitch.off_all()),
-      off_email: Preferences.off?(user, PreferenceSwitch.off_email()),
-      off_push: Preferences.off?(user, PreferenceSwitch.off_push()),
-      timezone: TimeZone.of(user) || "",
-      timezone_manual: TimeZone.manual?(user)
-    }
-  end
-
-  defp group(user, group) do
-    %{
-      key: group.key,
-      label: NotificationEmail.group_label(group),
-      enabled: Map.new(Preferences.channels(), &{&1, Preferences.enabled?(user, group.key, &1)}),
-      configurable: group.configurable
-    }
+    with_user(conn, fn user ->
+      case Preferences.change(user, params) do
+        {:ok, user} -> reply_data(conn, NotificationSettings.view(user))
+        {:error, reason} -> reply_reason(conn, reason)
+      end
+    end)
   end
 end

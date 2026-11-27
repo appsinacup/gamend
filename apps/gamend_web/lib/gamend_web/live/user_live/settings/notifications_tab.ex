@@ -8,9 +8,11 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   A box the group does not let users change is shown, ticked or not, and
   disabled: "Account" email is how the account works.
 
-  An admins' group (`admin: true`, "Reports to review") is not here: it is
-  the admin's work, not their account's, so its row is on
-  `/admin/notifications` (`admin_groups/1`, `group_rows/1`).
+  The rows are `GamendWeb.NotificationSettings.shown_groups/1`'s. An
+  admins' group (`admin: true`, "Reports to review") is not here: it is the
+  admin's work, not their account's, so its row is on
+  `/admin/notifications` (`NotificationSettings.admin_groups/1`,
+  `group_rows/1`).
   """
 
   use GamendWeb, :html
@@ -19,39 +21,14 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
 
   alias Gamend.Accounts.TimeZone
   alias Gamend.Notifications.Preferences
-  alias GamendWeb.MountedRoutes
   alias GamendWeb.NotificationEmail
+  alias GamendWeb.NotificationSettings
 
   require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
-  require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
   require Gamend.Notifications.PreferenceSwitch, as: PreferenceSwitch
 
-  def assign_defaults(socket, user), do: assign(socket, :notify_groups, shown_groups(user))
-
-  @doc """
-  The groups `user` has a row for on this tab, and a client in
-  `GET /api/v1/me/notification_settings`. A group whose every notification
-  is about a feature the site does not have (`GamendWeb.MountedRoutes`,
-  `GamendWeb.Features`) has nothing to choose: its row goes. The game still
-  sends that traffic, and the stored choice is kept. An admins' group
-  (`admin: true`) is on the admin's page.
-  """
-  @spec shown_groups(Gamend.Accounts.User.t()) :: [map()]
-  def shown_groups(user),
-    do: Enum.filter(Preferences.groups_for(user), &(not &1.admin and shown?(&1)))
-
-  @doc "The admins' groups `user` gets (none for anyone else), for `/admin/notifications`."
-  @spec admin_groups(Gamend.Accounts.User.t()) :: [map()]
-  def admin_groups(user), do: Enum.filter(Preferences.groups_for(user), & &1.admin)
-
-  defp shown?(%{key: PreferenceGroup.social()}),
-    do:
-      MountedRoutes.settings_tab?(SettingsTab.friends()) or
-        MountedRoutes.settings_tab?(SettingsTab.groups())
-
-  defp shown?(%{key: PreferenceGroup.chat()}), do: MountedRoutes.mounted?(~p"/chat")
-  defp shown?(%{key: PreferenceGroup.quests()}), do: GamendWeb.Features.enabled?(:list_quests)
-  defp shown?(_group), do: true
+  def assign_defaults(socket, user),
+    do: assign(socket, :notify_groups, NotificationSettings.shown_groups(user))
 
   attr :settings_tab, :string, required: true
   attr :user, :map, required: true

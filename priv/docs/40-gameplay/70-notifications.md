@@ -228,7 +228,7 @@ A user's time zone and last site language are saved alongside: `Gamend.Accounts.
 {"groups": {"social": {"push": false}}, "off_email": true, "timezone": "Europe/Bucharest"}
 ```
 
-A `timezone` sent here is the user's own pick; `""` goes back to the device's. A change is refused whole: `unknown_group` (404), `not_configurable` (403, a channel the group keeps at its default), `invalid_time_zone` (422). It answers the settings as they now are.
+A `timezone` sent here is the user's own pick; `""` goes back to the device's (the zone stays until a device sends its own). A group the user has no row for (an admin's, a host's `shown_to` one) is `unknown_group`. A change is refused whole: `unknown_group` (404), `not_configurable` (403, a channel the group keeps at its default), `invalid_time_zone` (422). It answers the settings as they now are.
 
 ## What was sent
 

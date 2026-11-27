@@ -41,14 +41,41 @@ POST .../icon             %{"key" => key}     (confirm)
 
 There is deliberately no generic `POST /uploads`: authorization is a property of the *target* (only you may set your avatar, only a group admin that group's icon), so each entity keeps its own endpoint pair and only the mechanism is shared. The pairs are `/api/v1/me/avatar/upload_url` + `/me/avatar` for the caller's avatar, and `.../icon/upload_url` + `.../icon` under groups, leaderboards, tournaments and quests (see [/api/docs](/api/docs); in the Godot addon these are `user_create_current_user_avatar_upload_url` and `user_set_current_user_avatar` on `GamendApi`).
 
-The object key is server-chosen (`<namespace>/<owner_id>/<random><ext>` via `Storage.build_key/3`, e.g. `avatars/<user_id>/…` or `icons/groups/<group_id>/…`), so a client can neither pick a key nor overwrite another object, and every change mints a fresh key.
+The object key is server-chosen (`<namespace>/<owner_id>/<random><ext>` via `Storage.build_key/3`, e.g. `avatars/<user_id>/…` or `icons/groups/<group_id>/…`), so a client can neither pick a key nor overwrite another object, and every change mints a fresh key. Confirming an avatar drops the pictures it replaces, as the settings page's Save does.
+
+On the local backend the ticket's `url` is `/api/v1/storage/upload?key=…&token=…`, a path with no host: the client sends it to the server it talks to. The `token` signs the key and the content type, and it is all the route takes, as an S3 presigned URL is: PUT the bytes with the ticket's `headers` and no session. An S3 ticket's `url` is the bucket's. Either is a capability for one key until `expires_in` (`GAMEND_STORAGE_UPLOAD_TTL_SECONDS`): a ban or a sign-out after it was issued does not void it, and confirm, which takes the session, is where the object reaches the account. The Balaur SDK's `core::upload(ticket, bytes)` does either.
+
+### Why an upload is refused
+
+Each refusal has its own `error`, so a client says what the site's settings page says for it:
+
+| Step | `error` (status) | Means | The site says |
+|---|---|---|---|
+| ticket | `unsupported_content_type` (400) | not PNG, JPEG, WebP or GIF | File is too large or not a supported image. |
+| ticket, confirm | `anonymous_avatar_disabled` (403) | a guest may not set an avatar | Link an email or a sign-in provider to set a custom avatar. |
+| ticket, confirm | `not_found` (404) | `GAMEND_FEATURES_USER_IMAGE_UPLOADS` is off | Avatar uploads are not available. |
+| upload | `invalid_token` (403) | not a ticket this server signed | Could not update avatar. |
+| upload | `ticket_expired` (403) | older than its `expires_in` | Could not update avatar. |
+| upload | `key_mismatch` (403) | `?key=` is not the ticket's | Could not update avatar. |
+| upload | `content_type_mismatch` (415) | sent as another type than the ticket's | File is too large or not a supported image. |
+| upload | `too_large` (413) | over `GAMEND_LIMITS_MAX_UPLOAD_BYTES` | File is too large or not a supported image. |
+| upload | `content_mismatch` (415) | the bytes are not the ticket's type | That file is not a valid image. |
+| upload | `quota_exceeded` (507) | the owner's prefix is full | Could not update avatar. |
+| upload | `storage_unavailable` (503) | the backend failed | Could not update avatar. |
+| confirm | `missing_key` (400) | no `key` | Could not update avatar. |
+| confirm | `key_not_owned` (403) | the key is not under the target's prefix | Could not update avatar. |
+| confirm | `object_not_found` (400) | nothing was uploaded there | Could not update avatar. |
+| confirm | `too_large` (413) | the stored object is over the cap (deleted) | File is too large or not a supported image. |
+| confirm | `not_an_image` (415) | the stored bytes are no image (deleted) | That file is not a valid image. |
+
+The site's words are core's msgids (`gettext`), so a client in another language finds them in the site's catalogue.
 
 ## What is checked, and where
 
 The backends give different guarantees at upload time, so the checks are split:
 
 - **At ticket time** (both backends): the declared content type must be in the allow-list: `image/png`, `image/jpeg`, `image/webp`, `image/gif` by default.
-- **At upload time** (local only): the size cap, the per-owner quota, and magic-byte sniffing all run, because the bytes pass through `PUT /api/v1/storage/upload`. On the local backend the key also travels inside a signed token, never the query string.
+- **At upload time** (local only): the ticket's expiry, its key and content type, the size cap, the per-owner quota, and magic-byte sniffing all run, because the bytes pass through `PUT /api/v1/storage/upload`. On the local backend the key and the content type travel inside the signed token, never the query string.
 - **At confirm time** (both backends): size and magic bytes are re-checked against the *stored* object, and a failing object is deleted. On S3 a presigned PUT goes straight to the bucket, so confirm is the only point at which the server sees the object at all, so nothing may persist an object URL without going through it.
 
 Two limits bound the whole surface: `GAMEND_LIMITS_MAX_UPLOAD_BYTES` (5 MiB per object) and `GAMEND_LIMITS_MAX_UPLOAD_BYTES_PER_OWNER` (50 MiB per owner prefix, the cap on orphans left by tickets a client requests but never confirms).

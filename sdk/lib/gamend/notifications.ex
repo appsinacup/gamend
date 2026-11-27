@@ -290,10 +290,13 @@ defmodule Gamend.Notifications do
   end
 
   @doc ~S"""
-    List all notifications for a user, ordered oldest-first so the client
-    receives them in chronological order.
+    List a user's notifications, a page at a time: oldest first, so the client
+    receives them in chronological order, or newest first, as the site's
+    notifications page shows them.
     
-    Supports pagination via `:page` and `:page_size` options.
+    Options: `:page`, `:page_size` and `:sort_by`, `Gamend.SortKey`'s
+    `inserted_at_asc` (oldest first, the default) or `inserted_at` (newest
+    first).
     
   """
   @spec list_notifications(

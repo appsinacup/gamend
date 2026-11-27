@@ -83,6 +83,36 @@ defmodule GamendWeb.Api.V1.AvatarUploadTest do
       assert body["profile_url"] =~ "/storage/#{key}"
     end
 
+    # What a game client does: the ticket's own url and headers, no session,
+    # as it PUTs to an S3 presigned URL; then confirm, and the account reads
+    # the picture back. A second picture takes the first one's place.
+    test "a client PUTs to the ticket's url with no session, confirms, and GET /me shows it",
+         %{conn: conn} do
+      put_ticket = fn ->
+        %{"url" => url, "method" => "PUT", "headers" => headers, "key" => key} =
+          ticket(conn, "image/png")
+
+        assert String.starts_with?(url, "/api/v1/storage/upload?key=")
+
+        up =
+          headers
+          |> Enum.reduce(build_conn(), fn {name, value}, c -> put_req_header(c, name, value) end)
+          |> put(url, @png)
+
+        assert json_response(up, 200) == %{"ok" => true}
+        assert json_response(post(conn, "/api/v1/me/avatar", %{key: key}), 200)
+        key
+      end
+
+      first = put_ticket.()
+      assert json_response(get(conn, "/api/v1/me"), 200)["data"]["profile_url"] =~ first
+
+      second = put_ticket.()
+      assert json_response(get(conn, "/api/v1/me"), 200)["data"]["profile_url"] =~ second
+      assert Gamend.Storage.exists?(second)
+      refute Gamend.Storage.exists?(first)
+    end
+
     test "rejects an unsigned key", %{conn: conn, user: user} do
       up =
         conn
@@ -101,7 +131,38 @@ defmodule GamendWeb.Api.V1.AvatarUploadTest do
         |> put_req_header("content-type", "image/png")
         |> put(upload_path("avatars/someone-else/x.png", token), @png)
 
-      assert json_response(up, 403)["error"] == "forbidden"
+      assert json_response(up, 403)["error"] == "key_mismatch"
+    end
+
+    test "rejects a ticket past its expires_in", %{conn: conn} do
+      %{"key" => key, "expires_in" => ttl} = ticket(conn, "image/png")
+
+      token =
+        Phoenix.Token.sign(GamendWeb.Endpoint, "storage upload", {key, "image/png"},
+          signed_at: System.system_time(:second) - ttl - 1
+        )
+
+      up =
+        build_conn()
+        |> put_req_header("content-type", "image/png")
+        |> put(upload_path(key, token), @png)
+
+      assert json_response(up, 403)["error"] == "ticket_expired"
+      refute Gamend.Storage.exists?(key)
+    end
+
+    # The key carries the ticket's extension, so the bytes must be the
+    # ticket's type, even when they are another image.
+    test "rejects a content type other than the ticket's", %{conn: conn} do
+      %{"key" => key, "token" => token} = ticket(conn, "image/png")
+
+      up =
+        build_conn()
+        |> put_req_header("content-type", "image/jpeg")
+        |> put(upload_path(key, token), <<0xFF, 0xD8, 0xFF, "jpeg">>)
+
+      assert json_response(up, 415)["error"] == "content_type_mismatch"
+      refute Gamend.Storage.exists?(key)
     end
 
     test "rejects a forged token", %{conn: conn, user: user} do
@@ -110,7 +171,7 @@ defmodule GamendWeb.Api.V1.AvatarUploadTest do
         |> put_req_header("content-type", "image/png")
         |> put(upload_path("avatars/#{user.id}/x.html", "not-a-real-token"), @png)
 
-      assert json_response(up, 403)["error"] == "forbidden"
+      assert json_response(up, 403)["error"] == "invalid_token"
     end
 
     # The key is server-chosen, so a client can never land an object under an
@@ -200,7 +261,7 @@ defmodule GamendWeb.Api.V1.AvatarUploadTest do
   describe "POST /api/v1/me/avatar" do
     test "rejects confirming a key owned by someone else", %{conn: conn} do
       conn = post(conn, "/api/v1/me/avatar", %{key: "avatars/someone-else/x.png"})
-      assert json_response(conn, 403)["error"] == "forbidden"
+      assert json_response(conn, 403)["error"] == "key_not_owned"
     end
 
     test "rejects confirming a non-existent object", %{conn: conn, user: user} do

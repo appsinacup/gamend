@@ -74,3 +74,32 @@ defmodule GamendWeb.Schemas.NotificationSettingsResponse do
   @moduledoc "The notification settings under `data`."
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.NotificationSettings
 end
+
+defmodule GamendWeb.Schemas.TimeZones do
+  @moduledoc """
+  The time zones a person picks from (`Gamend.Accounts.TimeZone.names/0`), as
+  the settings page's Notifications tab lists them.
+  """
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "TimeZones",
+    description: "The time zones the settings page's picker offers",
+    type: :object,
+    properties: %{
+      zones: %Schema{
+        type: :array,
+        items: %Schema{type: :string},
+        description:
+          "IANA names, sorted, `UTC` among them: each is the picker's value and its words"
+      }
+    },
+    required: [:zones]
+  })
+end
+
+defmodule GamendWeb.Schemas.TimeZonesResponse do
+  @moduledoc "The time zones under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.TimeZones
+end

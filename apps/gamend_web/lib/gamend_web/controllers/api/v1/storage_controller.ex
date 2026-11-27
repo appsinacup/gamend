@@ -4,17 +4,18 @@ defmodule GamendWeb.Api.V1.StorageController do
 
   For the S3 backend clients upload straight to the bucket via the presigned URL
   and these endpoints are unused; for the local backend the upload ticket points
-  `PUT /storage/upload` here.
+  at `PUT /api/v1/storage/upload` here.
 
-  ## Why the key is signed
+  ## Why the ticket is signed
 
   The key decides both where the object lands and, on the way back out, what
   extension it carries. Deriving it from the query string made it
-  client-controlled: an authenticated user could PUT `avatars/<own_id>/x.html`
-  and have it served back from our own origin as `text/html`. So the key comes
-  from a token `GamendWeb.Uploads` signed when it issued the ticket, and
-  `?key=` is only ever a cross-check. Authorization happened at ticket time,
-  which is also what lets non-avatar prefixes (entity icons) upload here at all.
+  client-controlled: a user could PUT `avatars/<own_id>/x.html` and have it
+  served back from our own origin as `text/html`. So the key and the content
+  type come from a token `GamendWeb.Uploads` signed when it issued the ticket,
+  and `?key=` is only ever a cross-check. Authorization happened at ticket
+  time, so the token is all this route takes, as an S3 presigned URL is: no
+  session, which also lets non-avatar prefixes (entity icons) upload here.
   """
 
   use GamendWeb, :controller
@@ -30,6 +31,10 @@ defmodule GamendWeb.Api.V1.StorageController do
   # as an opaque download.
   @servable_types ~w(image/png image/jpeg image/webp image/gif)
 
+  # What an upload is refused for, each its own code (`GamendWeb.ErrorStatus`).
+  @refusals ~w(ticket_expired key_mismatch content_type_mismatch content_mismatch too_large
+               quota_exceeded)a
+
   tags(["Storage"])
 
   operation(:upload,
@@ -37,14 +42,15 @@ defmodule GamendWeb.Api.V1.StorageController do
     summary: "Upload a file's bytes to an upload ticket (local storage)",
     description:
       "The URL an upload ticket names when storage is local: the client PUTs the raw " <>
-        "bytes here. An S3 backend's ticket names the bucket instead.",
-    security: [%{"authorization" => []}],
+        "bytes there with the ticket's `content-type`, and the ticket's `token` is all " <>
+        "it takes, as an S3 presigned URL is (no session). Then the ticket's confirm " <>
+        "call records the key. An S3 backend's ticket names the bucket instead.",
     parameters: [
       token: [
         in: :query,
         schema: %Schema{type: :string},
         required: true,
-        description: "The ticket's signed token; it names the key"
+        description: "The ticket's signed token; it names the key and the content type"
       ],
       key: [
         in: :query,
@@ -57,11 +63,16 @@ defmodule GamendWeb.Api.V1.StorageController do
     responses: [
       ok: {"Stored", "application/json", OkResponse},
       bad_request: Schemas.error("No token (missing_param)"),
-      forbidden: Schemas.error("The token does not name this key (forbidden)"),
-      request_entity_too_large: Schemas.error("Too large (too_large)"),
+      forbidden:
+        Schemas.error(
+          "Not a ticket this server signed (invalid_token), past its expires_in " <>
+            "(ticket_expired), or `key` is not the ticket's (key_mismatch)"
+        ),
+      request_entity_too_large: Schemas.error("Over the upload cap (too_large)"),
       unsupported_media_type:
         Schemas.error(
-          "The bytes are not the type sent (content_mismatch, unsupported_content_type)"
+          "Sent as another content type than the ticket's (content_type_mismatch), or the " <>
+            "bytes are not that type (content_mismatch)"
         ),
       insufficient_storage: Schemas.error("The owner's quota is full (quota_exceeded)"),
       service_unavailable: Schemas.error("The storage backend failed (storage_unavailable)")
@@ -72,36 +83,27 @@ defmodule GamendWeb.Api.V1.StorageController do
   operation(:show, false)
 
   @doc """
-  PUT /storage/upload?key=...&token=... — authenticated raw-body upload (local
-  backend). Answers `{"ok": true}`: the client already holds the key from its
-  ticket, and an S3 presigned PUT answers with no body at all.
+  PUT /api/v1/storage/upload?key=...&token=... — a local ticket's raw-body
+  upload, authorized by the token alone. Answers `{"ok": true}`: the client
+  already holds the key from its ticket, and an S3 presigned PUT answers with
+  no body at all. Each refusal has its own code, so a client can say which.
   """
   def upload(conn, %{"token" => token} = params) do
-    content_type = Uploads.request_content_type(conn)
-    max = Gamend.Limits.get(:max_upload_bytes)
-
-    with {:ok, key} <- verify_token(token, params["key"]),
-         {:ok, body, conn} <- Uploads.read_full_body(conn, max),
-         :ok <- Storage.validate_upload(content_type, byte_size(body)),
+    with {:ok, {key, content_type}} <- Uploads.verify_ticket(token),
+         :ok <- same_key(key, params["key"]),
+         :ok <- same_content_type(Uploads.request_content_type(conn), content_type),
+         {:ok, body, conn} <- Uploads.read_full_body(conn, Gamend.Limits.get(:max_upload_bytes)),
          :ok <- verify_magic_bytes(body, content_type),
          :ok <- check_owner_quota(key, byte_size(body)),
          {:ok, ^key} <- Storage.put(key, body, content_type: content_type) do
       reply_ok(conn)
     else
-      {:error, :forbidden} ->
-        reply_error(conn, :forbidden, "forbidden")
+      # A ticket this server did not sign; a provider's `invalid_token` is a 400.
+      {:error, :invalid_token} ->
+        reply_error(conn, :forbidden, "invalid_token")
 
-      {:error, :content_mismatch} ->
-        reply_error(conn, :unsupported_media_type, "content_mismatch")
-
-      {:error, :too_large} ->
-        reply_error(conn, :request_entity_too_large, "too_large")
-
-      {:error, :quota_exceeded} ->
-        reply_error(conn, :insufficient_storage, "quota_exceeded")
-
-      {:error, :unsupported_content_type} ->
-        reply_error(conn, :unsupported_media_type, "unsupported_content_type")
+      {:error, reason} when reason in @refusals ->
+        reply_reason(conn, reason)
 
       # Every check before it is answered above: this is the write failing.
       {:error, reason} ->
@@ -216,14 +218,14 @@ defmodule GamendWeb.Api.V1.StorageController do
       else: :ok
   end
 
-  defp verify_token(token, requested_key) do
-    case Phoenix.Token.verify(GamendWeb.Endpoint, Uploads.token_salt(), token,
-           max_age: Uploads.token_max_age()
-         ) do
-      {:ok, key} when requested_key in [nil, key] -> {:ok, key}
-      {:ok, _mismatched} -> {:error, :forbidden}
-      {:error, _} -> {:error, :forbidden}
-    end
+  # `?key=` is optional, and when given it must be the ticket's own.
+  defp same_key(key, requested) when requested in [nil, key], do: :ok
+  defp same_key(_key, _requested), do: {:error, :key_mismatch}
+
+  # The ticket named one content type, and its key that type's extension. A
+  # media type is the same in any case.
+  defp same_content_type(sent, ticket) do
+    if String.downcase(sent) == ticket, do: :ok, else: {:error, :content_type_mismatch}
   end
 
   # The declared content type is just a header. Check the bytes actually start

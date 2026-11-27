@@ -341,6 +341,9 @@ Two steps, never bytes through the app server:
 `POST .../icon/upload_url` returns a presigned ticket, the client PUTs to
 storage, `POST .../icon` confirms the key. `GamendWeb.Uploads` owns the
 mechanism and confines a client-supplied key to its own entity's prefix.
+The local backend's upload route takes the ticket's signed token and no
+session, as an S3 presigned URL does; each refusal is its own `error`
+([object storage](../../priv/docs/45-storage/20-object-storage.md)).
 
 ## Running the checks
 

@@ -210,8 +210,8 @@ defmodule GamendWeb.Api.V1.MeController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Upload ticket", "application/json", UploadTicketResponse},
-      bad_request: Schemas.error("Invalid content type or size"),
-      forbidden: Schemas.error("Avatars are disabled for anonymous accounts"),
+      bad_request: Schemas.error("Not an image type the server takes (unsupported_content_type)"),
+      forbidden: Schemas.error("A guest may not upload one (anonymous_avatar_disabled)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -249,12 +249,16 @@ defmodule GamendWeb.Api.V1.MeController do
       %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}
     },
     security: [%{"authorization" => []}],
-    responses: [
-      ok: {"Avatar updated", "application/json", CurrentUserResponse},
-      bad_request: Schemas.error("Object not found, or missing key"),
-      forbidden: Schemas.error("Key not owned by user, or avatars disabled"),
-      unauthorized: Schemas.error("Not authenticated")
-    ]
+    responses:
+      [
+        ok: {"Avatar updated", "application/json", CurrentUserResponse},
+        forbidden:
+          Schemas.error(
+            "The key is not under the user's avatars (key_not_owned), or a guest may not " <>
+              "upload one (anonymous_avatar_disabled)"
+          ),
+        unauthorized: Schemas.error("Not authenticated")
+      ] ++ Uploads.confirm_errors()
   )
 
   def set_avatar(conn, params) do
@@ -266,10 +270,17 @@ defmodule GamendWeb.Api.V1.MeController do
   end
 
   defp do_set_avatar(conn, user, params) do
-    Uploads.confirm(conn, StoragePrefix.avatars(), user.id, params["key"], fn url ->
+    key = params["key"]
+
+    Uploads.confirm(conn, StoragePrefix.avatars(), user.id, key, fn url ->
       case Gamend.Accounts.update_user_avatar(user, url) do
-        {:ok, updated} -> reply_data(conn, current_user(updated))
-        {:error, changeset} -> unprocessable(conn, changeset)
+        # The pictures it replaces go, as the settings page's Save drops them.
+        {:ok, updated} ->
+          _ = Gamend.Accounts.prune_user_avatars(user.id, key)
+          reply_data(conn, current_user(updated))
+
+        {:error, changeset} ->
+          unprocessable(conn, changeset)
       end
     end)
   end

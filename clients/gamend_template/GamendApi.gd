@@ -990,6 +990,10 @@ func health_index() -> GamendResult:
 func time_get_server_time() -> GamendResult:
 	return await _call_api(TimeApi.new(_config), "get_server_time")
 
+## The time zones the settings page's picker offers (`zones`, IANA names)
+func time_list_time_zones() -> GamendResult:
+	return await _call_api(TimeApi.new(_config), "list_time_zones")
+
 ### HOOKS
 
 ## Invoke a hook function via HTTP
@@ -1507,6 +1511,10 @@ func chat_chat_unread_count(chat_type: String, chat_ref_id: String) -> GamendRes
 func notifications_count_unread_notifications() -> GamendResult:
 	return await _call_api(NotificationsApi.new(_config), "count_unread_notifications", [])
 
+## Delete every notification, as the notifications page's Delete all does
+func notifications_delete_all_notifications() -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "delete_all_notifications", [])
+
 ## Delete notifications by IDs
 func notifications_delete_notifications(deleteNotificationsRequest: GamendDeleteNotificationsRequest) -> GamendResult:
 	return await _call_api(NotificationsApi.new(_config), "delete_notifications", [deleteNotificationsRequest])
@@ -1523,8 +1531,10 @@ func notifications_list_notifications(
 	page = null,
 	# pageSize: int   Eg: 56
 	# Page size (max results per page)
-	pageSize = null) -> GamendResult:
-	return await _call_api(NotificationsApi.new(_config), "list_notifications", [page, pageSize])
+	pageSize = null,
+	# sortBy: String   "inserted_at_asc" oldest first (the default), "inserted_at" newest first
+	sortBy = null) -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "list_notifications", [page, pageSize, sortBy])
 
 ## Mark every notification read
 func notifications_mark_all_notifications_read() -> GamendResult:

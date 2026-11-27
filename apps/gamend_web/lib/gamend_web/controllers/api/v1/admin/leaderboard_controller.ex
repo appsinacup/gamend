@@ -164,7 +164,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
        }},
     responses: [
       ok: {"Upload ticket", "application/json", UploadTicketResponse},
-      bad_request: Schemas.error("Unsupported content type"),
+      bad_request: Schemas.error("Not an image type the server takes (unsupported_content_type)"),
       not_found: Schemas.error("Not found")
     ]
   )
@@ -190,12 +190,12 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
     request_body:
       {"Uploaded object key", "application/json",
        %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}},
-    responses: [
-      ok: {"Updated leaderboard", "application/json", LeaderboardResponse},
-      bad_request: Schemas.error("Object not found"),
-      forbidden: Schemas.error("Key not owned by this leaderboard"),
-      not_found: Schemas.error("Not found")
-    ]
+    responses:
+      [
+        ok: {"Updated leaderboard", "application/json", LeaderboardResponse},
+        forbidden: Schemas.error("The key is not this leaderboard's (key_not_owned)"),
+        not_found: Schemas.error("Not found")
+      ] ++ Uploads.confirm_errors()
   )
 
   def set_icon(conn, %{"id" => id} = params) do

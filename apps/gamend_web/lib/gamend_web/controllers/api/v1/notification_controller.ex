@@ -23,13 +23,16 @@ defmodule GamendWeb.Api.V1.NotificationController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require Gamend.SortKey, as: SortKey
+
   tags(["Notifications"])
 
   operation(:index,
     operation_id: "list_notifications",
     summary: "List own notifications",
     description:
-      "Return all undeleted notifications for the authenticated user, ordered oldest-first. Supports pagination.",
+      "A page of the authenticated user's notifications, oldest first, or newest first " <>
+        "with `sort_by=inserted_at`, as the site's notifications page lists them.",
     security: [%{"authorization" => []}],
     parameters: [
       page: [
@@ -42,6 +45,16 @@ defmodule GamendWeb.Api.V1.NotificationController do
         in: :query,
         schema: %Schema{type: :integer},
         description: "Page size (max results per page)",
+        required: false
+      ],
+      sort_by: [
+        in: :query,
+        schema: %Schema{
+          type: :string,
+          enum: [SortKey.inserted_at_asc(), SortKey.inserted_at()],
+          default: SortKey.inserted_at_asc()
+        },
+        description: "`inserted_at_asc` oldest first (the default), `inserted_at` newest first",
         required: false
       ]
     ],
@@ -130,6 +143,20 @@ defmodule GamendWeb.Api.V1.NotificationController do
     ]
   )
 
+  operation(:delete_all,
+    operation_id: "delete_all_notifications",
+    summary: "Delete every notification",
+    description:
+      "Delete all of the authenticated user's notifications, as Delete all on the site's " <>
+        "notifications page does. With an unread one among them, the user's connections " <>
+        "hear `notifications_read` with no ids and the new `unread_count`.",
+    security: [%{"authorization" => []}],
+    responses: [
+      ok: {"Deleted count", "application/json", DeletedCountResponse},
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
   operation(:mark_read,
     operation_id: "mark_notifications_read",
     summary: "Mark notifications read by IDs",
@@ -197,7 +224,11 @@ defmodule GamendWeb.Api.V1.NotificationController do
         {page, page_size} = Pagination.params(params)
 
         notifications =
-          Notifications.list_notifications(user.id, page: page, page_size: page_size)
+          Notifications.list_notifications(user.id,
+            page: page,
+            page_size: page_size,
+            sort_by: params["sort_by"] || SortKey.inserted_at_asc()
+          )
 
         total_count = Notifications.count_notifications(user.id)
 
@@ -242,6 +273,13 @@ defmodule GamendWeb.Api.V1.NotificationController do
 
   def delete(conn, _params) do
     reply_error(conn, :bad_request, "missing_param", "ids is required (an array)")
+  end
+
+  def delete_all(conn, _params) do
+    with_user(conn, fn user ->
+      {deleted, _} = Notifications.delete_all_notifications(user.id)
+      reply_data(conn, %{deleted: deleted})
+    end)
   end
 
   def mark_read(conn, %{"ids" => ids}) when is_list(ids) do

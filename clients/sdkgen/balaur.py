@@ -23,7 +23,7 @@ the one way to sign in, and each keeps the session the calls after it carry.
 import json
 import re
 
-from model import CLIENTS, ROOT, Model, resolve, snake, wrap
+from model import CLIENTS, ROOT, Model, body_kind, resolve, snake, wrap
 
 TEMPLATE = CLIENTS / "balaur_template"
 OUT = ROOT / "balaur_addons" / "addons" / "gamend"
@@ -96,13 +96,17 @@ def short_name(op: dict, file: str) -> str:
 
 def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     """One operation as an async function over `core::rest`, answering its
-    reply. Path parameters are `str`, as they are in a path; the body and the
-    query are JSON maps, so `any`."""
+    reply. Path parameters are `str`, as they are in a path; a JSON body and
+    the query are maps, so `any`; a body of bytes is the bytes and the
+    content type they are sent as, over `core::rest_bytes`."""
     args = [f"{safe(p)}: str" for p in op["path_params"]]
     required_body: list[str] = []
-    if op["body"]:
+    kind = body_kind(op)
+    if kind == "json":
         args.append("params: any")
         required_body = list(resolve(model.spec, op["body"]["schema"]).get("required", []))
+    elif kind == "bytes":
+        args += ["bytes: [int]", "content_type: str"]
     if op["query"]:
         args.append("options: any")
     called = json.dumps(f"gamend::{file}::{name}")
@@ -127,9 +131,12 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
         allowed = ", ".join(json.dumps(q) for q, _ in op["query"])
         out.append(f"    let query = core::query(options, [{allowed}]);")
     path = path_expression(op, bool(op["query"]))
-    # A left-out body is nil, so a call with none writes none.
-    body = ", params" if op["body"] else ""
-    out.append(f'    let reply = await core::rest("{op["method"]}", {path}{body});')
+    if kind == "bytes":
+        out.append(f'    let reply = await core::rest_bytes("{op["method"]}", {path}, bytes, content_type);')
+    else:
+        # A left-out body is nil, so a call with none writes none.
+        body = ", params" if kind == "json" else ""
+        out.append(f'    let reply = await core::rest("{op["method"]}", {path}{body});')
     out.append("    reply")
     out.append("}")
     return "\n".join(out)
@@ -303,14 +310,14 @@ def write_readme(model: Model) -> str:
         "| Module | For |",
         "| --- | --- |",
         "| `gamend::client` | `configure`, signing in by device, email, Google ID token, Apple code or Steam ticket and confirming an email account, the socket, hooks and the key-value cache |",
-        "| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run |",
+        "| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run: its refresh token in the system's secure storage (`secrets::`), the rest in a save slot |",
         "| `gamend::socket` | The realtime socket's node: Phoenix Channels over `websocket`, heartbeats, reconnects and rejoins |",
         "| `gamend::presence` | The user cache |",
         "| `gamend::service` | The client's node, made beside the scene and tagged `local`: the server, the session, the sockets and every cache |",
         "| `gamend::prefs` | The player's prefs on this device |",
         "| `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |",
         "| `gamend::commands` | Generated: one function per event a channel answers |",
-        "| `gamend::core` | The server, HTTP with the session's token and its refresh, the query string, the required-field check and the reply helpers, each call kept in the activity log |",
+        "| `gamend::core` | The server, HTTP with the session's token and its refresh (a JSON body, or bytes with `rest_bytes`), a file put where an upload ticket says (`upload`), the query string, the required-field check and the reply helpers, each call kept in the activity log |",
         "| `gamend::activity` | The calls `core` and the socket sent and what `client::route` heard, for the dock |",
         "| `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |",
         "",
@@ -327,8 +334,10 @@ def write_readme(model: Model) -> str:
         ]
         for name, op in ops:
             args = list(op["path_params"])
-            if op["body"]:
+            if body_kind(op) == "json":
                 args.append("params")
+            elif body_kind(op) == "bytes":
+                args += ["bytes", "content_type"]
             if op["query"]:
                 args.append("options")
             summary = op["summary"].replace("|", "\\|")

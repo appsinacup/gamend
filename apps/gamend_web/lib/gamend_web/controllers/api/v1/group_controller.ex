@@ -993,7 +993,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       ok: {"Upload ticket", "application/json", UploadTicketResponse},
-      bad_request: Schemas.error("Unsupported content type"),
+      bad_request: Schemas.error("Not an image type the server takes (unsupported_content_type)"),
       forbidden: Schemas.error("Not a group admin"),
       unauthorized: Schemas.error("Not authenticated"),
       not_found: Schemas.error("Group not found")
@@ -1032,14 +1032,17 @@ defmodule GamendWeb.Api.V1.GroupController do
       "application/json",
       %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}
     },
-    responses: [
-      ok: {"Group with the new icon", "application/json", GroupResponse},
-      bad_request: Schemas.error("Object not found"),
-      forbidden: Schemas.error("Not a group admin, key not owned, or a hook refused (rejected)"),
-      unprocessable_entity: Schemas.error("Validation failed (validation_failed)"),
-      unauthorized: Schemas.error("Not authenticated"),
-      not_found: Schemas.error("Group not found")
-    ]
+    responses:
+      [
+        ok: {"Group with the new icon", "application/json", GroupResponse},
+        forbidden:
+          Schemas.error(
+            "Not a group admin, the key is not this group's (key_not_owned), or a hook refused (rejected)"
+          ),
+        unprocessable_entity: Schemas.error("Validation failed (validation_failed)"),
+        unauthorized: Schemas.error("Not authenticated"),
+        not_found: Schemas.error("Group not found")
+      ] ++ Uploads.confirm_errors()
   )
 
   def set_icon(conn, %{"id" => id} = params) do

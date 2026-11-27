@@ -1,8 +1,8 @@
 // The session every call carries, a sign-in through a provider's page, and a
-// session kept in a `save::` slot for the next run. Every other sign-in is a
-// `client::login_*`: a device id, an email, or a provider's native token.
+// session kept for the next run: its refresh token in the system's secure
+// storage (`secrets::`), the rest in a `save::` slot. Every other sign-in is
+// a `client::login_*`: a device id, an email, or a provider's native token.
 
-use addons::save::save;
 use core;
 use authentication;
 
@@ -43,7 +43,8 @@ pub fn restore(session: any) -> bool {
     core::hold(session)
 }
 
-/// The save slot the session is kept in.
+/// The save slot the session is kept in (`core::SLOT`); its refresh token
+/// is under `gamend_refresh_token` in secure storage.
 pub const SLOT: str = "gamend";
 
 /// How long to wait for the player to finish at the provider, in seconds,
@@ -183,22 +184,29 @@ fn data_of(body: any) -> any {
     if body.has(core::DATA) { body[core::DATA] } else { nil }
 }
 
-/// Keep a session for the next run. Not `save`: a function of that name
-/// would read as the save addon's `save::` module.
+/// Keep a session for the next run, as `session` answers it: its refresh
+/// token in the system's secure storage (`secrets::`: the Keychain, the
+/// Keystore, the Credential Manager, the Secret Service, a page's
+/// localStorage), the rest in the save slot `SLOT`, written first. Where the
+/// system keeps no secret (`secrets::backend()`), the token stays in the
+/// slot. A renewal that brings a new refresh token keeps it the same way.
+/// Not `save`: a function of that name would read as the save addon's
+/// `save::` module.
 pub fn keep(session: any) {
-    save::write(SLOT, session);
+    core::keep(session);
 }
 
-/// The session the last run kept, or nil.
+/// The session the last run kept, its refresh token read back from secure
+/// storage (or the slot, where the system kept none), or nil.
 pub fn saved() -> any {
-    let kept = save::read(SLOT);
-    if kept.kind() == types::KIND_MAP { kept } else { nil }
+    core::kept()
 }
 
-/// Sign out here: the saved session is dropped. The server's own logout is
-/// `authentication::logout`, which a caller makes first when it is online.
+/// Sign out here: the saved session is dropped, its refresh token with it.
+/// The server's own logout is `authentication::logout`, which a caller
+/// makes first when it is online.
 pub fn forget() {
-    save::remove(SLOT);
+    core::forget();
 }
 
 /// Whether this run has a session to restore.

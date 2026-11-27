@@ -55,11 +55,11 @@ pub async fn usage(options: any) -> any {
 
 /// Upload or overwrite an object at any key (admin)
 /// `PUT /api/v1/admin/storage/object`
-pub async fn upload_storage_object(params: any, options: any) -> any {
+pub async fn upload_storage_object(bytes: [int], content_type: str, options: any) -> any {
     if !core::given(options, "key") {
         return core::missing("gamend::admin_storage::upload_storage_object", "key");
     }
     let query = core::query(options, ["key"]);
-    let reply = await core::rest("PUT", "/api/v1/admin/storage/object{query}", params);
+    let reply = await core::rest_bytes("PUT", "/api/v1/admin/storage/object{query}", bytes, content_type);
     reply
 }

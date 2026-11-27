@@ -32,7 +32,6 @@ defmodule GamendWeb.Uploads do
 
   alias Gamend.Storage
 
-  require GamendWeb.ChannelError, as: ChannelError
   require Gamend.HttpHeader, as: HttpHeader
 
   @doc """
@@ -46,42 +45,56 @@ defmodule GamendWeb.Uploads do
         key = Storage.build_key(prefix, owner_id, stem <> Storage.extension_for(content_type))
         {:ok, ticket} = Storage.presigned_upload(key, content_type: content_type)
 
-        GamendWeb.Reply.reply_data(conn, sign_local_ticket(ticket, key))
+        GamendWeb.Reply.reply_data(conn, sign_local_ticket(ticket, key, content_type))
 
       {:error, reason} ->
         error(conn, :bad_request, to_string(reason))
     end
   end
 
-  @doc """
-  Salt for the upload token. Public so the receiving controller verifies with
-  the same one.
-  """
-  def token_salt, do: "storage upload"
+  @salt "storage upload"
 
-  @doc """
-  How long an upload ticket stays valid, in seconds: the `expires_in` the ticket
-  answers, so a client is never told a longer window than the token allows.
-  """
-  def token_max_age, do: Gamend.Storage.upload_ttl_seconds()
-
-  # The local backend receives the upload on our own endpoint, so the key has to
-  # travel signed: the receiver takes the key *from the token*, never from the
-  # query string. Without that, `?key=` is client-controlled and an authenticated
-  # user can choose their own extension — storing `x.html` under their avatar
-  # folder and having it served back as text/html from our origin.
+  # The local backend receives the upload on our own endpoint, so the ticket
+  # travels signed: the receiver takes the key and the content type *from the
+  # token*, never from the query string or the request. Without that, `?key=`
+  # is client-controlled and an authenticated user can choose their own
+  # extension — storing `x.html` under their avatar folder and having it served
+  # back as text/html from our origin. The token is the whole authorization,
+  # as an S3 presigned URL's signature is: the route takes no session.
   #
   # S3 tickets point at the bucket and are already signed by the provider, so
   # they pass through untouched.
-  defp sign_local_ticket(%{url: url} = ticket, key) do
-    if String.contains?(url, "/storage/upload?") do
-      token = Phoenix.Token.sign(GamendWeb.Endpoint, token_salt(), key)
+  defp sign_local_ticket(%{url: url} = ticket, key, content_type) do
+    if String.starts_with?(url, Storage.Local.upload_path() <> "?") do
+      token = Phoenix.Token.sign(GamendWeb.Endpoint, @salt, {key, content_type})
 
       ticket
       |> Map.put(:url, url <> "&token=" <> URI.encode_www_form(token))
       |> Map.put(:token, token)
     else
       ticket
+    end
+  end
+
+  @doc """
+  The key and content type a local ticket's `token` was signed for:
+  `:invalid_token` for one this server did not sign, `:ticket_expired` for
+  one older than the ticket's `expires_in` (`upload_ttl_seconds`).
+  """
+  @spec verify_ticket(String.t()) ::
+          {:ok, {String.t(), String.t()}} | {:error, :invalid_token | :ticket_expired}
+  def verify_ticket(token) when is_binary(token) do
+    case Phoenix.Token.verify(GamendWeb.Endpoint, @salt, token,
+           max_age: Storage.upload_ttl_seconds()
+         ) do
+      {:ok, {key, content_type}} when is_binary(key) and is_binary(content_type) ->
+        {:ok, {key, content_type}}
+
+      {:error, :expired} ->
+        {:error, :ticket_expired}
+
+      _invalid ->
+        {:error, :invalid_token}
     end
   end
 
@@ -100,11 +113,25 @@ defmodule GamendWeb.Uploads do
         {:error, :not_an_image} -> error(conn, :unsupported_media_type, "not_an_image")
       end
     else
-      error(conn, :forbidden, ChannelError.forbidden())
+      error(conn, :forbidden, "key_not_owned")
     end
   end
 
   def confirm(conn, _prefix, _owner_id, _key, _fun), do: error(conn, :bad_request, "missing_key")
+
+  @doc """
+  The refusals `confirm/5` answers on its own, for a confirm operation's
+  `responses` beside its `forbidden` (`key_not_owned`, in the target's words).
+  """
+  @spec confirm_errors() :: keyword()
+  def confirm_errors do
+    [
+      bad_request:
+        GamendWeb.Schemas.error("No such object (object_not_found), or no key (missing_key)"),
+      request_entity_too_large: GamendWeb.Schemas.error("Over the upload cap (too_large)"),
+      unsupported_media_type: GamendWeb.Schemas.error("The bytes are not an image (not_an_image)")
+    ]
+  end
 
   # A key with no `.`, `..` or empty segment.
   #
@@ -160,8 +187,8 @@ defmodule GamendWeb.Uploads do
   The request's `content-type`, without any `; charset=...` parameters.
 
   `default` is what an absent header means, and the two upload endpoints
-  deliberately disagree: the player-facing one passes `""`, so
-  `Storage.validate_upload/2` rejects an upload that did not declare a type,
+  deliberately disagree: the ticket's passes `""`, which is never the type its
+  token was signed for, so an upload that did not declare one is refused,
   while the admin one passes `"application/octet-stream"` and stores the bytes
   as-is. The difference is this argument, so it reads as a choice rather than
   drift.

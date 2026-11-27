@@ -17,11 +17,11 @@ use core;
 
 /// Upload a file's bytes to an upload ticket (local storage)
 /// `PUT /api/v1/storage/upload`
-pub async fn upload(params: any, options: any) -> any {
+pub async fn upload(bytes: [int], content_type: str, options: any) -> any {
     if !core::given(options, "token") {
         return core::missing("gamend::storage::upload", "token");
     }
     let query = core::query(options, ["token", "key"]);
-    let reply = await core::rest("PUT", "/api/v1/storage/upload{query}", params);
+    let reply = await core::rest_bytes("PUT", "/api/v1/storage/upload{query}", bytes, content_type);
     reply
 }

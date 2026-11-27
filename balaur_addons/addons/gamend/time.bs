@@ -21,3 +21,10 @@ pub async fn get_server_time() -> any {
     let reply = await core::rest("GET", "/api/v1/time");
     reply
 }
+
+/// Time zones to pick from
+/// `GET /api/v1/time_zones`
+pub async fn list_time_zones() -> any {
+    let reply = await core::rest("GET", "/api/v1/time_zones");
+    reply
+}

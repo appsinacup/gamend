@@ -54,6 +54,7 @@ defmodule Gamend.Notifications do
 
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
   require Gamend.Sent.SentKind, as: SentKind
+  require Gamend.SortKey, as: SortKey
 
   @type user_id :: Ecto.UUID.t()
 
@@ -112,30 +113,35 @@ defmodule Gamend.Notifications do
   # ---------------------------------------------------------------------------
 
   @doc """
-  List all notifications for a user, ordered oldest-first so the client
-  receives them in chronological order.
+  List a user's notifications, a page at a time: oldest first, so the client
+  receives them in chronological order, or newest first, as the site's
+  notifications page shows them.
 
-  Supports pagination via `:page` and `:page_size` options.
+  Options: `:page`, `:page_size` and `:sort_by`, `Gamend.SortKey`'s
+  `inserted_at_asc` (oldest first, the default) or `inserted_at` (newest
+  first).
   """
   @spec list_notifications(user_id(), keyword()) :: [Notification.t()]
   @decorate cacheable(
               key:
                 {:notifications, :list, notifications_version(user_id), user_id,
-                 Keyword.get(opts, :page, 1), Keyword.get(opts, :page_size, 25)},
+                 Keyword.get(opts, :page, 1), Keyword.get(opts, :page_size, 25),
+                 Keyword.get(opts, :sort_by, SortKey.inserted_at_asc())},
               opts: [ttl: Gamend.Cache.ttl()]
             )
   def list_notifications(user_id, opts \\ []) when is_binary(user_id) do
-    page = Keyword.get(opts, :page, 1)
-    page_size = Keyword.get(opts, :page_size, 25)
-    offset = (page - 1) * page_size
+    direction =
+      case Keyword.get(opts, :sort_by, SortKey.inserted_at_asc()) do
+        SortKey.inserted_at_asc() -> :asc
+        SortKey.inserted_at() -> :desc
+      end
 
     from(n in Notification,
       where: n.recipient_id == ^user_id,
-      order_by: [asc: n.inserted_at, asc: n.id],
-      limit: ^page_size,
-      offset: ^offset,
+      order_by: [{^direction, n.inserted_at}, {^direction, n.id}],
       preload: [:sender]
     )
+    |> Gamend.Query.page(opts)
     |> Repo.all()
   end
 

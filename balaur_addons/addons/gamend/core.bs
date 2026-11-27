@@ -1,7 +1,9 @@
 // What every generated call needs: the server and the session, HTTP over
 // the engine's `http`, query strings, required fields, reply helpers, and
-// each call kept in the activity log. The socket is `socket.bs`.
+// each call kept in the activity log; and the session kept for the next run.
+// The socket is `socket.bs`.
 
+use addons::save::save;
 use activity;
 use service;
 
@@ -72,6 +74,14 @@ internal const REFRESH_PATH: str = "/api/v1/refresh";
 /// `client_session`.
 const RUN_HEADER: str = "x-gamend-session";
 const JSON_TYPE: str = "application/json";
+const BODY_BYTES: str = "body_bytes";
+const PUT: str = "PUT";
+const UPLOAD: str = "upload";
+
+/// The save slot a kept session is in, and the key its refresh token is
+/// kept under in the system's secure storage (`secrets::`) beside it.
+internal const SLOT: str = "gamend";
+const REFRESH_SECRET: str = "gamend_refresh_token";
 
 /// The server a run talks to and the two the project names.
 pub struct Server {
@@ -123,29 +133,88 @@ internal fn answer_later(answer: any) -> int {
 /// Answers `{ kind: "rest", status, body, ms }`, the body decoded from
 /// JSON, or `{ kind: "error", error }` when no answer came.
 pub async fn rest(method: str, path: str, body: any) -> any {
-    let row = activity::started(REST, method + " " + path, body);
+    let reply = await exchange(method, path, body, nil, "");
+    reply
+}
+
+/// `rest` with `bytes` for the body, sent as `content_type`: a file's
+/// bytes, as `storage::upload` sends them. Answered as `rest` is.
+pub async fn rest_bytes(method: str, path: str, bytes: [int], content_type: str) -> any {
+    let reply = await exchange(method, path, nil, bytes, content_type);
+    reply
+}
+
+/// Put `bytes` where an upload ticket says (`url`, `method`, `headers`, as
+/// `users::create_current_user_avatar_upload_url` and every
+/// `…/upload_url` answer): an S3 bucket's signed address, or a path on
+/// this server where the ticket names no host. The ticket is the whole
+/// authorization, so no session goes with it. Then the ticket's confirm
+/// call (`users::set_current_user_avatar`) records its `key`. Answered as
+/// `rest` is; a refusal's body is decoded where it is JSON, the server's
+/// `{ error }` (`too_large`, `content_mismatch`, `ticket_expired`, …).
+pub async fn upload(ticket: any, bytes: [int]) -> any {
+    let address = ticket[URL].text();
+    // The query is the ticket's signature, which the log never holds.
+    let row = activity::started(UPLOAD, address.split("?")[0], "{bytes.len()} bytes");
+    await clocked();
+    // A bucket hears the ticket's headers alone: one more is one its CORS
+    // rules may refuse on a page.
+    let here = address.starts_with("/");
+    let headers: [http::Header] = [];
+    if here {
+        headers.push(http::Header { name: RUN_HEADER, value: run_id() });
+    }
+    let named = ticket[HEADERS];
+    if named.kind() == types::KIND_MAP {
+        for name in named.keys() {
+            headers.push(http::Header { name: name, value: named[name].text() });
+        }
+    }
+    let method = ticket[METHOD].text();
+    let opts: any = { METHOD: if method == "" { PUT } else { method }, HEADERS: headers, BODY_BYTES: bytes };
+    let reply = await send({ URL: if here { url() + address } else { address }, OPTIONS: opts });
+    activity::finished(row, reply);
+    reply
+}
+
+/// One call, kept in the activity log, its token renewed ahead where it is
+/// due and once more after a 401: `body` as JSON, or `bytes` as
+/// `content_type` where they are given.
+async fn exchange(method: str, path: str, body: any, bytes: any, content_type: str) -> any {
+    let row = activity::started(REST, method + " " + path, if bytes == nil { body } else { "{bytes.len()} bytes" });
     if due() {
         await renew_session();
     }
-    let reply = await send(method, path, body, true);
+    let reply = await send(outgoing(method, path, body, bytes, content_type));
     if reply[STATUS].as_int() == 401 && refresh_token() != "" {
         let why = await renew_session();
         if why == "" {
-            reply = await send(method, path, body, true);
+            reply = await send(outgoing(method, path, body, bytes, content_type));
         }
     }
     activity::finished(row, reply);
     reply
 }
 
+/// A call's `url` and `options`, its body JSON or bytes.
+fn outgoing(method: str, path: str, body: any, bytes: any, content_type: str) -> any {
+    if bytes == nil {
+        return request(method, path, body, true);
+    }
+    let headers = sent_headers(true);
+    headers.push(http::Header { name: CONTENT_TYPE, value: content_type });
+    let opts: any = { METHOD: method, HEADERS: headers, BODY_BYTES: bytes };
+    { URL: url() + path, OPTIONS: opts }
+}
+
 // An async fn reaches another file only when it is `pub`, so the calls
 // `client` and the socket make from their own files are built from the
 // plain helpers below.
 
-/// One HTTP call, nothing renewed, in this file.
-async fn send(method: str, path: str, body: any, authenticated: bool) -> any {
+/// One HTTP call, its `url` and `options` as `request` builds them, nothing
+/// renewed, in this file.
+async fn send(asked: any) -> any {
     await clocked();
-    let asked = request(method, path, body, authenticated);
     let sent = engine::unix_time();
     let reply = await task::wait(http::request(asked[URL].as_str(), asked[OPTIONS]));
     received(reply, sent)
@@ -155,17 +224,10 @@ async fn send(method: str, path: str, body: any, authenticated: bool) -> any {
 /// when `authenticated` (renewing goes without; a sign-in sends a guest's),
 /// and the body as JSON.
 internal fn request(method: str, path: str, body: any, authenticated: bool) -> any {
-    let headers = [
-        http::Header { name: "accept", value: JSON_TYPE },
-        http::Header { name: RUN_HEADER, value: run_id() },
-    ];
-    let token = access_token();
-    if authenticated && token != "" {
-        headers.push(http::Header { name: AUTHORIZATION, value: "Bearer " + token });
-    }
+    let headers = sent_headers(authenticated);
     // A body goes only on a call that writes, or one given a body: deleting
     // an account that has a password sends its `current_password`.
-    let writes = method == POST || method == "PUT" || method == "PATCH" || body != nil;
+    let writes = method == POST || method == PUT || method == "PATCH" || body != nil;
     if writes {
         headers.push(http::Header { name: CONTENT_TYPE, value: JSON_TYPE });
     }
@@ -176,6 +238,20 @@ internal fn request(method: str, path: str, body: any, authenticated: bool) -> a
     { URL: url() + path, OPTIONS: opts }
 }
 
+/// The headers every call sends: JSON accepted, the run's id, and the
+/// session's token when `authenticated`.
+fn sent_headers(authenticated: bool) -> [http::Header] {
+    let headers = [
+        http::Header { name: "accept", value: JSON_TYPE },
+        http::Header { name: RUN_HEADER, value: run_id() },
+    ];
+    let token = access_token();
+    if authenticated && token != "" {
+        headers.push(http::Header { name: AUTHORIZATION, value: "Bearer " + token });
+    }
+    headers
+}
+
 /// What `http` answered to a call sent at `sent`, as this client answers it.
 internal fn received(reply: any, sent: float) -> any {
     let ms = (engine::unix_time() - sent) * 1000.0;
@@ -183,9 +259,26 @@ internal fn received(reply: any, sent: float) -> any {
         let why = if reply.has(ERROR) { reply[ERROR].text() } else { reply[KIND].text() };
         return refusal(why);
     }
+    // Decoded where it is JSON, by its type or its first character: a
+    // bucket's answer to an upload is empty, or XML.
     let text = reply[BODY].as_str();
-    let decoded = if text == "" { nil } else { json::parse(text) };
+    let opens = text.starts_with("{{") || text.starts_with("[");
+    let decoded = if text != "" && (opens || json_reply(reply)) { json::parse(text) } else { nil };
     { KIND: REST, STATUS: reply[STATUS], BODY: decoded, MS: ms }
+}
+
+/// Whether a reply says its body is JSON (`content-type`, by any case).
+fn json_reply(reply: any) -> bool {
+    let headers = reply[HEADERS];
+    if headers.kind() != types::KIND_MAP {
+        return false;
+    }
+    for name in headers.keys() {
+        if name.to_lower() == CONTENT_TYPE && headers[name].text().contains("json") {
+            return true;
+        }
+    }
+    false
 }
 
 /// Trade the refresh token for a new session, once however many ask. A
@@ -209,7 +302,7 @@ pub async fn renew_session() -> str {
     let name = RENEWAL_EVENT + "{state.renewals}";
     let under_way: any = { RENEWAL_FIELD: name, BEGAN: engine::unix_time() };
     state.renewing = under_way;
-    let reply = await send(POST, REFRESH_PATH, body, false);
+    let reply = await send(request(POST, REFRESH_PATH, body, false));
     let why = renewed(reply);
     state.renewing = nil;
     events::emit(name, why);
@@ -229,11 +322,23 @@ internal fn renewal() -> any {
     if token == "" { nil } else { { REFRESH_TOKEN: token } }
 }
 
-/// A renewal's reply, its session kept: empty when it worked, otherwise why
-/// not.
+/// A renewal's reply, its session held: empty when it worked, otherwise why
+/// not. A server that hands out a new refresh token with it has the
+/// session kept for the next run again, where this account's was kept.
 internal fn renewed(reply: any) -> str {
+    let before = refresh_token();
     let answer = opened(reply, "refresh");
-    if answer[KIND].text() == ERROR { answer[ERROR].text() } else { "" }
+    if answer[KIND].text() == ERROR {
+        return answer[ERROR].text();
+    }
+    if refresh_token() == before {
+        return "";
+    }
+    let kept = save::read(SLOT);
+    if kept.kind() == types::KIND_MAP && kept[USER_ID].text() == held()[USER_ID].text() {
+        keep(held());
+    }
+    ""
 }
 
 /// A sign-in or refresh reply, its session kept. Answers `{ kind: "login",
@@ -308,6 +413,71 @@ internal fn hold(session: any) -> bool {
     }
     state.session = kept;
     true
+}
+
+/// Keep `session` for the next run: its refresh token in the system's
+/// secure storage (`secrets::`: the Keychain, the Keystore, the Credential
+/// Manager, the Secret Service, a page's localStorage), the rest in the
+/// save slot, which so holds no token that outlives the access one. The
+/// token before goes first and the slot is written before the new one, so a
+/// run that stops between them never pairs one account's slot with
+/// another's token. Where the system keeps no secret, the token stays in
+/// the slot.
+internal fn keep(session: any) {
+    let slot = slot_of(session);
+    let token = session[REFRESH_TOKEN].text();
+    secrets::remove(REFRESH_SECRET);
+    save::write(SLOT, slot);
+    if token == "" || secrets::set(REFRESH_SECRET, token) {
+        return;
+    }
+    slot[REFRESH_TOKEN] = token;
+    save::write(SLOT, slot);
+    log::warn("gamend: the refresh token is kept in the save: {secrets::backend()} keeps no secret");
+}
+
+/// The session the last run kept, its refresh token read from secure
+/// storage, or from the slot where the system kept none there (moved into
+/// secure storage once it can); nil for none.
+internal fn kept() -> any {
+    let saved = save::read(SLOT);
+    if saved.kind() != types::KIND_MAP {
+        return nil;
+    }
+    // A token in the slot is the one `keep` could not put in secure
+    // storage, so the newest: it goes there now where it can.
+    let held = saved[REFRESH_TOKEN].text();
+    if held != "" {
+        if secrets::set(REFRESH_SECRET, held) {
+            save::write(SLOT, slot_of(saved));
+        }
+        return saved;
+    }
+    let token = secrets::get(REFRESH_SECRET);
+    saved[REFRESH_TOKEN] = if token == nil { "" } else { token.unwrap() };
+    saved
+}
+
+/// The kept session dropped, its refresh token with it.
+internal fn forget() {
+    save::remove(SLOT);
+    secrets::remove(REFRESH_SECRET);
+}
+
+/// What the save slot holds of a session: all of it but its refresh token.
+fn slot_of(session: any) -> any {
+    let slot: any = {
+        USER_ID: session[USER_ID].text(),
+        USERNAME: session[USERNAME].text(),
+        DISPLAY_NAME: session[DISPLAY_NAME].text(),
+        ACCESS_TOKEN: session[ACCESS_TOKEN].text(),
+        REFRESH_TOKEN: "",
+        EXPIRES_IN: session[EXPIRES_IN],
+    };
+    if session[EXPIRES_AT].kind() == types::KIND_INT {
+        slot[EXPIRES_AT] = session[EXPIRES_AT];
+    }
+    slot
 }
 
 internal fn access_token() -> str {

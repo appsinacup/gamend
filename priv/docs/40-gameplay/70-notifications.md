@@ -9,6 +9,9 @@ The notification system delivers real-time and persistent notifications for soci
 ## API endpoints
 
 Endpoints are under `/api/v1/notifications` - see [/api/docs](/api/docs).
+`GET /api/v1/notifications` is a page of the user's notifications, oldest
+first; `sort_by=inserted_at` lists them newest first, as the site's page does
+(`inserted_at_asc` is the default).
 
 Each notification says whether it was `read`. The site's notifications page
 marks everything read when it opens; a client marks what it showed:
@@ -18,11 +21,13 @@ marks everything read when it opens; a client marks what it showed:
 | `POST /api/v1/notifications/read` `{ids}` | marks those read (others' and read ones skipped) |
 | `POST /api/v1/notifications/read_all` | marks every one read, as the page does |
 | `GET /api/v1/notifications/unread_count` | `{unread_count}`, the count on the account button |
+| `DELETE /api/v1/notifications` `{ids}` | deletes those (others' skipped), answers `{deleted}` |
+| `DELETE /api/v1/notifications/all` | deletes every one, as the page's Delete all does, answers `{deleted}` |
 
 Both marks answer `{marked, unread_count}`, and every connection of the user
 hears `notifications_read` (`{ids, unread_count}`), so a second device clears
-the same rows. Deleting an unread one says the new count the same way, with
-no ids.
+the same rows. Deleting an unread one, by its id or with all of them, says
+the new count the same way, with no ids.
 
 ## The notifications page
 
@@ -228,6 +233,8 @@ A user's time zone and last site language are saved alongside: `Gamend.Accounts.
 ```json
 {"groups": {"social": {"push": false}}, "off_email": true, "timezone": "Europe/Bucharest"}
 ```
+
+The zones the tab's picker offers are `GET /api/v1/time_zones` (`{zones}`, no session needed): the IANA names of `Gamend.Accounts.TimeZone.names/0`, sorted, `UTC` among them, each shown by its name. The picker's first row is the device's zone, `Automatic (this device): <zone>` on the site.
 
 A `timezone` sent here is the user's own pick; `""` goes back to the device's (the zone stays until a device sends its own). A group the user has no row for (an admin's, a host's `shown_to` one) is `unknown_group`. A change is refused whole: `unknown_group` (404), `not_configurable` (403, a channel the group keeps at its default), `invalid_time_zone` (422). It answers the settings as they now are.
 

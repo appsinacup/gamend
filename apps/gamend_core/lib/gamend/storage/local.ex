@@ -2,14 +2,21 @@ defmodule Gamend.Storage.Local do
   @moduledoc """
   Disk-backed storage — the default backend.
 
-  Files live under `STORAGE_LOCAL_DIR` (default `priv/storage`). Readable URLs
-  and upload tickets point at the app itself. The upload endpoint is protected
-  by the caller's own auth plus a namespace check (a client may only write keys
-  under its own id), so the client flow matches S3 without a separate signed
-  token — an S3 presigned `PUT` simply ignores the extra auth header.
+  Files live under `GAMEND_STORAGE_DIR` (default `priv/storage`). Readable
+  URLs point at `GET /storage/<key>`, and an upload ticket at the app's own
+  `PUT /api/v1/storage/upload` (`upload_path/0`), a path with no host, so a
+  client sends it to the server it talks to. `GamendWeb.Uploads` signs the
+  ticket's key and content type into its `token`, which is all that route
+  takes: no session, as an S3 presigned `PUT` takes none.
   """
 
   @behaviour Gamend.Storage.Adapter
+
+  @upload_path "/api/v1/storage/upload"
+
+  @doc "The path a local upload ticket names: the app's own upload route."
+  @spec upload_path() :: String.t()
+  def upload_path, do: @upload_path
 
   @impl true
   def put(key, data, _opts) do
@@ -64,7 +71,7 @@ defmodule Gamend.Storage.Local do
     {:ok,
      %{
        method: "PUT",
-       url: "#{base_url()}/storage/upload?key=#{URI.encode_www_form(key)}",
+       url: "#{@upload_path}?key=#{URI.encode_www_form(key)}",
        headers: headers,
        key: key,
        expires_in: Gamend.Storage.upload_ttl_seconds()

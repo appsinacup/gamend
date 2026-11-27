@@ -424,6 +424,10 @@ defmodule GamendWeb.Router.Shared do
 
         get "/health", HealthController, :index
         get "/time", TimeController, :show
+        get "/time_zones", TimeController, :time_zones
+        # A local upload ticket's URL: its signed token is the authorization,
+        # as an S3 presigned URL's signature is, so no session.
+        put "/storage/upload", StorageController, :upload
         post "/register/resend", SessionController, :resend_confirmation
         post "/password/reset", SessionController, :request_password_reset
         post "/login/code", SessionController, :request_login_code
@@ -681,7 +685,6 @@ defmodule GamendWeb.Router.Shared do
         patch "/me/display_name", MeController, :update_display_name
         patch "/me/username", MeController, :update_username
         put "/me/preferences", PreferenceController, :update
-        put "/storage/upload", StorageController, :upload
         get "/me/wallet", EconomyController, :wallet
         get "/me/wallet/ledger", EconomyController, :ledger
         get "/me/inventory", EconomyController, :inventory
@@ -740,6 +743,7 @@ defmodule GamendWeb.Router.Shared do
         get "/notifications/unread_count", NotificationController, :unread_count
         post "/notifications/read", NotificationController, :mark_read
         post "/notifications/read_all", NotificationController, :mark_all_read
+        delete "/notifications/all", NotificationController, :delete_all
         get "/me/notification_settings", NotificationSettingsController, :show
         put "/me/notification_settings", NotificationSettingsController, :update
       end

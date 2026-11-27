@@ -22,6 +22,13 @@ pub async fn count_unread_notifications() -> any {
     reply
 }
 
+/// Delete every notification
+/// `DELETE /api/v1/notifications/all`
+pub async fn delete_all_notifications() -> any {
+    let reply = await core::rest("DELETE", "/api/v1/notifications/all");
+    reply
+}
+
 /// Delete notifications by IDs
 /// `DELETE /api/v1/notifications`
 pub async fn delete_notifications(params: any) -> any {
@@ -42,7 +49,7 @@ pub async fn get_notification_settings() -> any {
 /// List own notifications
 /// `GET /api/v1/notifications`
 pub async fn list_notifications(options: any) -> any {
-    let query = core::query(options, ["page", "page_size"]);
+    let query = core::query(options, ["page", "page_size", "sort_by"]);
     let reply = await core::rest("GET", "/api/v1/notifications{query}");
     reply
 }

@@ -209,7 +209,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
        }},
     responses: [
       ok: {"Upload ticket", "application/json", UploadTicketResponse},
-      bad_request: Schemas.error("Unsupported content type"),
+      bad_request: Schemas.error("Not an image type the server takes (unsupported_content_type)"),
       not_found: Schemas.error("Not found")
     ]
   )
@@ -235,12 +235,12 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     request_body:
       {"Uploaded object key", "application/json",
        %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}},
-    responses: [
-      ok: {"Updated quest", "application/json", AdminQuestResponse},
-      bad_request: Schemas.error("Object not found"),
-      forbidden: Schemas.error("Key not owned by this quest"),
-      not_found: Schemas.error("Not found")
-    ]
+    responses:
+      [
+        ok: {"Updated quest", "application/json", AdminQuestResponse},
+        forbidden: Schemas.error("The key is not this quest's (key_not_owned)"),
+        not_found: Schemas.error("Not found")
+      ] ++ Uploads.confirm_errors()
   )
 
   def set_icon(conn, %{"id" => id} = params) do

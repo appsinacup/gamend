@@ -259,7 +259,62 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
     assert resp2["meta"]["has_more"] == false
   end
 
+  test "GET /api/v1/notifications?sort_by=inserted_at lists the newest first", %{conn: conn} do
+    {a, b} = make_friends()
+
+    for i <- 1..3 do
+      {:ok, _} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "N#{i}"})
+    end
+
+    titles = fn params ->
+      conn
+      |> auth_conn(b)
+      |> get("/api/v1/notifications", params)
+      |> json_response(200)
+      |> Map.fetch!("data")
+      |> Enum.map(& &1["title"])
+    end
+
+    assert titles.(%{}) == ["N1", "N2", "N3"]
+    assert titles.(%{sort_by: "inserted_at_asc"}) == ["N1", "N2", "N3"]
+    assert titles.(%{sort_by: "inserted_at"}) == ["N3", "N2", "N1"]
+    assert titles.(%{sort_by: "inserted_at", page: 1, page_size: 2}) == ["N3", "N2"]
+
+    assert conn
+           |> auth_conn(b)
+           |> get("/api/v1/notifications", %{sort_by: "title"})
+           |> json_response(422)
+  end
+
   # ── Delete notifications ───────────────────────────────────────────────────
+
+  test "DELETE /api/v1/notifications/all deletes every one of the caller's and says the count",
+       %{conn: conn} do
+    {a, b} = make_friends()
+    {:ok, _} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "One"})
+    {:ok, _} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "Two"})
+    {:ok, kept} = Notifications.send_notification(b.id, %{"user_id" => a.id, "title" => "Hers"})
+    :ok = Notifications.subscribe(b.id)
+
+    assert %{"data" => %{"deleted" => 2}} =
+             conn
+             |> auth_conn(b)
+             |> delete("/api/v1/notifications/all")
+             |> json_response(200)
+
+    assert_receive {:notifications_read, %{ids: [], unread_count: 0}}
+    assert Notifications.count_notifications(b.id) == 0
+    assert [%{id: id}] = Notifications.list_notifications(a.id)
+    assert id == kept.id
+
+    assert %{"data" => %{"deleted" => 0}} =
+             conn
+             |> auth_conn(b)
+             |> delete("/api/v1/notifications/all")
+             |> json_response(200)
+
+    assert conn |> delete("/api/v1/notifications/all") |> json_response(401)
+  end
 
   test "DELETE /api/v1/notifications deletes by IDs", %{conn: conn} do
     {a, b} = make_friends()

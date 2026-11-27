@@ -18,21 +18,21 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-290 operations in 45 modules, and 101 realtime events, 15 socket commands.
+292 operations in 45 modules, and 101 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
 | Module | For |
 | --- | --- |
 | `gamend::client` | `configure`, signing in by device, email, Google ID token, Apple code or Steam ticket and confirming an email account, the socket, hooks and the key-value cache |
-| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run |
+| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run: its refresh token in the system's secure storage (`secrets::`), the rest in a save slot |
 | `gamend::socket` | The realtime socket's node: Phoenix Channels over `websocket`, heartbeats, reconnects and rejoins |
 | `gamend::presence` | The user cache |
 | `gamend::service` | The client's node, made beside the scene and tagged `local`: the server, the session, the sockets and every cache |
 | `gamend::prefs` | The player's prefs on this device |
 | `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |
 | `gamend::commands` | Generated: one function per event a channel answers |
-| `gamend::core` | The server, HTTP with the session's token and its refresh, the query string, the required-field check and the reply helpers, each call kept in the activity log |
+| `gamend::core` | The server, HTTP with the session's token and its refresh (a JSON body, or bytes with `rest_bytes`), a file put where an upload ticket says (`upload`), the query string, the required-field check and the reply helpers, each call kept in the activity log |
 | `gamend::activity` | The calls `core` and the socket sent and what `client::route` heard, for the dock |
 | `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |
 
@@ -248,7 +248,7 @@ Admin – Storage.
 | `download_storage_object(options)` | `GET /api/v1/admin/storage/object` | Download an object by key (admin) |
 | `list_storage_objects(options)` | `GET /api/v1/admin/storage` | List stored objects with usage (admin) |
 | `usage(options)` | `GET /api/v1/admin/storage/usage` | Objects and bytes stored under a prefix (admin) |
-| `upload_storage_object(params, options)` | `PUT /api/v1/admin/storage/object` | Upload or overwrite an object at any key (admin) |
+| `upload_storage_object(bytes, content_type, options)` | `PUT /api/v1/admin/storage/object` | Upload or overwrite an object at any key (admin) |
 
 ## admin_tournaments
 
@@ -474,6 +474,7 @@ Notifications.
 | Function | Call | What it does |
 | --- | --- | --- |
 | `count_unread_notifications()` | `GET /api/v1/notifications/unread_count` | Count unread notifications |
+| `delete_all_notifications()` | `DELETE /api/v1/notifications/all` | Delete every notification |
 | `delete_notifications(params)` | `DELETE /api/v1/notifications` | Delete notifications by IDs |
 | `get_notification_settings()` | `GET /api/v1/me/notification_settings` | Get own notification settings |
 | `list_notifications(options)` | `GET /api/v1/notifications` | List own notifications |
@@ -598,7 +599,7 @@ Storage.
 
 | Function | Call | What it does |
 | --- | --- | --- |
-| `upload(params, options)` | `PUT /api/v1/storage/upload` | Upload a file's bytes to an upload ticket (local storage) |
+| `upload(bytes, content_type, options)` | `PUT /api/v1/storage/upload` | Upload a file's bytes to an upload ticket (local storage) |
 
 ## time
 
@@ -607,6 +608,7 @@ Time.
 | Function | Call | What it does |
 | --- | --- | --- |
 | `get_server_time()` | `GET /api/v1/time` | Server clock |
+| `list_time_zones()` | `GET /api/v1/time_zones` | Time zones to pick from |
 
 ## tournaments
 

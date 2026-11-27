@@ -1033,7 +1033,7 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(owner)
         |> post("/api/v1/groups/#{group.id}/icon", %{"key" => key})
 
-      assert json_response(conn, 403)["error"] == "forbidden"
+      assert json_response(conn, 403)["error"] == "key_not_owned"
     end
 
     # It was 422 `invalid_data`, whatever the reason.

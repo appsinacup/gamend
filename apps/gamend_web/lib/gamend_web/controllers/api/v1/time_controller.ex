@@ -1,15 +1,18 @@
 defmodule GamendWeb.Api.V1.TimeController do
   @moduledoc """
   The server's clock, so a client can render in server-time space instead of
-  guessing from HTTP `Date` headers, which have one-second resolution.
+  guessing from HTTP `Date` headers, which have one-second resolution, and the
+  time zones a person picks from.
 
   Unauthenticated on purpose: a clock is not a secret, and a client needs it
-  before it has finished signing in.
+  before it has finished signing in. Nor is the list of zones.
   """
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
+  alias Gamend.Accounts.TimeZone
   alias GamendWeb.Schemas.ServerTimeResponse
+  alias GamendWeb.Schemas.TimeZonesResponse
 
   @get_server_time "get_server_time"
 
@@ -26,5 +29,19 @@ defmodule GamendWeb.Api.V1.TimeController do
     ]
   )
 
+  operation(:time_zones,
+    operation_id: "list_time_zones",
+    summary: "Time zones to pick from",
+    description:
+      "The IANA time zones the settings page's Notifications tab offers, sorted, `UTC` " <>
+        "among them; the site shows each by its name. A client's picker sends one as " <>
+        "`timezone` to `PUT /api/v1/me/notification_settings`, or `\"\"` for the device's.",
+    responses: [
+      ok: {"Time zones", "application/json", TimeZonesResponse}
+    ]
+  )
+
   def show(conn, _params), do: reply_data(conn, %{server_now: Gamend.Time.now_ms()})
+
+  def time_zones(conn, _params), do: reply_data(conn, %{zones: TimeZone.names()})
 end

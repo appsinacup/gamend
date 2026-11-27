@@ -1413,6 +1413,11 @@ class Notification:
 		service.field = __group
 		data[__group.tag] = service
 		
+		__read = PBField.new("read", PB_DATA_TYPE.BOOL, PB_RULE.OPTIONAL, 11, true, DEFAULT_VALUES_3[PB_DATA_TYPE.BOOL])
+		service = PBServiceField.new()
+		service.field = __read
+		data[__read.tag] = service
+		
 	var data = {}
 	
 	var __id: PBField
@@ -1524,6 +1529,76 @@ class Notification:
 		__group.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_group(value : String) -> void:
 		__group.value = value
+	
+	var __read: PBField
+	func has_read() -> bool:
+		return data[11].state == PB_SERVICE_STATE.FILLED
+	func get_read() -> bool:
+		return __read.value
+	func clear_read() -> void:
+		data[11].state = PB_SERVICE_STATE.UNFILLED
+		__read.value = DEFAULT_VALUES_3[PB_DATA_TYPE.BOOL]
+	func set_read(value : bool) -> void:
+		__read.value = value
+	
+	func _to_string() -> String:
+		return PBPacker.message_to_string(data)
+		
+	func to_bytes() -> PackedByteArray:
+		return PBPacker.pack_message(data)
+		
+	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+		var cur_limit = bytes.size()
+		if limit != -1:
+			cur_limit = limit
+		var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+		if result == cur_limit:
+			if PBPacker.check_required(data):
+				if limit == -1:
+					return PB_ERR.NO_ERRORS
+			else:
+				return PB_ERR.REQUIRED_FIELDS
+		elif limit == -1 && result > 0:
+			return PB_ERR.PARSE_INCOMPLETE
+		return result
+	
+class NotificationsRead:
+	extends RefCounted
+	func _init():
+		var service
+		
+		var __ids_default: Array[String] = []
+		__ids = PBField.new("ids", PB_DATA_TYPE.STRING, PB_RULE.REPEATED, 1, true, __ids_default)
+		service = PBServiceField.new()
+		service.field = __ids
+		data[__ids.tag] = service
+		
+		__unread_count = PBField.new("unread_count", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		service = PBServiceField.new()
+		service.field = __unread_count
+		data[__unread_count.tag] = service
+		
+	var data = {}
+	
+	var __ids: PBField
+	func get_ids() -> Array[String]:
+		return __ids.value
+	func clear_ids() -> void:
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__ids.value.clear()
+	func add_ids(value : String) -> void:
+		__ids.value.append(value)
+	
+	var __unread_count: PBField
+	func has_unread_count() -> bool:
+		return data[2].state == PB_SERVICE_STATE.FILLED
+	func get_unread_count() -> int:
+		return __unread_count.value
+	func clear_unread_count() -> void:
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__unread_count.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
+	func set_unread_count(value : int) -> void:
+		__unread_count.value = value
 	
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)

@@ -737,6 +737,11 @@ defmodule GamendWeb.Router.Shared do
         get "/notifications", NotificationController, :index
         post "/notifications", NotificationController, :create
         delete "/notifications", NotificationController, :delete
+        get "/notifications/unread_count", NotificationController, :unread_count
+        post "/notifications/read", NotificationController, :mark_read
+        post "/notifications/read_all", NotificationController, :mark_all_read
+        get "/me/notification_settings", NotificationSettingsController, :show
+        put "/me/notification_settings", NotificationSettingsController, :update
       end
     end
   end

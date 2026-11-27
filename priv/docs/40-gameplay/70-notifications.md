@@ -10,9 +10,18 @@ The notification system delivers real-time and persistent notifications for soci
 
 Endpoints are under `/api/v1/notifications` - see [/api/docs](/api/docs).
 
-There is deliberately **no** "mark as read" endpoint. Reading is server-side:
-the web UI and `Notifications.mark_all_notifications_read/1` set the flag, so a
-game client tracks its own seen state or deletes what it has handled.
+Each notification says whether it was `read`. The site's notifications page
+marks everything read when it opens; a client marks what it showed:
+
+| Call | Does |
+|---|---|
+| `POST /api/v1/notifications/read` `{ids}` | marks those read (others' and read ones skipped) |
+| `POST /api/v1/notifications/read_all` | marks every one read, as the page does |
+| `GET /api/v1/notifications/unread_count` | `{unread_count}`, the count on the account button |
+
+Both marks answer `{marked, unread_count}`, and every connection of the user
+hears `notifications_read` (`{ids, unread_count}`), so a second device clears
+the same rows.
 
 ## The notifications page
 
@@ -31,6 +40,7 @@ game client tracks its own seen state or deletes what it has handled.
   "icon_url": "",
   "group": "social",
   "metadata": {"type": "group_invite", "group_id": "01977f5a-0005-7000-8000-3f6a2d8c0a05"},
+  "read": false,
   "inserted_at": "2026-02-22T12:00:00Z"
 }
 ```
@@ -208,7 +218,17 @@ Every email core sends, a sign-in link as much as a notification or a digest, is
 
 A group whose notices come in runs batches its email: `email_every: :day`, `:week` or `:month` keeps each notice (`Gamend.Notifications.Digest`, table `notification_digest_items`) until that long after the oldest one, and one email lists them (`GamendWeb.Workers.NotificationDigest`, queued by an hourly sweep). A lone notice keeps its own subject. The in-app row and the push stay instant. `email_now: ["chat_warning"]` lists the types that keep their own email; a `notify/3` call says the same with `"email_now" => true`.
 
-A user's time zone (taken from the browser) and last site language are saved alongside: `Gamend.Accounts.TimeZone` gives "their day" and "their evening" for a reminder, `Gamend.Accounts.Preferences.locale/1` the language to write it in.
+A user's time zone and last site language are saved alongside: `Gamend.Accounts.TimeZone` gives "their day" and "their evening" for a reminder, `Gamend.Accounts.Preferences.locale/1` the language to write it in. The browser sends its zone on connect; a game client sends its device's with `PUT /api/v1/me/preferences` `{"key": "timezone", "value": "Europe/Bucharest"}` and reads it back in the row `preferences`. Either is kept unless the user chose a zone by hand.
+
+### A client's settings
+
+`GET /api/v1/me/notification_settings` is the Notifications tab for a client: `groups` (each `key`, `label` in the user's language, `enabled` per channel, the `configurable` channels), `channels`, the switches `off_all`, `off_email` and `off_push`, and `timezone` with `timezone_manual`. `PUT` the same path changes what it is sent and keeps the rest:
+
+```json
+{"groups": {"social": {"push": false}}, "off_email": true, "timezone": "Europe/Bucharest"}
+```
+
+A `timezone` sent here is the user's own pick; `""` goes back to the device's. A change is refused whole: `unknown_group` (404), `not_configurable` (403, a channel the group keeps at its default), `invalid_time_zone` (422). It answers the settings as they now are.
 
 ## What was sent
 
@@ -218,7 +238,7 @@ Admin → Notifications → **Sent** lists every email and push that went out, n
 
 ## Real-time (WebSocket)
 
-Connect to the UserChannel to receive notifications in real time. Each one arrives as a `notification_created` event on the "user:" topic; on join the channel replays the most recent 50, oldest first.
+Connect to the UserChannel to receive notifications in real time. Each one arrives as a `notification_created` event on the "user:" topic; on join the channel replays the most recent 50, oldest first. Notifications marked read, on this device or another, arrive as `notifications_read` with their `ids` and the `unread_count`.
 
 ```javascript
   // JavaScript — join the user channel

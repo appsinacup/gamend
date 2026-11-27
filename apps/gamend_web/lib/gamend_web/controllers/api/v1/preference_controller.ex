@@ -3,8 +3,8 @@ defmodule GamendWeb.Api.V1.PreferenceController do
   `PUT /api/v1/me/preferences` (`key`, `value`): a preference the client
   sets on the signed-in account, as the site's page does with
   `PUT /preferences` (`Gamend.Accounts.Preferences.put_client/3`) — the
-  theme, and what the host allows. It reads them back as the row
-  `preferences`, which moves with every change.
+  theme, the device's time zone, and what the host allows. It reads them
+  back as the row `preferences`, which moves with every change.
   """
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
@@ -22,9 +22,10 @@ defmodule GamendWeb.Api.V1.PreferenceController do
     summary: "Set one of the current user's preferences",
     description:
       "Saves `value` under `key` on the account: the theme (`dark`, `light`, or `system`, " <>
-        "which removes it), or a key the host allows with one of its values. Read back as " <>
-        "the KV row `preferences` (owner only). Answers 422 invalid_preference for a key or " <>
-        "value not allowed.",
+        "which removes it), `timezone` (the device's IANA zone, kept unless the user picked " <>
+        "one by hand), or a key the host allows with one of its values. Read back as the KV " <>
+        "row `preferences` (owner only). Answers 422 invalid_preference for a key or value " <>
+        "not allowed.",
     request_body: {
       "Preference payload",
       "application/json",

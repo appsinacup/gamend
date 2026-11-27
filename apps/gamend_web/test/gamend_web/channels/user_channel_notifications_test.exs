@@ -71,6 +71,23 @@ defmodule GamendWeb.UserChannelNotificationsTest do
     assert payload.group == ""
   end
 
+  test "user channel pushes notifications read on another device, and each one's read state" do
+    {a, b} = make_friends()
+    {:ok, n} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "Seen"})
+
+    {:ok, token, _claims} = Guardian.encode_and_sign(b)
+    {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})
+    {:ok, _, _socket} = subscribe_and_join(socket, "user:#{b.id}", %{})
+
+    assert_push "updated", _user_payload
+    assert_push "notification_created", %{read: false}
+
+    {1, nil} = Notifications.mark_notifications_read(b.id, [n.id])
+
+    assert_push "notifications_read", payload
+    assert payload == %{ids: [n.id], unread_count: 0}
+  end
+
   test "a pushed notification is pushed again to the next session" do
     {a, b} = make_friends()
 

@@ -18,15 +18,19 @@ defmodule Gamend.Accounts.Preferences do
   `config :gamend_core, :client_preferences` (a map of key to allowed
   values, e.g. `%{"game_sounds" => ~w(on off)}`, or to a `{module,
   function}` answering them, e.g. the languages the site serves). Only
-  those keys, with only those values, can be written that way.
+  those keys, with only those values, can be written that way. A client
+  also says its device's time zone that way (`"timezone"`, an IANA name):
+  kept as the browser's is (`Gamend.Accounts.TimeZone.put_device/2`),
+  unless the user chose one by hand.
 
-  Those are what a client reads back, as the row `preferences`
-  (`row/1`, `Gamend.KV.Computed`): its owner's only, moved by every change
-  here, so a second device sees the theme or the sound change the first
-  made.
+  Those, and the time zone, are what a client reads back, as the row
+  `preferences` (`row/1`, `Gamend.KV.Computed`): its owner's only, moved by
+  every change here, so a second device sees the theme or the sound change
+  the first made.
   """
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.TimeZone
   alias Gamend.Accounts.User
   alias Gamend.Repo
 
@@ -48,6 +52,7 @@ defmodule Gamend.Accounts.Preferences do
 
   @client %{"theme" => ~w(dark light system)}
   @row "preferences"
+  @time_zone "timezone"
 
   @doc """
   The preferences a page may set (`put_client/3`): core's `theme` and the
@@ -71,6 +76,13 @@ defmodule Gamend.Accounts.Preferences do
   saved theme, so the device decides again.
   """
   @spec put_client(User.t(), String.t(), String.t()) :: {:ok, User.t()} | {:error, term()}
+  def put_client(%User{} = user, @time_zone, zone) when is_binary(zone) do
+    case TimeZone.put_device(user, zone) do
+      {:ok, user} -> {:ok, user}
+      {:error, _reason} -> {:error, :invalid}
+    end
+  end
+
   def put_client(%User{} = user, key, value) when is_binary(key) and is_binary(value) do
     cond do
       value not in Map.get(client_keys(), key, []) -> {:error, :invalid}
@@ -83,13 +95,13 @@ defmodule Gamend.Accounts.Preferences do
 
   @doc """
   The row `preferences` (`Gamend.KV.Computed`) for the user in `scope`:
-  what they set of `client_keys/0` (no theme where the device decides), or
-  nil with no such user.
+  what they set of `client_keys/0` (no theme where the device decides) and
+  their `"timezone"`, or nil with no such user.
   """
   @spec row(%{user_id: String.t() | nil}) :: map() | nil
   def row(%{user_id: id}) when is_binary(id) do
     case Accounts.get_user(id) do
-      %User{} = user -> Map.take(get(user), Map.keys(client_keys()))
+      %User{} = user -> Map.take(get(user), [@time_zone | Map.keys(client_keys())])
       _none -> nil
     end
   end

@@ -18,7 +18,7 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-285 operations in 45 modules, and 100 realtime events, 15 socket commands.
+290 operations in 45 modules, and 101 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -473,9 +473,14 @@ Notifications.
 
 | Function | Call | What it does |
 | --- | --- | --- |
+| `count_unread_notifications()` | `GET /api/v1/notifications/unread_count` | Count unread notifications |
 | `delete_notifications(params)` | `DELETE /api/v1/notifications` | Delete notifications by IDs |
+| `get_notification_settings()` | `GET /api/v1/me/notification_settings` | Get own notification settings |
 | `list_notifications(options)` | `GET /api/v1/notifications` | List own notifications |
+| `mark_all_notifications_read()` | `POST /api/v1/notifications/read_all` | Mark every notification read |
+| `mark_notifications_read(params)` | `POST /api/v1/notifications/read` | Mark notifications read by IDs |
 | `send_notification(params)` | `POST /api/v1/notifications` | Send a notification to a friend |
+| `update_notification_settings(params)` | `PUT /api/v1/me/notification_settings` | Change own notification settings |
 
 ## parties
 

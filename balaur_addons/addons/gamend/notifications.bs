@@ -15,6 +15,13 @@
 
 use core;
 
+/// Count unread notifications
+/// `GET /api/v1/notifications/unread_count`
+pub async fn count_unread_notifications() -> any {
+    let reply = await core::rest("GET", "/api/v1/notifications/unread_count");
+    reply
+}
+
 /// Delete notifications by IDs
 /// `DELETE /api/v1/notifications`
 pub async fn delete_notifications(params: any) -> any {
@@ -25,11 +32,35 @@ pub async fn delete_notifications(params: any) -> any {
     reply
 }
 
+/// Get own notification settings
+/// `GET /api/v1/me/notification_settings`
+pub async fn get_notification_settings() -> any {
+    let reply = await core::rest("GET", "/api/v1/me/notification_settings");
+    reply
+}
+
 /// List own notifications
 /// `GET /api/v1/notifications`
 pub async fn list_notifications(options: any) -> any {
     let query = core::query(options, ["page", "page_size"]);
     let reply = await core::rest("GET", "/api/v1/notifications{query}");
+    reply
+}
+
+/// Mark every notification read
+/// `POST /api/v1/notifications/read_all`
+pub async fn mark_all_notifications_read() -> any {
+    let reply = await core::rest("POST", "/api/v1/notifications/read_all");
+    reply
+}
+
+/// Mark notifications read by IDs
+/// `POST /api/v1/notifications/read`
+pub async fn mark_notifications_read(params: any) -> any {
+    if !core::given(params, "ids") {
+        return core::missing("gamend::notifications::mark_notifications_read", "ids");
+    }
+    let reply = await core::rest("POST", "/api/v1/notifications/read", params);
     reply
 }
 
@@ -43,5 +74,12 @@ pub async fn send_notification(params: any) -> any {
         return core::missing("gamend::notifications::send_notification", "title");
     }
     let reply = await core::rest("POST", "/api/v1/notifications", params);
+    reply
+}
+
+/// Change own notification settings
+/// `PUT /api/v1/me/notification_settings`
+pub async fn update_notification_settings(params: any) -> any {
+    let reply = await core::rest("PUT", "/api/v1/me/notification_settings", params);
     reply
 }

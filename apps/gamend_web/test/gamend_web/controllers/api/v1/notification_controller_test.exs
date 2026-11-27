@@ -317,4 +317,78 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
 
     assert %{"error" => "validation_failed", "errors" => %{"ids" => [_]}} = resp
   end
+
+  # ── Read state ─────────────────────────────────────────────────────────────
+
+  test "POST /api/v1/notifications/read marks those ids read and tells the user's connections",
+       %{conn: conn} do
+    {a, b} = make_friends()
+    {:ok, n1} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "One"})
+    {:ok, n2} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "Two"})
+    {:ok, other} = Notifications.send_notification(b.id, %{"user_id" => a.id, "title" => "Hi"})
+    :ok = Notifications.subscribe(b.id)
+
+    assert %{"data" => %{"marked" => 1, "unread_count" => 1}} =
+             conn
+             |> auth_conn(b)
+             |> post("/api/v1/notifications/read", %{ids: [n1.id, other.id]})
+             |> json_response(200)
+
+    assert_receive {:notifications_read, %{ids: [id], unread_count: 1}}
+    assert id == n1.id
+
+    listed =
+      conn
+      |> auth_conn(b)
+      |> get("/api/v1/notifications")
+      |> json_response(200)
+      |> Map.fetch!("data")
+      |> Map.new(&{&1["id"], &1["read"]})
+
+    assert listed == %{n1.id => true, n2.id => false}
+    refute Gamend.Repo.get!(Gamend.Notifications.Notification, other.id).read
+
+    # Read already: nothing marked, nothing said.
+    assert %{"data" => %{"marked" => 0, "unread_count" => 1}} =
+             conn
+             |> auth_conn(b)
+             |> post("/api/v1/notifications/read", %{ids: [n1.id]})
+             |> json_response(200)
+
+    refute_receive {:notifications_read, _}
+  end
+
+  test "POST /api/v1/notifications/read_all and GET /unread_count", %{conn: conn} do
+    {a, b} = make_friends()
+    {:ok, _} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "One"})
+    {:ok, _} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "Two"})
+
+    assert %{"data" => %{"unread_count" => 2}} =
+             conn
+             |> auth_conn(b)
+             |> get("/api/v1/notifications/unread_count")
+             |> json_response(200)
+
+    :ok = Notifications.subscribe(b.id)
+
+    assert %{"data" => %{"marked" => 2, "unread_count" => 0}} =
+             conn
+             |> auth_conn(b)
+             |> post("/api/v1/notifications/read_all")
+             |> json_response(200)
+
+    assert_receive {:notifications_read, %{ids: ids, unread_count: 0}}
+    assert length(ids) == 2
+
+    assert %{"data" => %{"unread_count" => 0}} =
+             conn
+             |> auth_conn(b)
+             |> get("/api/v1/notifications/unread_count")
+             |> json_response(200)
+  end
+
+  test "the read routes need a signed-in user", %{conn: conn} do
+    assert conn |> post("/api/v1/notifications/read_all") |> response(401)
+    assert conn |> get("/api/v1/notifications/unread_count") |> response(401)
+  end
 end

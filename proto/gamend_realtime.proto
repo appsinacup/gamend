@@ -87,6 +87,12 @@ message Notification {
   int64 inserted_at_ms = 8;
   string icon_url = 9;
   string group = 10;
+  bool read = 11;
+}
+
+message NotificationsRead {
+  repeated string ids = 1;
+  int64 unread_count = 2;
 }
 
 message ChatMessage {

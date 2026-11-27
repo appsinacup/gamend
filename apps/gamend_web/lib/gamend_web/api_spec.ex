@@ -86,6 +86,8 @@ defmodule GamendWeb.ApiSpec do
         - **Send notifications** to accepted friends with a title, optional content, and optional metadata
         - **List own notifications** with pagination (ordered oldest-first)
         - **Delete notifications** by ID (single or batch)
+        - **Read state**: mark some or all read, the unread count, and `notifications_read` on every connection of the user
+        - **Settings**: the groups and channels a user turns on and off, the switches, and the time zone reminders follow (`/me/notification_settings`)
         - **Real-time delivery** via the user WebSocket channel (`"notification"` events)
         - **Offline delivery**: undeleted notifications are replayed on WebSocket reconnect
         - **Push delivery**: notifications also fan out to the recipient's registered mobile devices (see Push notifications)

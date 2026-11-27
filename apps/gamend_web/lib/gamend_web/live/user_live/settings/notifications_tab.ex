@@ -28,12 +28,16 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
 
   def assign_defaults(socket, user), do: assign(socket, :notify_groups, shown_groups(user))
 
-  # A group whose every notification is about a feature the site does not
-  # have (`GamendWeb.MountedRoutes`, `GamendWeb.Features`) has nothing to
-  # choose on the website: its row goes. The game still sends that traffic,
-  # and the stored choice is kept.
-  # An admins' group (`admin: true`) is on the admin's page.
-  defp shown_groups(user),
+  @doc """
+  The groups `user` has a row for on this tab, and a client in
+  `GET /api/v1/me/notification_settings`. A group whose every notification
+  is about a feature the site does not have (`GamendWeb.MountedRoutes`,
+  `GamendWeb.Features`) has nothing to choose: its row goes. The game still
+  sends that traffic, and the stored choice is kept. An admins' group
+  (`admin: true`) is on the admin's page.
+  """
+  @spec shown_groups(Gamend.Accounts.User.t()) :: [map()]
+  def shown_groups(user),
     do: Enum.filter(Preferences.groups_for(user), &(not &1.admin and shown?(&1)))
 
   @doc "The admins' groups `user` gets (none for anyone else), for `/admin/notifications`."

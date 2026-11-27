@@ -67,6 +67,7 @@ defmodule Gamend.Notifications.Preferences do
   require Gamend.Notifications.NotificationChannel, as: NotificationChannel
   require Gamend.Notifications.NotificationType, as: NotificationType
   require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
+  require Gamend.Notifications.PreferenceSwitch, as: PreferenceSwitch
 
   @month "month"
   @week "week"
@@ -389,6 +390,66 @@ defmodule Gamend.Notifications.Preferences do
           do: update(user, &put_choice(&1, key, channel, on?)),
           else: {:error, :not_configurable}
     end
+  end
+
+  @switches [
+    PreferenceSwitch.off_all(),
+    PreferenceSwitch.off_email(),
+    PreferenceSwitch.off_push()
+  ]
+
+  @doc """
+  Several choices at once, in one write, as a client sends them
+  (`PUT /api/v1/me/notification_settings`): `"groups"`, `%{group =>
+  %{channel => bool}}` (`put/4` each), and the switches `"off_all"`,
+  `"off_email"`, `"off_push"`, each `true` (`turn_off/2`) or `false`
+  (`turn_on/2`); a key left out is left as it is. Refused whole, with
+  nothing written: `:unknown_group` for a group the user has no row for
+  (an admins' one for anyone else), `:not_configurable` for a channel the
+  group does not let users change.
+  """
+  @spec change(User.t(), map()) :: {:ok, User.t()} | {:error, term()}
+  def change(%User{} = user, changes) when is_map(changes) do
+    switches = Map.take(changes, @switches)
+
+    case choices(user, Map.get(changes, "groups") || %{}) do
+      {:ok, []} when switches == %{} -> {:ok, user}
+      {:ok, choices} -> change(user, choices, switches)
+      error -> error
+    end
+  end
+
+  defp change(user, choices, switches) do
+    update(user, fn prefs ->
+      prefs =
+        Enum.reduce(choices, prefs, fn {key, channel, on?}, acc ->
+          put_choice(acc, key, channel, on?)
+        end)
+
+      Enum.reduce(switches, prefs, fn
+        {switch, true}, acc -> Map.put(acc, switch, true)
+        {switch, false}, acc -> Map.delete(acc, switch)
+      end)
+    end)
+  end
+
+  # Every `{group key, channel, on?}` of a change, each checked as `put/4`
+  # checks one.
+  defp choices(user, groups) do
+    Enum.reduce_while(groups, {:ok, []}, fn {group_key, channels}, {:ok, acc} ->
+      case group(group_key) do
+        %{admin: true} when user.is_admin != true ->
+          {:halt, {:error, :unknown_group}}
+
+        %{key: key, configurable: configurable} ->
+          if Enum.all?(Map.keys(channels), &(&1 in configurable)),
+            do: {:cont, {:ok, acc ++ Enum.map(channels, fn {c, on?} -> {key, c, on?} end)}},
+            else: {:halt, {:error, :not_configurable}}
+
+        nil ->
+          {:halt, {:error, :unknown_group}}
+      end
+    end)
   end
 
   # A switch (all email off, everything off) still wins over a choice:

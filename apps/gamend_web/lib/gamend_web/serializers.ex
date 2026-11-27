@@ -142,6 +142,7 @@ defmodule GamendWeb.Serializers do
       icon_url: notification.icon_url || "",
       group: Notifications.group_of(notification) || "",
       metadata: metadata,
+      read: notification.read == true,
       inserted_at: notification.inserted_at
     }
   end

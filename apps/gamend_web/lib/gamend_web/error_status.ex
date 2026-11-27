@@ -74,6 +74,7 @@ defmodule GamendWeb.ErrorStatus do
     not_authorized: :forbidden,
     not_cancelled: :forbidden,
     not_completed: :forbidden,
+    not_configurable: :forbidden,
     not_connected: :forbidden,
     not_enough_space: :forbidden,
     not_friends: :forbidden,
@@ -107,6 +108,7 @@ defmodule GamendWeb.ErrorStatus do
     not_in_lobby: :not_found,
     not_in_party: :not_found,
     not_member: :not_found,
+    unknown_group: :not_found,
     unknown_language: :not_found,
 
     # 409: the state the request depends on is not the one it found.
@@ -121,6 +123,7 @@ defmodule GamendWeb.ErrorStatus do
     unsupported_content_type: :unsupported_media_type,
     blocked_content: :unprocessable_entity,
     invalid_state: :unprocessable_entity,
+    invalid_time_zone: :unprocessable_entity,
     max_members_too_low: :unprocessable_entity,
     message_not_in_chat: :unprocessable_entity,
     no_participants: :unprocessable_entity,

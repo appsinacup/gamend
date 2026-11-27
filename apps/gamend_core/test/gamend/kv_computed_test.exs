@@ -120,7 +120,7 @@ defmodule Gamend.KVComputedTest do
       user: user
     } do
       {:ok, user} =
-        Preferences.update(user, &Map.merge(&1, %{"timezone" => "Europe/Paris"}))
+        Preferences.update(user, &Map.merge(&1, %{"notifications" => %{"off_all" => true}}))
 
       assert {:ok, %{value: %{}}} = KV.get("preferences", user_id: user.id)
       assert :error == KV.get("preferences")
@@ -131,7 +131,7 @@ defmodule Gamend.KVComputedTest do
       assert_receive {:kv_stale, %{key: "preferences", user_id: ^user_id}}
 
       assert {:ok, %{value: %{"theme" => "dark"} = row}} = KV.get("preferences", user_id: user.id)
-      refute Map.has_key?(row, "timezone")
+      refute Map.has_key?(row, "notifications")
 
       {:ok, _user} = Preferences.put_client(user, "theme", "system")
       assert {:ok, %{value: %{}}} = KV.get("preferences", user_id: user.id)

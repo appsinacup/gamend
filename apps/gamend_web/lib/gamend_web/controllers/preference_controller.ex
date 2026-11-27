@@ -2,7 +2,7 @@ defmodule GamendWeb.PreferenceController do
   @moduledoc """
   `PUT /preferences` (`key`, `value`): a preference the page itself sets,
   saved to the signed-in account (`Gamend.Accounts.Preferences.put_client/3`)
-  — the theme, and what the host allows. A visitor has no account to save to,
+  — the theme, the device's time zone, and what the host allows. A visitor has no account to save to,
   so their page keeps its own copy and this answers 204 all the same. 422 for
   a key or value that is not allowed.
   """

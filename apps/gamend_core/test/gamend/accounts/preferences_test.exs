@@ -32,17 +32,26 @@ defmodule Gamend.Accounts.PreferencesTest do
     assert Preferences.get(user) == %{"game_sounds" => "off", "locale" => "fr", "theme" => "dark"}
 
     assert {:error, :invalid} == Preferences.put_client(user, "locale", "xx")
-    assert {:error, :invalid} == Preferences.put_client(user, "timezone", "UTC")
+    assert {:error, :invalid} == Preferences.put_client(user, "timezone", "Mars/Olympus")
+    {:ok, user} = Preferences.put_client(user, "timezone", "Europe/Paris")
+    assert Preferences.get(user)["timezone"] == "Europe/Paris"
 
     {:ok, user} = Preferences.put_client(user, "theme", "system")
     refute Map.has_key?(Preferences.get(user), "theme")
   end
 
-  test "the row is what a page may set, nil with no user", %{user: user} do
+  test "the row is what a page may set and the time zone, nil with no user", %{user: user} do
     {:ok, user} =
-      Preferences.update(user, &Map.merge(&1, %{"timezone" => "UTC", "locale" => "fr"}))
+      Preferences.update(
+        user,
+        &Map.merge(&1, %{
+          "timezone" => "UTC",
+          "locale" => "fr",
+          "notifications" => %{"off_all" => true}
+        })
+      )
 
-    assert Preferences.row(%{user_id: user.id}) == %{"locale" => "fr"}
+    assert Preferences.row(%{user_id: user.id}) == %{"locale" => "fr", "timezone" => "UTC"}
     assert Preferences.row(%{user_id: nil}) == nil
     assert Preferences.row(%{user_id: Ecto.UUID.generate()}) == nil
   end

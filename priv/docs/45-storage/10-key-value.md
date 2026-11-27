@@ -131,7 +131,7 @@ A row only its owner may read says so with `access`, in the words `before_kv_get
 
 ### The account's preferences
 
-Core computes one row itself: `preferences`, what a page or a client may set on the account (`Gamend.Accounts.Preferences.client_keys/0`: the theme, and what the host adds to `config :gamend_core, :client_preferences`), its owner's only. A client sets one with `PUT /api/v1/me/preferences` (`{"key": "theme", "value": "dark"}`; `system` removes the theme), the site's page with `PUT /preferences`, and every change moves the row, so a second device is pushed the theme or the sound the first one changed.
+Core computes one row itself: `preferences`, what a page or a client may set on the account (`Gamend.Accounts.Preferences.client_keys/0`: the theme, and what the host adds to `config :gamend_core, :client_preferences`), its owner's only. A client sets one with `PUT /api/v1/me/preferences` (`{"key": "theme", "value": "dark"}`; `system` removes the theme), the site's page with `PUT /preferences`, and every change moves the row, so a second device is pushed the theme or the sound the first one changed. The row also holds the account's `timezone`, which a client sets the same way with its device's IANA zone (`{"key": "timezone", "value": "Europe/Bucharest"}`); a zone the user picked by hand stays ([Notifications](/docs/notifications#a-clients-settings)).
 
 ```json
 {"theme": "dark", "game_sounds": "off"}

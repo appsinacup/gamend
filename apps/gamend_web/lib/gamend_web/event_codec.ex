@@ -70,6 +70,10 @@ defmodule GamendWeb.EventCodec do
   defp message_for(_, RealtimeEvent.kv_updated(), p), do: kv_entry(p)
   defp message_for(_, RealtimeEvent.kv_deleted(), p), do: kv_entry(p)
   defp message_for(_, RealtimeEvent.notification_created(), p), do: notification(p)
+
+  defp message_for(_, RealtimeEvent.notifications_read(), p),
+    do: %PB.NotificationsRead{ids: get(p, :ids) || [], unread_count: get(p, :unread_count) || 0}
+
   defp message_for(_, RealtimeEvent.chat_message_created(), p), do: chat_message(p)
   defp message_for(_, RealtimeEvent.chat_message_updated(), p), do: chat_message(p)
   defp message_for(_, RealtimeEvent.chat_message_deleted(), p), do: %PB.EntityId{id: get(p, :id)}
@@ -418,7 +422,8 @@ defmodule GamendWeb.EventCodec do
       icon_url: get(p, :icon_url) || "",
       group: get(p, :group) || "",
       metadata_json: json_bytes(p, :metadata) || "",
-      inserted_at_ms: ms(p, :inserted_at) || 0
+      inserted_at_ms: ms(p, :inserted_at) || 0,
+      read: get(p, :read) == true
     }
   end
 

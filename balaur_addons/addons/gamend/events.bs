@@ -13,6 +13,7 @@ pub fn table() -> [[str]] {
     [
         ["user", "updated", "user_updated"],
         ["user", "notification_created", "notification_emitted"],
+        ["user", "notifications_read", "notifications_read"],
         ["user", "friend_updated", "friend_updated"],
         ["user", "kv_updated", "kv_updated"],
         ["user", "kv_deleted", "kv_deleted"],

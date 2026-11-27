@@ -28,6 +28,7 @@ pub const KV_DELETED: str = "kv_deleted";
 pub const KV_UPDATED: str = "kv_updated";
 pub const MATCH_FOUND: str = "match_found";
 pub const NOTIFICATION_EMITTED: str = "notification_emitted";
+pub const NOTIFICATIONS_READ: str = "notifications_read";
 pub const PARTY_INVITE_ACCEPTED: str = "party_invite_accepted";
 pub const PARTY_INVITE_CANCELLED: str = "party_invite_cancelled";
 pub const PARTY_INVITE_DECLINED: str = "party_invite_declined";

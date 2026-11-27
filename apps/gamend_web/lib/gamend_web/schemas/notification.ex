@@ -21,6 +21,10 @@ defmodule GamendWeb.Schemas.Notification do
         description: "The notification group it belongs to (`social`, `chat`, …). Empty for none"
       },
       metadata: FreeForm.metadata(),
+      read: %Schema{
+        type: :boolean,
+        description: "Whether the recipient has read it (`mark_notifications_read`)"
+      },
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
     required: [
@@ -33,6 +37,7 @@ defmodule GamendWeb.Schemas.Notification do
       :icon_url,
       :group,
       :metadata,
+      :read,
       :inserted_at
     ]
   })
@@ -60,6 +65,47 @@ end
 defmodule GamendWeb.Schemas.DeletedCountResponse do
   @moduledoc "The deleted count under `data`."
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.DeletedCount
+end
+
+defmodule GamendWeb.Schemas.NotificationsRead do
+  @moduledoc "What marking notifications read did, and how many are left unread."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "NotificationsRead",
+    description: "Notifications marked read",
+    type: :object,
+    properties: %{
+      marked: %Schema{type: :integer, description: "How many were unread and are read now"},
+      unread_count: %Schema{type: :integer, description: "How many of the user's are unread"}
+    },
+    required: [:marked, :unread_count]
+  })
+end
+
+defmodule GamendWeb.Schemas.NotificationsReadResponse do
+  @moduledoc "Notifications marked read under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.NotificationsRead
+end
+
+defmodule GamendWeb.Schemas.UnreadCount do
+  @moduledoc "How many of the user's notifications are unread."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "UnreadCount",
+    description: "Unread notifications",
+    type: :object,
+    properties: %{unread_count: %Schema{type: :integer}},
+    required: [:unread_count]
+  })
+end
+
+defmodule GamendWeb.Schemas.UnreadCountResponse do
+  @moduledoc "The unread count under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.UnreadCount
 end
 
 defmodule GamendWeb.Schemas.NotificationResponse do

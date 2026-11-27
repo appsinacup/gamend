@@ -5,6 +5,7 @@ class_name GamendApi
 extends Node
 
 signal notification_emitted(notification: Dictionary)
+signal notifications_read(payload: Dictionary)  ## {ids, unread_count}: marked read, here or on another device
 signal user_updated(user: Dictionary)
 signal kv_updated(payload: Dictionary)
 signal kv_deleted(payload: Dictionary)
@@ -713,6 +714,8 @@ func _handle_user_event(event: String, payload: Dictionary):
 			user_updated.emit(payload)
 		"notification_created":
 			notification_emitted.emit(payload)
+		"notifications_read":
+			notifications_read.emit(payload)
 		"wallet_updated":
 			wallet_updated.emit(payload)
 		"inventory_updated":
@@ -1025,8 +1028,9 @@ func user_update_current_user_display_name(display_name: String) -> GamendResult
 	return await _call_api(UsersApi.new(_config), "update_current_user_display_name", [request])
 
 ## Set one of the current user's preferences on the account: the theme
-## (dark, light, or system, which removes it), or a key the host allows
-## with one of its values. Read back as the KV row `preferences`.
+## (dark, light, or system, which removes it), `timezone` (the device's
+## IANA zone), or a key the host allows with one of its values. Read back
+## as the KV row `preferences`.
 func user_update_current_user_preference(key: String, value: String) -> GamendResult:
 	var request := GamendUpdateCurrentUserPreferenceRequest.new()
 	request.key = key
@@ -1499,9 +1503,18 @@ func chat_chat_unread_count(chat_type: String, chat_ref_id: String) -> GamendRes
 
 ## NOTIFICATIONS
 
+## Count unread notifications
+func notifications_count_unread_notifications() -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "count_unread_notifications", [])
+
 ## Delete notifications by IDs
 func notifications_delete_notifications(deleteNotificationsRequest: GamendDeleteNotificationsRequest) -> GamendResult:
 	return await _call_api(NotificationsApi.new(_config), "delete_notifications", [deleteNotificationsRequest])
+
+## Get own notification settings: each group's channels, the switches and
+## the time zone reminders follow.
+func notifications_get_notification_settings() -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "get_notification_settings", [])
 
 ## List own notifications
 func notifications_list_notifications(
@@ -1513,9 +1526,21 @@ func notifications_list_notifications(
 	pageSize = null) -> GamendResult:
 	return await _call_api(NotificationsApi.new(_config), "list_notifications", [page, pageSize])
 
+## Mark every notification read
+func notifications_mark_all_notifications_read() -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "mark_all_notifications_read", [])
+
+## Mark notifications read by IDs
+func notifications_mark_notifications_read(markNotificationsReadRequest: GamendMarkNotificationsReadRequest) -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "mark_notifications_read", [markNotificationsReadRequest])
+
 ## Send a notification to a friend
 func notifications_send_notification(sendNotificationRequest: GamendSendNotificationRequest) -> GamendResult:
 	return await _call_api(NotificationsApi.new(_config), "send_notification", [sendNotificationRequest])
+
+## Change own notification settings: what is sent changes, the rest stays.
+func notifications_update_notification_settings(updateNotificationSettingsRequest: GamendUpdateNotificationSettingsRequest) -> GamendResult:
+	return await _call_api(NotificationsApi.new(_config), "update_notification_settings", [updateNotificationSettingsRequest])
 
 ## GROUPS
 

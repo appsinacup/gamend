@@ -13,6 +13,9 @@ defmodule Gamend.Notifications do
   This module broadcasts to the `"notifications:user:<user_id>"` topic:
 
   - `{:notification_created, notification}` – a new notification was created
+  - `{:notifications_read, %{ids: ids, unread_count: count}}` – notifications
+    were marked read (`mark_notifications_read/2`, `mark_all_notifications_read/1`,
+    `mark_notification_read/2`): their ids and how many are left unread
 
   ## Usage
 
@@ -223,7 +226,10 @@ defmodule Gamend.Notifications do
     |> Repo.all()
   end
 
-  @doc "Mark a single notification as read. Only the recipient can mark it."
+  @doc """
+  Mark a single notification as read. Only the recipient can mark it; one
+  already read answers it as it is.
+  """
   @spec mark_notification_read(user_id(), Ecto.UUID.t()) ::
           {:ok, Notification.t()} | {:error, atom()}
   def mark_notification_read(user_id, notification_id)
@@ -236,13 +242,16 @@ defmodule Gamend.Notifications do
       nil ->
         {:error, :not_found}
 
+      %Notification{read: true} = notification ->
+        {:ok, notification}
+
       notification ->
         notification
         |> Ecto.Changeset.change(read: true)
         |> Repo.update()
         |> case do
           {:ok, updated} ->
-            invalidate_notifications_cache(user_id)
+            read_moved(user_id, [updated.id])
             {:ok, updated}
 
           error ->
@@ -251,39 +260,53 @@ defmodule Gamend.Notifications do
     end
   end
 
-  @doc "Mark all notifications as read for a user."
+  @doc """
+  Mark all notifications as read for a user: `{marked, nil}`. Those it
+  marks are told to the user's other connections (`notifications_read`).
+  """
   @spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), nil}
   def mark_all_notifications_read(user_id) when is_binary(user_id) do
-    {marked, _} =
-      result =
-      from(n in Notification,
-        where: n.recipient_id == ^user_id and n.read == false
-      )
-      |> Repo.update_all(set: [read: true, updated_at: DateTime.utc_now(:second)])
-
     # The notifications page calls this on every visit: with nothing unread
     # the cached lists and counts are still right, and dropping them made the
     # page read them all again.
-    if marked > 0, do: invalidate_notifications_cache(user_id)
-    result
+    mark_read(user_id, from(n in Notification, where: n.recipient_id == ^user_id))
   end
 
   @doc """
   Mark the user's notifications `ids` read, in one statement: what the
-  notifications page does with those that arrive while it is open. Others'
-  ids are skipped.
+  notifications page does with those that arrive while it is open, and a
+  client with those it showed. Others' ids are skipped, and so are those
+  already read.
   """
   @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
   def mark_notifications_read(user_id, ids) when is_binary(user_id) and is_list(ids) do
-    {marked, _} =
-      result =
-      from(n in Notification,
-        where: n.recipient_id == ^user_id and n.id in ^ids and n.read == false
-      )
+    mark_read(
+      user_id,
+      from(n in Notification, where: n.recipient_id == ^user_id and n.id in ^ids)
+    )
+  end
+
+  # The unread ones of `query` marked read, and the ids marked said on the
+  # user's topic with what is left unread.
+  defp mark_read(user_id, query) do
+    {marked, ids} =
+      query
+      |> where([n], n.read == false)
+      |> select([n], n.id)
       |> Repo.update_all(set: [read: true, updated_at: DateTime.utc_now(:second)])
 
-    if marked > 0, do: invalidate_notifications_cache(user_id)
-    result
+    if marked > 0, do: read_moved(user_id, ids)
+    {marked, nil}
+  end
+
+  # After the cache is dropped, so the count is the one after the write.
+  defp read_moved(user_id, ids) do
+    invalidate_notifications_cache(user_id)
+
+    broadcast_user(
+      user_id,
+      {:notifications_read, %{ids: ids, unread_count: count_unread_notifications(user_id)}}
+    )
   end
 
   @doc "Get a single notification by ID."

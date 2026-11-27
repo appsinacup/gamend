@@ -104,6 +104,19 @@ defmodule Gamend.Realtime.V1.Notification do
   field :inserted_at_ms, 8, type: :int64, json_name: "insertedAtMs"
   field :icon_url, 9, type: :string, json_name: "iconUrl"
   field :group, 10, type: :string
+  field :read, 11, type: :bool
+end
+
+defmodule Gamend.Realtime.V1.NotificationsRead do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.NotificationsRead",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :ids, 1, repeated: true, type: :string
+  field :unread_count, 2, type: :int64, json_name: "unreadCount"
 end
 
 defmodule Gamend.Realtime.V1.ChatMessage do

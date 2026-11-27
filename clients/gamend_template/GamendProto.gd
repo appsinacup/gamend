@@ -89,6 +89,10 @@ static func decode_event(topic: String, event: String, data: PackedByteArray) ->
 			return _kv(data)
 		"notification_created":
 			return _notification_payload(data)
+		"notifications_read":
+			return _decode(PB.NotificationsRead.new(), data, func(m): return {
+				"ids": Array(m.get_ids()), "unread_count": m.get_unread_count()
+			})
 		"chat_message_created", "chat_message_updated":
 			return _chat(data)
 		"chat_message_deleted":
@@ -426,6 +430,7 @@ static func _notification_payload(data: PackedByteArray) -> Variant:
 		"group": m.get_group(),
 		"metadata": _json_bytes(m.get_metadata_json(), {}),
 		"inserted_at_ms": m.get_inserted_at_ms(),
+		"read": m.get_read(),
 	})
 
 

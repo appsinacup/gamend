@@ -17,6 +17,8 @@ defmodule GamendWeb.UserChannel do
   On join the channel pushes all undeleted notifications for the user in
   chronological order (oldest-first) as individual `"notification_created"` events.
   New notifications arriving while connected are also pushed as `"notification_created"`.
+  Notifications marked read, here or on another device, are pushed as
+  `"notifications_read"` (`ids`, `unread_count`).
 
   ## Hook RPC
 
@@ -533,6 +535,12 @@ defmodule GamendWeb.UserChannel do
       Serializers.serialize_notification(notification)
     )
 
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:notifications_read, payload}, socket) do
+    push_event(socket, RealtimeEvent.notifications_read(), payload)
     {:noreply, socket}
   end
 

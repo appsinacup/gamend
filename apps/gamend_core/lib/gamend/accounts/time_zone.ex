@@ -3,10 +3,11 @@ defmodule Gamend.Accounts.TimeZone do
   A user's time zone, for "their day" and "their evening": an IANA name
   (`"Europe/Bucharest"`) kept in their private preferences
   (`Gamend.Accounts.Preferences`), taken from the browser
-  (`Intl.DateTimeFormat().resolvedOptions().timeZone`, sent on connect) or
-  chosen in settings. A zone chosen by hand (`choose/2`) stays until the user
-  goes back to automatic: the browser no longer overwrites it
-  (`manual?/1`). Unknown or unset, everything falls back to UTC.
+  (`Intl.DateTimeFormat().resolvedOptions().timeZone`, sent on connect), a
+  client's device (`put_device/2`) or chosen in settings. A zone chosen by
+  hand (`choose/2`) stays until the user goes back to automatic: neither the
+  browser nor a device replaces it (`manual?/1`). Unknown or unset,
+  everything falls back to UTC.
 
   The `tz` database is passed to `DateTime.shift_zone/3` explicitly, so a
   host needs no global `:time_zone_database` config.
@@ -48,6 +49,22 @@ defmodule Gamend.Accounts.TimeZone do
       not valid?(name) -> {:error, :invalid_time_zone}
       of(user) == name -> {:ok, user}
       true -> Preferences.update(user, &Map.put(&1, @key, name))
+    end
+  end
+
+  @doc """
+  The zone a device says the user is in: a page's on connect, a client's
+  (`Gamend.Accounts.Preferences.put_client/3`). Saved as `put/2` does,
+  unless the user chose theirs by hand (`manual?/1`), which stays; an
+  unknown name is refused either way.
+  """
+  @spec put_device(User.t(), String.t()) ::
+          {:ok, User.t()} | {:error, :invalid_time_zone | term()}
+  def put_device(%User{} = user, name) do
+    cond do
+      not valid?(name) -> {:error, :invalid_time_zone}
+      manual?(user) -> {:ok, user}
+      true -> put(user, name)
     end
   end
 

@@ -1697,6 +1697,7 @@ export const gamend = $root.gamend = (() => {
                  * @property {number|Long|null} [inserted_at_ms] Notification inserted_at_ms
                  * @property {string|null} [icon_url] Notification icon_url
                  * @property {string|null} [group] Notification group
+                 * @property {boolean|null} [read] Notification read
                  * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
                  */
 
@@ -1809,6 +1810,14 @@ export const gamend = $root.gamend = (() => {
                 Notification.prototype.group = "";
 
                 /**
+                 * Notification read.
+                 * @member {boolean} read
+                 * @memberof gamend.realtime.v1.Notification
+                 * @instance
+                 */
+                Notification.prototype.read = false;
+
+                /**
                  * Encodes the specified Notification message. Does not implicitly {@link gamend.realtime.v1.Notification.verify|verify} messages.
                  * @function encode
                  * @memberof gamend.realtime.v1.Notification
@@ -1844,6 +1853,8 @@ export const gamend = $root.gamend = (() => {
                         writer.uint32(/* id 9, wireType 2 =*/74).string(message.icon_url);
                     if (message.group != null && $Object.hasOwnProperty.call(message, "group") && message.group !== "")
                         writer.uint32(/* id 10, wireType 2 =*/82).string(message.group);
+                    if (message.read != null && $Object.hasOwnProperty.call(message, "read") && message.read !== false)
+                        writer.uint32(/* id 11, wireType 0 =*/88).bool(message.read);
                     if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
                         for (let i = 0; i < message.$unknowns.length; ++i)
                             writer.raw(message.$unknowns[i]);
@@ -1978,6 +1989,15 @@ export const gamend = $root.gamend = (() => {
                                     delete message.group;
                                 continue;
                             }
+                        case 11: {
+                                if (wireType !== 0)
+                                    break;
+                                if (value = reader.bool())
+                                    message.read = value;
+                                else
+                                    delete message.read;
+                                continue;
+                            }
                         }
                         reader.skipType(wireType, _depth, tag);
                         if (!reader.discardUnknown) {
@@ -2053,6 +2073,9 @@ export const gamend = $root.gamend = (() => {
                     if (object.group != null)
                         if (typeof object.group !== "string" || object.group.length)
                             message.group = $String(object.group);
+                    if (object.read != null)
+                        if (object.read)
+                            message.read = $Boolean(object.read);
                     return message;
                 };
 
@@ -2094,6 +2117,7 @@ export const gamend = $root.gamend = (() => {
                             object.inserted_at_ms = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                         object.icon_url = "";
                         object.group = "";
+                        object.read = false;
                     }
                     if (message.id != null && $Object.hasOwnProperty.call(message, "id"))
                         object.id = message.id;
@@ -2120,6 +2144,8 @@ export const gamend = $root.gamend = (() => {
                         object.icon_url = message.icon_url;
                     if (message.group != null && $Object.hasOwnProperty.call(message, "group"))
                         object.group = message.group;
+                    if (message.read != null && $Object.hasOwnProperty.call(message, "read"))
+                        object.read = message.read;
                     return object;
                 };
 
@@ -2149,6 +2175,266 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 return Notification;
+            })();
+
+            v1.NotificationsRead = (function() {
+
+                /**
+                 * Properties of a NotificationsRead.
+                 * @typedef {Object} gamend.realtime.v1.NotificationsRead.$Properties
+                 * @property {Array.<string>|null} [ids] NotificationsRead ids
+                 * @property {number|Long|null} [unread_count] NotificationsRead unread_count
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a NotificationsRead.
+                 * @memberof gamend.realtime.v1
+                 * @interface INotificationsRead
+                 * @augments gamend.realtime.v1.NotificationsRead.$Properties
+                 * @deprecated Use gamend.realtime.v1.NotificationsRead.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a NotificationsRead.
+                 * @typedef {gamend.realtime.v1.NotificationsRead.$Properties} gamend.realtime.v1.NotificationsRead.$Shape
+                 */
+
+                /**
+                 * Constructs a new NotificationsRead.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a NotificationsRead.
+                 * @constructor
+                 * @param {gamend.realtime.v1.NotificationsRead.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const NotificationsRead = function (properties) {
+                    this.ids = [];
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * NotificationsRead ids.
+                 * @member {Array.<string>} ids
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @instance
+                 */
+                NotificationsRead.prototype.ids = $util.emptyArray;
+
+                /**
+                 * NotificationsRead unread_count.
+                 * @member {number|Long} unread_count
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @instance
+                 */
+                NotificationsRead.prototype.unread_count = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+                /**
+                 * Encodes the specified NotificationsRead message. Does not implicitly {@link gamend.realtime.v1.NotificationsRead.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @static
+                 * @param {gamend.realtime.v1.NotificationsRead.$Properties} message NotificationsRead message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                NotificationsRead.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.ids != null && message.ids.length)
+                        for (let i = 0; i < message.ids.length; ++i)
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.ids[i]);
+                    if (message.unread_count != null && $Object.hasOwnProperty.call(message, "unread_count") && (typeof message.unread_count === "object" ? message.unread_count.low || message.unread_count.high : message.unread_count !== 0))
+                        writer.uint32(/* id 2, wireType 0 =*/16).int64(message.unread_count);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a NotificationsRead message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.NotificationsRead & gamend.realtime.v1.NotificationsRead.$Shape} NotificationsRead
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                NotificationsRead.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.NotificationsRead();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if (!(message.ids && message.ids.length))
+                                    message.ids = [];
+                                message.ids.push(reader.stringVerify());
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 0)
+                                    break;
+                                if (typeof (value = reader.int64()) === "object" ? value.low || value.high : value !== 0)
+                                    message.unread_count = value;
+                                else
+                                    delete message.unread_count;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a NotificationsRead message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.NotificationsRead} NotificationsRead
+                 */
+                NotificationsRead.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.NotificationsRead)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.NotificationsRead: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.NotificationsRead();
+                    if (object.ids) {
+                        if (!$Array.isArray(object.ids))
+                            throw $TypeError(".gamend.realtime.v1.NotificationsRead.ids: array expected");
+                        message.ids = $Array(object.ids.length);
+                        for (let i = 0; i < object.ids.length; ++i)
+                            message.ids[i] = $String(object.ids[i]);
+                    }
+                    if (object.unread_count != null)
+                        if (typeof object.unread_count === "object" ? object.unread_count.low || object.unread_count.high : $Number(object.unread_count) !== 0)
+                            if ($util.Long)
+                                message.unread_count = $util.Long.fromValue(object.unread_count, false);
+                            else if (typeof object.unread_count === "string")
+                                message.unread_count = $parseInt(object.unread_count, 10);
+                            else if (typeof object.unread_count === "number")
+                                message.unread_count = object.unread_count;
+                            else if (typeof object.unread_count === "object")
+                                message.unread_count = new $util.LongBits(object.unread_count.low >>> 0, object.unread_count.high >>> 0).toNumber();
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a NotificationsRead message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @static
+                 * @param {gamend.realtime.v1.NotificationsRead} message NotificationsRead
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                NotificationsRead.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.arrays || options.defaults)
+                        object.ids = [];
+                    if (options.defaults)
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, false);
+                            object.unread_count = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
+                        } else
+                            object.unread_count = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
+                    if (message.ids && message.ids.length) {
+                        object.ids = $Array(message.ids.length);
+                        for (let j = 0; j < message.ids.length; ++j)
+                            object.ids[j] = message.ids[j];
+                    }
+                    if (message.unread_count != null && $Object.hasOwnProperty.call(message, "unread_count"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.unread_count = typeof message.unread_count === "number" ? $BigInt(message.unread_count) : $util.Long.fromBits(message.unread_count.low >>> 0, message.unread_count.high >>> 0, false).toBigInt();
+                        else if (typeof message.unread_count === "number")
+                            object.unread_count = options.longs === $String ? $String(message.unread_count) : message.unread_count;
+                        else
+                            object.unread_count = options.longs === $String ? $util.Long.prototype.toString.call(message.unread_count) : options.longs === $Number ? new $util.LongBits(message.unread_count.low >>> 0, message.unread_count.high >>> 0).toNumber() : message.unread_count;
+                    return object;
+                };
+
+                /**
+                 * Converts this NotificationsRead to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                NotificationsRead.prototype.toJSON = function() {
+                    return NotificationsRead.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for NotificationsRead
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.NotificationsRead
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                NotificationsRead.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.NotificationsRead";
+                };
+
+                return NotificationsRead;
             })();
 
             v1.ChatMessage = (function() {

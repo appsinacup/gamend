@@ -9,7 +9,16 @@ defmodule GamendWeb.Api.V1.NotificationController do
   alias Gamend.Notifications
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{DeletedCountResponse, FreeForm, NotificationPage, NotificationResponse}
+
+  alias GamendWeb.Schemas.{
+    DeletedCountResponse,
+    FreeForm,
+    NotificationPage,
+    NotificationResponse,
+    NotificationsReadResponse,
+    UnreadCountResponse
+  }
+
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -119,6 +128,62 @@ defmodule GamendWeb.Api.V1.NotificationController do
     ]
   )
 
+  operation(:mark_read,
+    operation_id: "mark_notifications_read",
+    summary: "Mark notifications read by IDs",
+    description:
+      "Mark one or more of the authenticated user's notifications read. Others' ids and those " <>
+        "already read are skipped. The user's connections hear `notifications_read` with the " <>
+        "ids marked and the unread count.",
+    security: [%{"authorization" => []}],
+    request_body: {
+      "Notification IDs to mark read",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          ids: %Schema{
+            type: :array,
+            items: %Schema{type: :string, format: :uuid},
+            description: "Array of notification IDs to mark read"
+          }
+        },
+        required: [:ids]
+      }
+    },
+    responses: [
+      ok: {"Marked, and the unread count", "application/json", NotificationsReadResponse},
+      bad_request: Schemas.error("Bad request"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:mark_all_read,
+    operation_id: "mark_all_notifications_read",
+    summary: "Mark every notification read",
+    description:
+      "Mark all of the authenticated user's notifications read, as opening the site's " <>
+        "notifications page does. The user's connections hear `notifications_read`.",
+    security: [%{"authorization" => []}],
+    responses: [
+      ok: {"Marked, and the unread count", "application/json", NotificationsReadResponse},
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:unread_count,
+    operation_id: "count_unread_notifications",
+    summary: "Count unread notifications",
+    description:
+      "How many of the authenticated user's notifications are unread: the count on the " <>
+        "site's account button.",
+    security: [%{"authorization" => []}],
+    responses: [
+      ok: {"Unread count", "application/json", UnreadCountResponse},
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
   # ---------------------------------------------------------------------------
   # Actions
   # ---------------------------------------------------------------------------
@@ -185,7 +250,47 @@ defmodule GamendWeb.Api.V1.NotificationController do
     reply_error(conn, :bad_request, "missing_param", "ids is required (an array)")
   end
 
-  # ---------------------------------------------------------------------------
-  # Helpers
-  # ---------------------------------------------------------------------------
+  def mark_read(conn, %{"ids" => ids}) when is_list(ids) do
+    case Scope.user(conn.assigns.current_scope) do
+      %User{} = user ->
+        ids = ids |> Enum.map(&parse_id/1) |> Enum.reject(&is_nil/1)
+        {marked, _} = Notifications.mark_notifications_read(user.id, ids)
+        reply_read(conn, user, marked)
+
+      _ ->
+        reply_error(conn, :unauthorized, "not_authenticated")
+    end
+  end
+
+  def mark_read(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "ids is required (an array)")
+  end
+
+  def mark_all_read(conn, _params) do
+    case Scope.user(conn.assigns.current_scope) do
+      %User{} = user ->
+        {marked, _} = Notifications.mark_all_notifications_read(user.id)
+        reply_read(conn, user, marked)
+
+      _ ->
+        reply_error(conn, :unauthorized, "not_authenticated")
+    end
+  end
+
+  def unread_count(conn, _params) do
+    case Scope.user(conn.assigns.current_scope) do
+      %User{} = user ->
+        reply_data(conn, %{unread_count: Notifications.count_unread_notifications(user.id)})
+
+      _ ->
+        reply_error(conn, :unauthorized, "not_authenticated")
+    end
+  end
+
+  defp reply_read(conn, user, marked) do
+    reply_data(conn, %{
+      marked: marked,
+      unread_count: Notifications.count_unread_notifications(user.id)
+    })
+  end
 end

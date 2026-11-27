@@ -30,7 +30,12 @@ defmodule GamendWeb.PreferenceControllerTest do
       assert conn |> put("/preferences", %{key: "theme", value: "dark"}) |> response(204)
       assert conn |> put("/preferences", %{key: "game_sounds", value: "off"}) |> response(204)
       assert conn |> put("/preferences", %{key: "theme", value: "pink"}) |> response(422)
-      assert conn |> put("/preferences", %{key: "timezone", value: "UTC"}) |> response(422)
+
+      assert conn
+             |> put("/preferences", %{key: "timezone", value: "Mars/Olympus"})
+             |> response(422)
+
+      assert conn |> put("/preferences", %{key: "locale_of_mars", value: "UTC"}) |> response(422)
 
       prefs = Preferences.get(Accounts.get_user!(user.id))
       assert prefs["theme"] == "dark"

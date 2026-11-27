@@ -3,6 +3,7 @@ defmodule GamendWeb.Api.V1.PreferenceControllerTest do
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Preferences
+  alias Gamend.Accounts.TimeZone
   alias Gamend.AccountsFixtures
   alias GamendWeb.Auth.Guardian
 
@@ -35,7 +36,11 @@ defmodule GamendWeb.Api.V1.PreferenceControllerTest do
     test "refuses a key or a value not allowed, and saves nothing", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
 
-      for params <- [%{key: "theme", value: "purple"}, %{key: "timezone", value: "UTC"}] do
+      for params <- [
+            %{key: "theme", value: "purple"},
+            %{key: "timezone", value: "Mars/Olympus"},
+            %{key: "locale_of_mars", value: "UTC"}
+          ] do
         assert %{"error" => "invalid_preference"} =
                  conn
                  |> auth_conn(user)
@@ -48,6 +53,31 @@ defmodule GamendWeb.Api.V1.PreferenceControllerTest do
                conn |> auth_conn(user) |> put("/api/v1/me/preferences", %{}) |> json_response(422)
 
       assert Preferences.get(Accounts.get_user(user.id)) == %{}
+    end
+
+    test "saves the device's time zone, read back in the row, unless one was picked by hand",
+         %{conn: conn} do
+      user = AccountsFixtures.user_fixture()
+
+      assert %{"ok" => true} ==
+               conn
+               |> auth_conn(user)
+               |> put("/api/v1/me/preferences", %{key: "timezone", value: "Europe/Bucharest"})
+               |> json_response(200)
+
+      user = Accounts.get_user(user.id)
+      assert TimeZone.of(user) == "Europe/Bucharest"
+      assert Preferences.row(%{user_id: user.id}) == %{"timezone" => "Europe/Bucharest"}
+
+      {:ok, user} = TimeZone.choose(user, "Asia/Tokyo")
+
+      assert %{"ok" => true} ==
+               conn
+               |> auth_conn(user)
+               |> put("/api/v1/me/preferences", %{key: "timezone", value: "Europe/Bucharest"})
+               |> json_response(200)
+
+      assert TimeZone.of(Accounts.get_user(user.id)) == "Asia/Tokyo"
     end
 
     test "needs a signed-in user", %{conn: conn} do

@@ -323,6 +323,11 @@ const anyTopic = {
       PB.Notification.toObject(PB.Notification.decode(bin), { defaults: true, longs: Number }),
       [['metadata_json', 'metadata']]
     ),
+  notifications_read: (bin) =>
+    PB.NotificationsRead.toObject(PB.NotificationsRead.decode(bin), {
+      defaults: true,
+      longs: Number,
+    }),
   chat_message_created: (bin) => decodeChat(bin),
   chat_message_updated: (bin) => decodeChat(bin),
   chat_message_deleted: (bin) => PB.EntityId.toObject(PB.EntityId.decode(bin)),

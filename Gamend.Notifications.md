@@ -244,11 +244,12 @@ Results are ordered newest-first and cached with the same version-based TTL.
 # `mark_all_notifications_read`
 
 ```elixir
-@spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), nil}
+@spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), non_neg_integer()}
 ```
 
-Mark all notifications as read for a user: `{marked, nil}`. Those it
-marks are told to the user's other connections (`notifications_read`).
+Mark all notifications as read for a user: `{marked, unread_count}`.
+Those it marks are told to the user's other connections
+(`notifications_read`).
 
 # `mark_notification_read`
 
@@ -263,13 +264,14 @@ already read answers it as it is.
 # `mark_notifications_read`
 
 ```elixir
-@spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
+@spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) ::
+  {non_neg_integer(), non_neg_integer()}
 ```
 
 Mark the user's notifications `ids` read, in one statement: what the
 notifications page does with those that arrive while it is open, and a
 client with those it showed. Others' ids are skipped, and so are those
-already read.
+already read. `{marked, unread_count}`.
 
 # `notify`
 

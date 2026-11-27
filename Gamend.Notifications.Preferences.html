@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1531">
+    <meta name="project" content="gamend_core v1.1.1532">
 
 
-    <title>Gamend.Notifications.Preferences — gamend_core v1.1.1531</title>
+    <title>Gamend.Notifications.Preferences — gamend_core v1.1.1532</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-B5F48D2A.js"></script>
+    <script defer src="dist/sidebar_items-89689BBB.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1531
+          v1.1.1532
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Notifications.<wbr />Preferences</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1531)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1532)</small>
 
     </h1>
 
@@ -169,12 +169,14 @@ under <code class="inline">&quot;notifications&quot;</code>:</p><pre><code class
       </div>
 
         <div class="summary-synopsis"><p>Several choices at once, in one write, as a client sends them
-(<code class="inline">PUT /api/v1/me/notification_settings</code>): <code class="inline">&quot;groups&quot;</code>, <code class="inline">%{group =&gt; %{channel =&gt; bool}}</code> (<a href="#put/4"><code class="inline">put/4</code></a> each), and the switches <code class="inline">&quot;off_all&quot;</code>,
-<code class="inline">&quot;off_email&quot;</code>, <code class="inline">&quot;off_push&quot;</code>, each <code class="inline">true</code> (<a href="#turn_off/2"><code class="inline">turn_off/2</code></a>) or <code class="inline">false</code>
-(<a href="#turn_on/2"><code class="inline">turn_on/2</code></a>); a key left out is left as it is. Refused whole, with
+(<code class="inline">PUT /api/v1/me/notification_settings</code>): <code class="inline">&quot;groups&quot;</code>, <code class="inline">%{group =&gt; %{channel =&gt; bool}}</code> (<a href="#put/4"><code class="inline">put/4</code></a> each), the switches (<code class="inline">&quot;off_all&quot;</code>,
+<code class="inline">&quot;off_email&quot;</code>, <code class="inline">&quot;off_push&quot;</code>), each <code class="inline">true</code> (<a href="#turn_off/2"><code class="inline">turn_off/2</code></a>) or <code class="inline">false</code>
+(<a href="#turn_on/2"><code class="inline">turn_on/2</code></a>), and <code class="inline">&quot;timezone&quot;</code>, the user's own pick of the zone
+reminders follow (<a href="Gamend.Accounts.TimeZone.html#choose/2"><code class="inline">Gamend.Accounts.TimeZone.choose/2</code></a>; <code class="inline">&quot;&quot;</code> goes back to
+the device's). A key left out is left as it is. Refused whole, with
 nothing written: <code class="inline">:unknown_group</code> for a group the user has no row for
 (an admins' one for anyone else), <code class="inline">:not_configurable</code> for a channel the
-group does not let users change.</p></div>
+group does not let users change, <code class="inline">:invalid_time_zone</code>.</p></div>
 
     </div>
 
@@ -300,7 +302,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#turn_off/2" data-no-tooltip="" translate="no">turn_off(user, atom)</a>
+        <a href="#turn_off/2" data-no-tooltip="" translate="no">turn_off(user, which)</a>
 
       </div>
 
@@ -310,7 +312,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#turn_on/2" data-no-tooltip="" translate="no">turn_on(user, atom)</a>
+        <a href="#turn_on/2" data-no-tooltip="" translate="no">turn_on(user, which)</a>
 
       </div>
 
@@ -342,7 +344,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <h1 class="signature" translate="no">change(user, changes)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L412" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L399" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -359,12 +361,14 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       </div>
 
 <p>Several choices at once, in one write, as a client sends them
-(<code class="inline">PUT /api/v1/me/notification_settings</code>): <code class="inline">&quot;groups&quot;</code>, <code class="inline">%{group =&gt; %{channel =&gt; bool}}</code> (<a href="#put/4"><code class="inline">put/4</code></a> each), and the switches <code class="inline">&quot;off_all&quot;</code>,
-<code class="inline">&quot;off_email&quot;</code>, <code class="inline">&quot;off_push&quot;</code>, each <code class="inline">true</code> (<a href="#turn_off/2"><code class="inline">turn_off/2</code></a>) or <code class="inline">false</code>
-(<a href="#turn_on/2"><code class="inline">turn_on/2</code></a>); a key left out is left as it is. Refused whole, with
+(<code class="inline">PUT /api/v1/me/notification_settings</code>): <code class="inline">&quot;groups&quot;</code>, <code class="inline">%{group =&gt; %{channel =&gt; bool}}</code> (<a href="#put/4"><code class="inline">put/4</code></a> each), the switches (<code class="inline">&quot;off_all&quot;</code>,
+<code class="inline">&quot;off_email&quot;</code>, <code class="inline">&quot;off_push&quot;</code>), each <code class="inline">true</code> (<a href="#turn_off/2"><code class="inline">turn_off/2</code></a>) or <code class="inline">false</code>
+(<a href="#turn_on/2"><code class="inline">turn_on/2</code></a>), and <code class="inline">&quot;timezone&quot;</code>, the user's own pick of the zone
+reminders follow (<a href="Gamend.Accounts.TimeZone.html#choose/2"><code class="inline">Gamend.Accounts.TimeZone.choose/2</code></a>; <code class="inline">&quot;&quot;</code> goes back to
+the device's). A key left out is left as it is. Refused whole, with
 nothing written: <code class="inline">:unknown_group</code> for a group the user has no row for
 (an admins' one for anyone else), <code class="inline">:not_configurable</code> for a channel the
-group does not let users change.</p>
+group does not let users change, <code class="inline">:invalid_time_zone</code>.</p>
   </section>
 </section>
 <section class="detail" id="channels/0">
@@ -377,7 +381,7 @@ group does not let users change.</p>
       <h1 class="signature" translate="no">channels()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L168" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -405,7 +409,7 @@ group does not let users change.</p>
       <h1 class="signature" translate="no">digest?(group_key, type)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L306" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L307" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -435,7 +439,7 @@ not in its <code class="inline">email_now</code>.</p>
       <h1 class="signature" translate="no">email_every_days(group_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L321" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L322" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -463,7 +467,7 @@ not in its <code class="inline">email_now</code>.</p>
       <h1 class="signature" translate="no">enabled?(user, group_key, channel)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L342" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L343" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -495,7 +499,7 @@ else.</p>
       <h1 class="signature" translate="no">group(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L233" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L234" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -523,7 +527,7 @@ else.</p>
       <h1 class="signature" translate="no">group_for_type(type)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L242" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L243" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -553,7 +557,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">groups()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L177" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -583,7 +587,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <h1 class="signature" translate="no">groups_for(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L197" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L198" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -611,7 +615,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <h1 class="signature" translate="no">off?(user, switch)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L477" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L491" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -639,7 +643,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <h1 class="signature" translate="no">put(user, group_key, channel, on?)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L380" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L381" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -668,7 +672,7 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <h1 class="signature" translate="no">stored(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L332" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L333" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -693,10 +697,10 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">turn_off(user, atom)</h1>
+      <h1 class="signature" translate="no">turn_off(user, which)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L465" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L479" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -722,10 +726,10 @@ them. A core group a host's <code class="inline">includes</code> names is left o
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">turn_on(user, atom)</h1>
+      <h1 class="signature" translate="no">turn_on(user, which)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L471" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L483" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -753,9 +757,9 @@ them. A core group a host's <code class="inline">includes</code> names is left o
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1531">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1532">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1531">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1532">Hex Preview</a>
 
             </span>
 

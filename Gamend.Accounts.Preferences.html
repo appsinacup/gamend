@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1531">
+    <meta name="project" content="gamend_core v1.1.1532">
 
 
-    <title>Gamend.Accounts.Preferences — gamend_core v1.1.1531</title>
+    <title>Gamend.Accounts.Preferences — gamend_core v1.1.1532</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-B5F48D2A.js"></script>
+    <script defer src="dist/sidebar_items-89689BBB.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1531
+          v1.1.1532
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Preferences</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1531)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1532)</small>
 
     </h1>
 
@@ -154,8 +154,9 @@ the first made.</p>
 
       </div>
 
-        <div class="summary-synopsis"><p>The preferences a page may set (<a href="#put_client/3"><code class="inline">put_client/3</code></a>): core's <code class="inline">theme</code> and the
-host's <code class="inline">:client_preferences</code>, each with its allowed values.</p></div>
+        <div class="summary-synopsis"><p>The preferences a page may set (<a href="#put_client/3"><code class="inline">put_client/3</code></a>) from a list: core's
+<code class="inline">theme</code> and the host's <code class="inline">:client_preferences</code>, each with its allowed
+values. The device's <code class="inline">&quot;timezone&quot;</code> is set there too, from any known zone.</p></div>
 
     </div>
 
@@ -187,7 +188,10 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
 
         <div class="summary-synopsis"><p>Save a preference a page set: <code class="inline">{:ok, user}</code>, or <code class="inline">{:error, :invalid}</code> for a
 key or value not in <a href="#client_keys/0"><code class="inline">client_keys/0</code></a>. The theme's <code class="inline">&quot;system&quot;</code> removes the
-saved theme, so the device decides again.</p></div>
+saved theme, so the device decides again. <code class="inline">&quot;timezone&quot;</code> is no key of
+<a href="#client_keys/0"><code class="inline">client_keys/0</code></a>: its value is any known IANA zone, the device's, saved
+unless the user picked one by hand (<code class="inline">TimeZone.put_device/2</code>); a host's
+<code class="inline">:client_preferences</code> entry for it is not read.</p></div>
 
     </div>
 
@@ -248,7 +252,7 @@ new one. <code class="inline">{:ok, user}</code> with the saved user; the row <c
       <h1 class="signature" translate="no">client_keys()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L63" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -263,8 +267,9 @@ new one. <code class="inline">{:ok, user}</code> with the saved user; the row <c
 
       </div>
 
-<p>The preferences a page may set (<a href="#put_client/3"><code class="inline">put_client/3</code></a>): core's <code class="inline">theme</code> and the
-host's <code class="inline">:client_preferences</code>, each with its allowed values.</p>
+<p>The preferences a page may set (<a href="#put_client/3"><code class="inline">put_client/3</code></a>) from a list: core's
+<code class="inline">theme</code> and the host's <code class="inline">:client_preferences</code>, each with its allowed
+values. The device's <code class="inline">&quot;timezone&quot;</code> is set there too, from any known zone.</p>
   </section>
 </section>
 <section class="detail" id="get/1">
@@ -333,7 +338,7 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
       <h1 class="signature" translate="no">put_client(user, key, zone)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L79" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -351,7 +356,10 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
 
 <p>Save a preference a page set: <code class="inline">{:ok, user}</code>, or <code class="inline">{:error, :invalid}</code> for a
 key or value not in <a href="#client_keys/0"><code class="inline">client_keys/0</code></a>. The theme's <code class="inline">&quot;system&quot;</code> removes the
-saved theme, so the device decides again.</p>
+saved theme, so the device decides again. <code class="inline">&quot;timezone&quot;</code> is no key of
+<a href="#client_keys/0"><code class="inline">client_keys/0</code></a>: its value is any known IANA zone, the device's, saved
+unless the user picked one by hand (<code class="inline">TimeZone.put_device/2</code>); a host's
+<code class="inline">:client_preferences</code> entry for it is not read.</p>
   </section>
 </section>
 <section class="detail" id="row/1">
@@ -364,7 +372,7 @@ saved theme, so the device decides again.</p>
       <h1 class="signature" translate="no">row(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -394,7 +402,7 @@ their <code class="inline">&quot;timezone&quot;</code>, or nil with no such user
       <h1 class="signature" translate="no">theme(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L117" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -422,7 +430,7 @@ their <code class="inline">&quot;timezone&quot;</code>, or nil with no such user
       <h1 class="signature" translate="no">update(user, fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L129" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -451,9 +459,9 @@ new one. <code class="inline">{:ok, user}</code> with the saved user; the row <c
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1531">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1532">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1531">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1532">Hex Preview</a>
 
             </span>
 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1531">
+    <meta name="project" content="gamend_core v1.1.1532">
 
 
-    <title>Gamend.Accounts.TimeZone — gamend_core v1.1.1531</title>
+    <title>Gamend.Accounts.TimeZone — gamend_core v1.1.1532</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-B5F48D2A.js"></script>
+    <script defer src="dist/sidebar_items-89689BBB.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1531
+          v1.1.1532
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />TimeZone</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1531)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1532)</small>
 
     </h1>
 
@@ -152,6 +152,19 @@ host needs no global <code class="inline">:time_zone_database</code> config.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#chosen/2" data-no-tooltip="" translate="no">chosen(prefs, name)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The preferences map <code class="inline">prefs</code> with the user's pick (<a href="#choose/2"><code class="inline">choose/2</code></a>): <code class="inline">name</code>
+kept by hand, nil back to automatic (the zone stays until a device
+sends its own), <code class="inline">:keep</code> as it is. For a writer that
+saves it with other preferences at once.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#day_start/2" data-no-tooltip="" translate="no">day_start(user, date)</a>
 
       </div>
@@ -159,6 +172,19 @@ host needs no global <code class="inline">:time_zone_database</code> config.</p>
         <div class="summary-synopsis"><p>The moment <code class="inline">date</code> begins for a user or a zone, as a UTC DateTime (UTC
 midnight when the zone is unknown). Where midnight does not exist (a clock
 change at 00:00), the first moment after it.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#device_change/2" data-no-tooltip="" translate="no">device_change(user, name)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The zone worth writing from what a device says (<code class="inline">name</code>), nil for none: a
+known zone, not the user's already, and the user picked none by hand
+(<a href="#manual?/1"><code class="inline">manual?/1</code></a>). Read from <code class="inline">user</code> as it was, so the write itself goes
+through <a href="#with_device/2"><code class="inline">with_device/2</code></a>.</p></div>
 
     </div>
 
@@ -241,10 +267,10 @@ from the <code class="inline">tz</code> package's own data and kept.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>The zone a device says the user is in: a page's on connect, a client's
-(<a href="Gamend.Accounts.Preferences.html#put_client/3"><code class="inline">Gamend.Accounts.Preferences.put_client/3</code></a>). Saved as <a href="#put/2"><code class="inline">put/2</code></a> does,
-unless the user chose theirs by hand (<a href="#manual?/1"><code class="inline">manual?/1</code></a>), which stays; an
-unknown name is refused either way.</p></div>
+        <div class="summary-synopsis"><p>The zone a client's device says the user is in
+(<a href="Gamend.Accounts.Preferences.html#put_client/3"><code class="inline">Gamend.Accounts.Preferences.put_client/3</code></a>), saved when
+<a href="#device_change/2"><code class="inline">device_change/2</code></a> says so (a page's on connect is saved with its locale
+in one write); an unknown name is refused.</p></div>
 
     </div>
 
@@ -255,6 +281,19 @@ unknown name is refused either way.</p></div>
       </div>
 
         <div class="summary-synopsis"><p>Whether <code class="inline">name</code> is a time zone the database knows.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#with_device/2" data-no-tooltip="" translate="no">with_device(prefs, name)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The preferences map <code class="inline">prefs</code> as it is at the write, with a device's
+<code class="inline">name</code> (nil for none) unless the user picked a zone by hand: for
+<a href="Gamend.Accounts.Preferences.html#update/2"><code class="inline">Gamend.Accounts.Preferences.update/2</code></a>'s function, so a pick made
+meanwhile stays.</p></div>
 
     </div>
 
@@ -282,7 +321,7 @@ unknown name is refused either way.</p></div>
       <h1 class="signature" translate="no">choose(user, name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -302,6 +341,37 @@ unknown name is refused either way.</p></div>
 <code class="inline">nil</code> goes back to automatic (the browser's zone, from the next visit).</p>
   </section>
 </section>
+<section class="detail" id="chosen/2">
+
+  <div class="detail-header">
+    <a href="#chosen/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">chosen(prefs, name)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> chosen(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil | :keep) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>The preferences map <code class="inline">prefs</code> with the user's pick (<a href="#choose/2"><code class="inline">choose/2</code></a>): <code class="inline">name</code>
+kept by hand, nil back to automatic (the zone stays until a device
+sends its own), <code class="inline">:keep</code> as it is. For a writer that
+saves it with other preferences at once.</p>
+  </section>
+</section>
 <section class="detail" id="day_start/2">
 
   <div class="detail-header">
@@ -312,7 +382,7 @@ unknown name is refused either way.</p></div>
       <h1 class="signature" translate="no">day_start(user, date)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L159" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L194" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -332,6 +402,37 @@ midnight when the zone is unknown). Where midnight does not exist (a clock
 change at 00:00), the first moment after it.</p>
   </section>
 </section>
+<section class="detail" id="device_change/2">
+
+  <div class="detail-header">
+    <a href="#device_change/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">device_change(user, name)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L78" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> device_change(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The zone worth writing from what a device says (<code class="inline">name</code>), nil for none: a
+known zone, not the user's already, and the user picked none by hand
+(<a href="#manual?/1"><code class="inline">manual?/1</code></a>). Read from <code class="inline">user</code> as it was, so the write itself goes
+through <a href="#with_device/2"><code class="inline">with_device/2</code></a>.</p>
+  </section>
+</section>
 <section class="detail" id="local/2">
 
     <span id="local/1"></span>
@@ -344,7 +445,7 @@ change at 00:00), the first moment after it.</p>
       <h1 class="signature" translate="no">local(user_or_zone, utc \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L135" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L170" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -375,7 +476,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">local_date(user_or_zone, utc \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L185" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -406,7 +507,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">local_hour(user_or_zone, utc \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L211" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -434,7 +535,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">manual?(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L86" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -462,7 +563,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">names()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L94" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L129" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -565,10 +666,10 @@ from the <code class="inline">tz</code> package's own data and kept.</p>
 
       </div>
 
-<p>The zone a device says the user is in: a page's on connect, a client's
-(<a href="Gamend.Accounts.Preferences.html#put_client/3"><code class="inline">Gamend.Accounts.Preferences.put_client/3</code></a>). Saved as <a href="#put/2"><code class="inline">put/2</code></a> does,
-unless the user chose theirs by hand (<a href="#manual?/1"><code class="inline">manual?/1</code></a>), which stays; an
-unknown name is refused either way.</p>
+<p>The zone a client's device says the user is in
+(<a href="Gamend.Accounts.Preferences.html#put_client/3"><code class="inline">Gamend.Accounts.Preferences.put_client/3</code></a>), saved when
+<a href="#device_change/2"><code class="inline">device_change/2</code></a> says so (a page's on connect is saved with its locale
+in one write); an unknown name is refused.</p>
   </section>
 </section>
 <section class="detail" id="valid?/1">
@@ -599,6 +700,37 @@ unknown name is refused either way.</p>
 <p>Whether <code class="inline">name</code> is a time zone the database knows.</p>
   </section>
 </section>
+<section class="detail" id="with_device/2">
+
+  <div class="detail-header">
+    <a href="#with_device/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">with_device(prefs, name)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L89" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> with_device(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>The preferences map <code class="inline">prefs</code> as it is at the write, with a device's
+<code class="inline">name</code> (nil for none) unless the user picked a zone by hand: for
+<a href="Gamend.Accounts.Preferences.html#update/2"><code class="inline">Gamend.Accounts.Preferences.update/2</code></a>'s function, so a pick made
+meanwhile stays.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -608,9 +740,9 @@ unknown name is refused either way.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1531">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1532">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1531">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1532">Hex Preview</a>
 
             </span>
 

@@ -1,4 +1,4 @@
-# gamend_core v1.1.1530 - API Reference
+# gamend_core v1.1.1531 - API Reference
 
 ## Modules
 
@@ -230,10 +230,11 @@ that carry them, and listing or revoking a user's sessions.
   - [Gamend.Accounts.TimeZone](Gamend.Accounts.TimeZone.md): A user's time zone, for "their day" and "their evening": an IANA name
 (`"Europe/Bucharest"`) kept in their private preferences
 (`Gamend.Accounts.Preferences`), taken from the browser
-(`Intl.DateTimeFormat().resolvedOptions().timeZone`, sent on connect) or
-chosen in settings. A zone chosen by hand (`choose/2`) stays until the user
-goes back to automatic: the browser no longer overwrites it
-(`manual?/1`). Unknown or unset, everything falls back to UTC.
+(`Intl.DateTimeFormat().resolvedOptions().timeZone`, sent on connect), a
+client's device (`put_device/2`) or chosen in settings. A zone chosen by
+hand (`choose/2`) stays until the user goes back to automatic: neither the
+browser nor a device replaces it (`manual?/1`). Unknown or unset,
+everything falls back to UTC.
   - [Gamend.Accounts.TokenContext](Gamend.Accounts.TokenContext.md): The `user_tokens.context` values that name what a token is for.
 
   - [Gamend.Accounts.User](Gamend.Accounts.User.md): The User schema and associated changeset functions used across the

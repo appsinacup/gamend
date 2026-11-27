@@ -4,10 +4,11 @@
 A user's time zone, for "their day" and "their evening": an IANA name
 (`"Europe/Bucharest"`) kept in their private preferences
 (`Gamend.Accounts.Preferences`), taken from the browser
-(`Intl.DateTimeFormat().resolvedOptions().timeZone`, sent on connect) or
-chosen in settings. A zone chosen by hand (`choose/2`) stays until the user
-goes back to automatic: the browser no longer overwrites it
-(`manual?/1`). Unknown or unset, everything falls back to UTC.
+(`Intl.DateTimeFormat().resolvedOptions().timeZone`, sent on connect), a
+client's device (`put_device/2`) or chosen in settings. A zone chosen by
+hand (`choose/2`) stays until the user goes back to automatic: neither the
+browser nor a device replaces it (`manual?/1`). Unknown or unset,
+everything falls back to UTC.
 
 The `tz` database is passed to `DateTime.shift_zone/3` explicitly, so a
 host needs no global `:time_zone_database` config.
@@ -92,6 +93,18 @@ A user's time zone, or nil when unknown.
 ```
 
 Save a user's time zone; an unknown name is refused, the same one is a no-op.
+
+# `put_device`
+
+```elixir
+@spec put_device(Gamend.Accounts.User.t(), String.t()) ::
+  {:ok, Gamend.Accounts.User.t()} | {:error, :invalid_time_zone | term()}
+```
+
+The zone a device says the user is in: a page's on connect, a client's
+(`Gamend.Accounts.Preferences.put_client/3`). Saved as `put/2` does,
+unless the user chose theirs by hand (`manual?/1`), which stays; an
+unknown name is refused either way.
 
 # `valid?`
 

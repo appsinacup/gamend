@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1530">
+    <meta name="project" content="gamend_core v1.1.1531">
 
 
-    <title>Gamend.Notifications — gamend_core v1.1.1530</title>
+    <title>Gamend.Notifications — gamend_core v1.1.1531</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-A06DC57E.js"></script>
+    <script defer src="dist/sidebar_items-B5F48D2A.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1530
+          v1.1.1531
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Notifications</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1530)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1531)</small>
 
     </h1>
 
@@ -118,7 +118,9 @@ gamend_core
 notifications.</p><p>Notifications can only be sent to accepted friends. They are stored in the
 database so that recipients receive them even when offline. On WebSocket
 connect the client gets all undeleted notifications (ordered by timestamp).
-New notifications are also pushed in real-time via PubSub.</p><h2 id="module-pubsub-events" class="section-heading"><a href="#module-pubsub-events" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">PubSub Events</span></h2><p>This module broadcasts to the <code class="inline">&quot;notifications:user:&lt;user_id&gt;&quot;</code> topic:</p><ul><li><code class="inline">{:notification_created, notification}</code> – a new notification was created</li></ul><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Send a notification to a friend</span><span class="w">
+New notifications are also pushed in real-time via PubSub.</p><h2 id="module-pubsub-events" class="section-heading"><a href="#module-pubsub-events" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">PubSub Events</span></h2><p>This module broadcasts to the <code class="inline">&quot;notifications:user:&lt;user_id&gt;&quot;</code> topic:</p><ul><li><code class="inline">{:notification_created, notification}</code> – a new notification was created</li><li><code class="inline">{:notifications_read, %{ids: ids, unread_count: count}}</code> – notifications
+were marked read (<a href="#mark_notifications_read/2"><code class="inline">mark_notifications_read/2</code></a>, <a href="#mark_all_notifications_read/1"><code class="inline">mark_all_notifications_read/1</code></a>,
+<a href="#mark_notification_read/2"><code class="inline">mark_notification_read/2</code></a>): their ids and how many are left unread</li></ul><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Send a notification to a friend</span><span class="w">
 </span><span class="p" data-group-id="group-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">notification</span><span class="p" data-group-id="group-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Notifications</span><span class="o">.</span><span class="n">send_notification</span><span class="p" data-group-id="group-2">(</span><span class="n">sender_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-3">%{</span><span class="w">
   </span><span class="s">&quot;user_id&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="n">recipient_id</span><span class="p">,</span><span class="w">
   </span><span class="s">&quot;title&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Game invite&quot;</span><span class="p">,</span><span class="w">
@@ -359,7 +361,8 @@ entire history).</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Mark all notifications as read for a user.</p></div>
+        <div class="summary-synopsis"><p>Mark all notifications as read for a user: <code class="inline">{marked, nil}</code>. Those it
+marks are told to the user's other connections (<code class="inline">notifications_read</code>).</p></div>
 
     </div>
 
@@ -369,7 +372,8 @@ entire history).</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Mark a single notification as read. Only the recipient can mark it.</p></div>
+        <div class="summary-synopsis"><p>Mark a single notification as read. Only the recipient can mark it; one
+already read answers it as it is.</p></div>
 
     </div>
 
@@ -380,8 +384,9 @@ entire history).</p></div>
       </div>
 
         <div class="summary-synopsis"><p>Mark the user's notifications <code class="inline">ids</code> read, in one statement: what the
-notifications page does with those that arrive while it is open. Others'
-ids are skipped.</p></div>
+notifications page does with those that arrive while it is open, and a
+client with those it showed. Others' ids are skipped, and so are those
+already read.</p></div>
 
     </div>
 
@@ -452,7 +457,7 @@ devices, an email. A channel they turned off is skipped.</p></div>
       <h1 class="signature" translate="no">user_id()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L56" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -493,7 +498,7 @@ devices, an email. A channel they turned off is skipped.</p></div>
       <h1 class="signature" translate="no">admin_create_notification(sender_id, recipient_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L389" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L412" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -522,7 +527,7 @@ devices, an email. A channel they turned off is skipped.</p></div>
       <h1 class="signature" translate="no">admin_delete_notification(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L552" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L575" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -552,7 +557,7 @@ devices, an email. A channel they turned off is skipped.</p></div>
       <h1 class="signature" translate="no">announce_to_all(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L503" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L526" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -587,7 +592,7 @@ answers how many accounts it is going to.</p>
       <h1 class="signature" translate="no">count_all_notifications(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L339" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L362" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -671,7 +676,7 @@ answers how many accounts it is going to.</p>
       <h1 class="signature" translate="no">create_chat_notification(sender_id, recipient_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L865" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L888" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -703,7 +708,7 @@ are updated (so the user sees the latest message preview).</p>
       <h1 class="signature" translate="no">delete_all_notifications(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L666" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L689" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -731,7 +736,7 @@ are updated (so the user sees the latest message preview).</p>
       <h1 class="signature" translate="no">delete_notification_by(sender_id, recipient_id, title)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L677" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L700" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -761,7 +766,7 @@ Used internally to retract system-generated notifications (e.g. friend request c
       <h1 class="signature" translate="no">delete_notifications(user_id, ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L652" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L675" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -818,7 +823,7 @@ Returns <code class="inline">{deleted_count, nil}</code>.</p>
       <h1 class="signature" translate="no">get_notification!(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L302" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L325" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -846,7 +851,7 @@ Returns <code class="inline">{deleted_count, nil}</code>.</p>
       <h1 class="signature" translate="no">group_of(map)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L399" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L422" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -879,7 +884,7 @@ belongs to: the one <a href="#notify/3"><code class="inline">notify/3</code></a>
       <h1 class="signature" translate="no">list_all_notifications(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L328" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L351" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -973,7 +978,7 @@ as <a href="#list_notifications/2"><code class="inline">list_notifications/2</co
       <h1 class="signature" translate="no">list_recent_notifications(user_id, limit)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L146" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1036,7 +1041,7 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
       <h1 class="signature" translate="no">mark_all_notifications_read(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L256" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L268" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1051,7 +1056,8 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
 
       </div>
 
-<p>Mark all notifications as read for a user.</p>
+<p>Mark all notifications as read for a user: <code class="inline">{marked, nil}</code>. Those it
+marks are told to the user's other connections (<code class="inline">notifications_read</code>).</p>
   </section>
 </section>
 <section class="detail" id="mark_notification_read/2">
@@ -1064,7 +1070,7 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
       <h1 class="signature" translate="no">mark_notification_read(user_id, notification_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L229" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L235" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1080,7 +1086,8 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
 
       </div>
 
-<p>Mark a single notification as read. Only the recipient can mark it.</p>
+<p>Mark a single notification as read. Only the recipient can mark it; one
+already read answers it as it is.</p>
   </section>
 </section>
 <section class="detail" id="mark_notifications_read/2">
@@ -1093,7 +1100,7 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
       <h1 class="signature" translate="no">mark_notifications_read(user_id, ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L277" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L282" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1109,8 +1116,9 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
       </div>
 
 <p>Mark the user's notifications <code class="inline">ids</code> read, in one statement: what the
-notifications page does with those that arrive while it is open. Others'
-ids are skipped.</p>
+notifications page does with those that arrive while it is open, and a
+client with those it showed. Others' ids are skipped, and so are those
+already read.</p>
   </section>
 </section>
 <section class="detail" id="notify/3">
@@ -1123,7 +1131,7 @@ ids are skipped.</p>
       <h1 class="signature" translate="no">notify(user, group, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L439" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L462" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1165,7 +1173,7 @@ out on.</p>
       <h1 class="signature" translate="no">send_notification(sender_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L595" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L618" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1203,7 +1211,7 @@ themselves, <code class="inline">:too_many_notifications</code> when the recipie
       <h1 class="signature" translate="no">subscribe(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1231,7 +1239,7 @@ themselves, <code class="inline">:too_many_notifications</code> when the recipie
       <h1 class="signature" translate="no">unsubscribe(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1258,9 +1266,9 @@ themselves, <code class="inline">:too_many_notifications</code> when the recipie
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1530">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1531">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1530">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1531">Hex Preview</a>
 
             </span>
 

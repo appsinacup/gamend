@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1530">
+    <meta name="project" content="gamend_core v1.1.1531">
 
 
-    <title>Gamend.Accounts.TimeZone — gamend_core v1.1.1530</title>
+    <title>Gamend.Accounts.TimeZone — gamend_core v1.1.1531</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-A06DC57E.js"></script>
+    <script defer src="dist/sidebar_items-B5F48D2A.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1530
+          v1.1.1531
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />TimeZone</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1530)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1531)</small>
 
     </h1>
 
@@ -117,10 +117,11 @@ gamend_core
 <p>A user's time zone, for &quot;their day&quot; and &quot;their evening&quot;: an IANA name
 (<code class="inline">&quot;Europe/Bucharest&quot;</code>) kept in their private preferences
 (<a href="Gamend.Accounts.Preferences.html"><code class="inline">Gamend.Accounts.Preferences</code></a>), taken from the browser
-(<code class="inline">Intl.DateTimeFormat().resolvedOptions().timeZone</code>, sent on connect) or
-chosen in settings. A zone chosen by hand (<a href="#choose/2"><code class="inline">choose/2</code></a>) stays until the user
-goes back to automatic: the browser no longer overwrites it
-(<a href="#manual?/1"><code class="inline">manual?/1</code></a>). Unknown or unset, everything falls back to UTC.</p><p>The <code class="inline">tz</code> database is passed to <a href="https://elixir.hexdocs.pm/DateTime.html#shift_zone/3"><code class="inline">DateTime.shift_zone/3</code></a> explicitly, so a
+(<code class="inline">Intl.DateTimeFormat().resolvedOptions().timeZone</code>, sent on connect), a
+client's device (<a href="#put_device/2"><code class="inline">put_device/2</code></a>) or chosen in settings. A zone chosen by
+hand (<a href="#choose/2"><code class="inline">choose/2</code></a>) stays until the user goes back to automatic: neither the
+browser nor a device replaces it (<a href="#manual?/1"><code class="inline">manual?/1</code></a>). Unknown or unset,
+everything falls back to UTC.</p><p>The <code class="inline">tz</code> database is passed to <a href="https://elixir.hexdocs.pm/DateTime.html#shift_zone/3"><code class="inline">DateTime.shift_zone/3</code></a> explicitly, so a
 host needs no global <code class="inline">:time_zone_database</code> config.</p>
     </section>
 
@@ -236,6 +237,19 @@ from the <code class="inline">tz</code> package's own data and kept.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#put_device/2" data-no-tooltip="" translate="no">put_device(user, name)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The zone a device says the user is in: a page's on connect, a client's
+(<a href="Gamend.Accounts.Preferences.html#put_client/3"><code class="inline">Gamend.Accounts.Preferences.put_client/3</code></a>). Saved as <a href="#put/2"><code class="inline">put/2</code></a> does,
+unless the user chose theirs by hand (<a href="#manual?/1"><code class="inline">manual?/1</code></a>), which stays; an
+unknown name is refused either way.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#valid?/1" data-no-tooltip="" translate="no">valid?(name)</a>
 
       </div>
@@ -268,7 +282,7 @@ from the <code class="inline">tz</code> package's own data and kept.</p></div>
       <h1 class="signature" translate="no">choose(user, name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -298,7 +312,7 @@ from the <code class="inline">tz</code> package's own data and kept.</p></div>
       <h1 class="signature" translate="no">day_start(user, date)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L159" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -330,7 +344,7 @@ change at 00:00), the first moment after it.</p>
       <h1 class="signature" translate="no">local(user_or_zone, utc \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L135" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -361,7 +375,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">local_date(user_or_zone, utc \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L133" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -392,7 +406,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">local_hour(user_or_zone, utc \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L159" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -420,7 +434,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">manual?(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L69" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L86" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -448,7 +462,7 @@ is unknown.</p>
       <h1 class="signature" translate="no">names()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L94" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -478,7 +492,7 @@ from the <code class="inline">tz</code> package's own data and kept.</p>
       <h1 class="signature" translate="no">of(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L35" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L36" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -506,7 +520,7 @@ from the <code class="inline">tz</code> package's own data and kept.</p>
       <h1 class="signature" translate="no">put(user, name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L47" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -525,6 +539,38 @@ from the <code class="inline">tz</code> package's own data and kept.</p>
 <p>Save a user's time zone; an unknown name is refused, the same one is a no-op.</p>
   </section>
 </section>
+<section class="detail" id="put_device/2">
+
+  <div class="detail-header">
+    <a href="#put_device/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">put_device(user, name)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L63" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> put_device(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()} | {:error, :invalid_time_zone | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>The zone a device says the user is in: a page's on connect, a client's
+(<a href="Gamend.Accounts.Preferences.html#put_client/3"><code class="inline">Gamend.Accounts.Preferences.put_client/3</code></a>). Saved as <a href="#put/2"><code class="inline">put/2</code></a> does,
+unless the user chose theirs by hand (<a href="#manual?/1"><code class="inline">manual?/1</code></a>), which stays; an
+unknown name is refused either way.</p>
+  </section>
+</section>
 <section class="detail" id="valid?/1">
 
   <div class="detail-header">
@@ -535,7 +581,7 @@ from the <code class="inline">tz</code> package's own data and kept.</p>
       <h1 class="signature" translate="no">valid?(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L27" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/time_zone.ex#L28" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -562,9 +608,9 @@ from the <code class="inline">tz</code> package's own data and kept.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1530">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1531">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1530">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1531">Hex Preview</a>
 
             </span>
 

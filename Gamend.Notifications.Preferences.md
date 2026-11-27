@@ -60,6 +60,22 @@ under `"notifications"`:
     %{"off_all" => bool, "off_email" => bool, "off_push" => bool,
       "groups" => %{group => %{channel => bool}}}
 
+# `change`
+
+```elixir
+@spec change(Gamend.Accounts.User.t(), map()) ::
+  {:ok, Gamend.Accounts.User.t()} | {:error, term()}
+```
+
+Several choices at once, in one write, as a client sends them
+(`PUT /api/v1/me/notification_settings`): `"groups"`, `%{group =>
+%{channel => bool}}` (`put/4` each), and the switches `"off_all"`,
+`"off_email"`, `"off_push"`, each `true` (`turn_off/2`) or `false`
+(`turn_on/2`); a key left out is left as it is. Refused whole, with
+nothing written: `:unknown_group` for a group the user has no row for
+(an admins' one for anyone else), `:not_configurable` for a channel the
+group does not let users change.
+
 # `channels`
 
 ```elixir

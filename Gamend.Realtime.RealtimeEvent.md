@@ -146,6 +146,9 @@ Every value.
 # `notification_created`
 *macro* 
 
+# `notifications_read`
+*macro* 
+
 # `offer`
 *macro* 
 

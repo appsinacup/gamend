@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1530">
+    <meta name="project" content="gamend_core v1.1.1531">
 
 
-    <title>Gamend.Accounts.Preferences — gamend_core v1.1.1530</title>
+    <title>Gamend.Accounts.Preferences — gamend_core v1.1.1531</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-A06DC57E.js"></script>
+    <script defer src="dist/sidebar_items-B5F48D2A.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1530
+          v1.1.1531
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Preferences</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1530)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1531)</small>
 
     </h1>
 
@@ -125,10 +125,13 @@ settings changed at once cannot lose each other.</p><p>Some are set by the page 
 site's theme, and whatever a host adds to
 <code class="inline">config :gamend_core, :client_preferences</code> (a map of key to allowed
 values, e.g. <code class="inline">%{&quot;game_sounds&quot; =&gt; ~w(on off)}</code>, or to a <code class="inline">{module, function}</code> answering them, e.g. the languages the site serves). Only
-those keys, with only those values, can be written that way.</p><p>Those are what a client reads back, as the row <code class="inline">preferences</code>
-(<a href="#row/1"><code class="inline">row/1</code></a>, <a href="Gamend.KV.Computed.html"><code class="inline">Gamend.KV.Computed</code></a>): its owner's only, moved by every change
-here, so a second device sees the theme or the sound change the first
-made.</p>
+those keys, with only those values, can be written that way. A client
+also says its device's time zone that way (<code class="inline">&quot;timezone&quot;</code>, an IANA name):
+kept as the browser's is (<a href="Gamend.Accounts.TimeZone.html#put_device/2"><code class="inline">Gamend.Accounts.TimeZone.put_device/2</code></a>),
+unless the user chose one by hand.</p><p>Those, and the time zone, are what a client reads back, as the row
+<code class="inline">preferences</code> (<a href="#row/1"><code class="inline">row/1</code></a>, <a href="Gamend.KV.Computed.html"><code class="inline">Gamend.KV.Computed</code></a>): its owner's only, moved by
+every change here, so a second device sees the theme or the sound change
+the first made.</p>
     </section>
 
 </div>
@@ -178,7 +181,7 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#put_client/3" data-no-tooltip="" translate="no">put_client(user, key, value)</a>
+        <a href="#put_client/3" data-no-tooltip="" translate="no">put_client(user, key, zone)</a>
 
       </div>
 
@@ -195,8 +198,8 @@ saved theme, so the device decides again.</p></div>
       </div>
 
         <div class="summary-synopsis"><p>The row <code class="inline">preferences</code> (<a href="Gamend.KV.Computed.html"><code class="inline">Gamend.KV.Computed</code></a>) for the user in <code class="inline">scope</code>:
-what they set of <a href="#client_keys/0"><code class="inline">client_keys/0</code></a> (no theme where the device decides), or
-nil with no such user.</p></div>
+what they set of <a href="#client_keys/0"><code class="inline">client_keys/0</code></a> (no theme where the device decides) and
+their <code class="inline">&quot;timezone&quot;</code>, or nil with no such user.</p></div>
 
     </div>
 
@@ -245,7 +248,7 @@ new one. <code class="inline">{:ok, user}</code> with the saved user; the row <c
       <h1 class="signature" translate="no">client_keys()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -274,7 +277,7 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
       <h1 class="signature" translate="no">get(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -302,7 +305,7 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
       <h1 class="signature" translate="no">locale(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -327,10 +330,10 @@ host's <code class="inline">:client_preferences</code>, each with its allowed va
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">put_client(user, key, value)</h1>
+      <h1 class="signature" translate="no">put_client(user, key, zone)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L79" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -361,7 +364,7 @@ saved theme, so the device decides again.</p>
       <h1 class="signature" translate="no">row(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -377,8 +380,8 @@ saved theme, so the device decides again.</p>
       </div>
 
 <p>The row <code class="inline">preferences</code> (<a href="Gamend.KV.Computed.html"><code class="inline">Gamend.KV.Computed</code></a>) for the user in <code class="inline">scope</code>:
-what they set of <a href="#client_keys/0"><code class="inline">client_keys/0</code></a> (no theme where the device decides), or
-nil with no such user.</p>
+what they set of <a href="#client_keys/0"><code class="inline">client_keys/0</code></a> (no theme where the device decides) and
+their <code class="inline">&quot;timezone&quot;</code>, or nil with no such user.</p>
   </section>
 </section>
 <section class="detail" id="theme/1">
@@ -391,7 +394,7 @@ nil with no such user.</p>
       <h1 class="signature" translate="no">theme(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -419,7 +422,7 @@ nil with no such user.</p>
       <h1 class="signature" translate="no">update(user, fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/preferences.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -448,9 +451,9 @@ new one. <code class="inline">{:ok, user}</code> with the saved user; the row <c
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1530">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1531">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1530">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1531">Hex Preview</a>
 
             </span>
 

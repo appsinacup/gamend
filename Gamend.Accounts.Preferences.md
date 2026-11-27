@@ -19,12 +19,15 @@ site's theme, and whatever a host adds to
 `config :gamend_core, :client_preferences` (a map of key to allowed
 values, e.g. `%{"game_sounds" => ~w(on off)}`, or to a `{module,
 function}` answering them, e.g. the languages the site serves). Only
-those keys, with only those values, can be written that way.
+those keys, with only those values, can be written that way. A client
+also says its device's time zone that way (`"timezone"`, an IANA name):
+kept as the browser's is (`Gamend.Accounts.TimeZone.put_device/2`),
+unless the user chose one by hand.
 
-Those are what a client reads back, as the row `preferences`
-(`row/1`, `Gamend.KV.Computed`): its owner's only, moved by every change
-here, so a second device sees the theme or the sound change the first
-made.
+Those, and the time zone, are what a client reads back, as the row
+`preferences` (`row/1`, `Gamend.KV.Computed`): its owner's only, moved by
+every change here, so a second device sees the theme or the sound change
+the first made.
 
 # `client_keys`
 
@@ -69,8 +72,8 @@ saved theme, so the device decides again.
 ```
 
 The row `preferences` (`Gamend.KV.Computed`) for the user in `scope`:
-what they set of `client_keys/0` (no theme where the device decides), or
-nil with no such user.
+what they set of `client_keys/0` (no theme where the device decides) and
+their `"timezone"`, or nil with no such user.
 
 # `theme`
 

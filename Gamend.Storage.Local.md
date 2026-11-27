@@ -3,11 +3,12 @@
 
 Disk-backed storage — the default backend.
 
-Files live under `STORAGE_LOCAL_DIR` (default `priv/storage`). Readable URLs
-and upload tickets point at the app itself. The upload endpoint is protected
-by the caller's own auth plus a namespace check (a client may only write keys
-under its own id), so the client flow matches S3 without a separate signed
-token — an S3 presigned `PUT` simply ignores the extra auth header.
+Files live under `GAMEND_STORAGE_DIR` (default `priv/storage`). Readable
+URLs point at `GET /storage/<key>`, and an upload ticket at the app's own
+`PUT /api/v1/storage/upload` (`upload_path/0`), a path with no host, so a
+client sends it to the server it talks to. `GamendWeb.Uploads` signs the
+ticket's key and content type into its `token`, which is all that route
+takes: no session, as an S3 presigned `PUT` takes none.
 
 # `root_dir`
 
@@ -22,6 +23,14 @@ default are the single source of truth. The previous fallback here pointed at
 the *application's* priv directory, which is a different path from the
 declared `priv/storage` default — and inside a release it is a versioned
 directory that a deploy replaces, silently taking every stored object with it.
+
+# `upload_path`
+
+```elixir
+@spec upload_path() :: String.t()
+```
+
+The path a local upload ticket names: the app's own upload route.
 
 ---
 

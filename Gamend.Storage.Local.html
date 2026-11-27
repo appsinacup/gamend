@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1533">
+    <meta name="project" content="gamend_core v1.1.1534">
 
 
-    <title>Gamend.Storage.Local — gamend_core v1.1.1533</title>
+    <title>Gamend.Storage.Local — gamend_core v1.1.1534</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-2EAE7B46.js"></script>
+    <script defer src="dist/sidebar_items-04DEE03B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1533
+          v1.1.1534
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Storage.<wbr />Local</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1533)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1534)</small>
 
     </h1>
 
@@ -114,11 +114,12 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>Disk-backed storage — the default backend.</p><p>Files live under <code class="inline">STORAGE_LOCAL_DIR</code> (default <code class="inline">priv/storage</code>). Readable URLs
-and upload tickets point at the app itself. The upload endpoint is protected
-by the caller's own auth plus a namespace check (a client may only write keys
-under its own id), so the client flow matches S3 without a separate signed
-token — an S3 presigned <code class="inline">PUT</code> simply ignores the extra auth header.</p>
+<p>Disk-backed storage — the default backend.</p><p>Files live under <code class="inline">GAMEND_STORAGE_DIR</code> (default <code class="inline">priv/storage</code>). Readable
+URLs point at <code class="inline">GET /storage/&lt;key&gt;</code>, and an upload ticket at the app's own
+<code class="inline">PUT /api/v1/storage/upload</code> (<a href="#upload_path/0"><code class="inline">upload_path/0</code></a>), a path with no host, so a
+client sends it to the server it talks to. <code class="inline">GamendWeb.Uploads</code> signs the
+ticket's key and content type into its <code class="inline">token</code>, which is all that route
+takes: no session, as an S3 presigned <code class="inline">PUT</code> takes none.</p>
     </section>
 
 </div>
@@ -142,6 +143,16 @@ token — an S3 presigned <code class="inline">PUT</code> simply ignores the ext
       </div>
 
         <div class="summary-synopsis"><p>Directory objects are written to.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#upload_path/0" data-no-tooltip="" translate="no">upload_path()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The path a local upload ticket names: the app's own upload route.</p></div>
 
     </div>
 
@@ -169,7 +180,7 @@ token — an S3 presigned <code class="inline">PUT</code> simply ignores the ext
       <h1 class="signature" translate="no">root_dir()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage/local.ex#L211" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage/local.ex#L218" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -191,6 +202,34 @@ declared <code class="inline">priv/storage</code> default — and inside a relea
 directory that a deploy replaces, silently taking every stored object with it.</p>
   </section>
 </section>
+<section class="detail" id="upload_path/0">
+
+  <div class="detail-header">
+    <a href="#upload_path/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">upload_path()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage/local.ex#L19" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> upload_path() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>The path a local upload ticket names: the app's own upload route.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -200,9 +239,9 @@ directory that a deploy replaces, silently taking every stored object with it.</
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1533">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1534">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1533">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1534">Hex Preview</a>
 
             </span>
 

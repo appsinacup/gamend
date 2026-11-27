@@ -52,6 +52,14 @@ admin tools, never as a raw client "give me items" endpoint.
 Remove `qty` of `item`, atomically. `{:error, :insufficient_items}` if the user
 doesn't hold enough — the stack never goes negative.
 
+# `count_items`
+
+```elixir
+@spec count_items(keyword()) :: non_neg_integer()
+```
+
+How many stacks `list_items/1`'s filters hold, every page.
+
 # `grant_item`
 
 ```elixir
@@ -78,6 +86,17 @@ entitlement rows are: a host drawing something from a player's items on
 every row of a list (a title on a leaderboard) read it once per player,
 not once per row per render. Inside a transaction the cache is skipped
 both ways: a read there may see a write a rollback would undo.
+
+# `list_items`
+
+```elixir
+@spec list_items(keyword()) :: [Gamend.Inventory.Item.t()]
+```
+
+Item stacks by item code, a page of them (`:page`, `:page_size`), of one
+user (`:user_id`) or every one's, of one `:item`, and with `held: true`
+only those with some left: the Items tab, `GET /api/v1/me/inventory` and
+the admin's list. Each with its `user`, but with `preload: false`.
 
 # `quantity`
 

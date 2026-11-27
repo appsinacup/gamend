@@ -278,7 +278,22 @@ query, so run a long walk outside a transaction.
 @spec subscribe(String.t(), keyword()) :: :ok | {:error, term()}
 ```
 
-Subscribe the current process to changes for a specific key/scope.
+Subscribe the current process to changes for a specific key/scope. A part
+of a computed family (`word_pools:fr`) hears its own moves here; a move of
+every part is the family's (`subscribe_family/2`).
+
+# `subscribe_family`
+
+```elixir
+@spec subscribe_family(String.t(), keyword()) :: :ok | {:error, term()}
+```
+
+Subscribe the current process to the moves of every part of the computed
+family `family` (`"word_pools:*"`, `Gamend.KV.Computed`) in a scope: a
+`from` key with no `*` written, or `refresh/2` of the family, arrives as
+`{:kv_stale, %{key: "word_pools:*", ...}}`, for the subscriber to read
+again each part it holds. Once however many times it is asked; the user
+channel does it for the parts a client subscribes to.
 
 # `unsubscribe`
 
@@ -287,6 +302,14 @@ Subscribe the current process to changes for a specific key/scope.
 ```
 
 Unsubscribe the current process from changes for a specific key/scope.
+
+# `unsubscribe_family`
+
+```elixir
+@spec unsubscribe_family(String.t(), keyword()) :: :ok
+```
+
+Undo `subscribe_family/2`.
 
 # `update_entry`
 

@@ -29,9 +29,11 @@ worked out from that language's stored row.
 
 `word_pools:fr` is then `MyGame.WordPools.row/1` with `part: "fr"`, and a
 write of `words:fr` moves it, and only it. A `from` key with no `*` moves
-no row of a family: which part would it be? A key named whole wins over a
-family, and the longest prefix over a shorter one, as `kv_schemas`
-patterns do.
+every part of the family in its scope, as `Gamend.KV.refresh/2` of the
+family's own key (`"word_pools:*"`) does: its subscribers are told on the
+family's topic (`Gamend.KV.subscribe_family/2`). A key
+named whole wins over a family, and the longest prefix over a shorter
+one, as `kv_schemas` patterns do.
 
 `Gamend.KV.get/2` answers it, so the HTTP API and `kv:subscribe` do too,
 behind the same `before_kv_get` decision as a stored row. When it moves,
@@ -84,6 +86,23 @@ Whether `key` is a computed row, one of a family's included.
 ```
 
 The computed rows worked out from the stored key `key`.
+
+# `family`
+
+```elixir
+@spec family(String.t()) :: String.t() | nil
+```
+
+The family `key` is a part of (`"word_pools:*"` for `word_pools:fr`), nil
+for a key of its own or a stored one.
+
+# `family?`
+
+```elixir
+@spec family?(String.t()) :: boolean()
+```
+
+Whether `key` is a family's own key (`"word_pools:*"`), one the host computes.
 
 # `fetch`
 

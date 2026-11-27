@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1532">
+    <meta name="project" content="gamend_core v1.1.1533">
 
 
-    <title>Gamend.Inventory — gamend_core v1.1.1532</title>
+    <title>Gamend.Inventory — gamend_core v1.1.1533</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-89689BBB.js"></script>
+    <script defer src="dist/sidebar_items-2EAE7B46.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1532
+          v1.1.1533
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Inventory</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1532)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1533)</small>
 
     </h1>
 
@@ -179,6 +179,16 @@ doesn't hold enough — the stack never goes negative.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#count_items/1" data-no-tooltip="" translate="no">count_items(opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How many stacks <a href="#list_items/1"><code class="inline">list_items/1</code></a>'s filters hold, every page.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#grant_item/4" data-no-tooltip="" translate="no">grant_item(user_id, item, qty, opts \\ [])</a>
 
       </div>
@@ -194,6 +204,19 @@ doesn't hold enough — the stack never goes negative.</p></div>
       </div>
 
         <div class="summary-synopsis"><p>All held items for a user, as a <code class="inline">%{item =&gt; quantity}</code> map.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list_items/1" data-no-tooltip="" translate="no">list_items(opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Item stacks by item code, a page of them (<code class="inline">:page</code>, <code class="inline">:page_size</code>), of one
+user (<code class="inline">:user_id</code>) or every one's, of one <code class="inline">:item</code>, and with <code class="inline">held: true</code>
+only those with some left: the Items tab, <code class="inline">GET /api/v1/me/inventory</code> and
+the admin's list. Each with its <code class="inline">user</code>, but with <code class="inline">preload: false</code>.</p></div>
 
     </div>
 
@@ -352,6 +375,36 @@ doesn't hold enough — the stack never goes negative.</p></div>
 doesn't hold enough — the stack never goes negative.</p>
   </section>
 </section>
+<section class="detail" id="count_items/1">
+
+    <span id="count_items/0"></span>
+
+  <div class="detail-header">
+    <a href="#count_items/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count_items(opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/inventory.ex#L259" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count_items(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>How many stacks <a href="#list_items/1"><code class="inline">list_items/1</code></a>'s filters hold, every page.</p>
+  </section>
+</section>
 <section class="detail" id="grant_item/4">
 
     <span id="grant_item/3"></span>
@@ -415,6 +468,39 @@ entitlement rows are: a host drawing something from a player's items on
 every row of a list (a title on a leaderboard) read it once per player,
 not once per row per render. Inside a transaction the cache is skipped
 both ways: a read there may see a write a rollback would undo.</p>
+  </section>
+</section>
+<section class="detail" id="list_items/1">
+
+    <span id="list_items/0"></span>
+
+  <div class="detail-header">
+    <a href="#list_items/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list_items(opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/inventory.ex#L251" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list_items(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="Gamend.Inventory.Item.html#t:t/0">Gamend.Inventory.Item.t</a>()]</pre>
+
+      </div>
+
+<p>Item stacks by item code, a page of them (<code class="inline">:page</code>, <code class="inline">:page_size</code>), of one
+user (<code class="inline">:user_id</code>) or every one's, of one <code class="inline">:item</code>, and with <code class="inline">held: true</code>
+only those with some left: the Items tab, <code class="inline">GET /api/v1/me/inventory</code> and
+the admin's list. Each with its <code class="inline">user</code>, but with <code class="inline">preload: false</code>.</p>
   </section>
 </section>
 <section class="detail" id="quantity/2">
@@ -538,9 +624,9 @@ both ways: a read there may see a write a rollback would undo.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1532">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1533">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1532">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1533">Hex Preview</a>
 
             </span>
 

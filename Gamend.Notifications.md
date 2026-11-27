@@ -14,9 +14,11 @@ New notifications are also pushed in real-time via PubSub.
 This module broadcasts to the `"notifications:user:<user_id>"` topic:
 
 - `{:notification_created, notification}` – a new notification was created
-- `{:notifications_read, %{ids: ids, unread_count: count}}` – notifications
-  were marked read (`mark_notifications_read/2`, `mark_all_notifications_read/1`,
-  `mark_notification_read/2`): their ids and how many are left unread
+- `{:notifications_read, %{ids: ids, unread_count: count}}` – the unread
+  count moved: notifications marked read (`mark_notifications_read/2`,
+  `mark_all_notifications_read/1`, `mark_notification_read/2`), their ids,
+  or unread ones deleted (`delete_notifications/2` and the other deletes),
+  no ids
 
 ## Usage
 

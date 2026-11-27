@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1532">
+    <meta name="project" content="gamend_core v1.1.1533">
 
 
-    <title>Gamend.KV — gamend_core v1.1.1532</title>
+    <title>Gamend.KV — gamend_core v1.1.1533</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-89689BBB.js"></script>
+    <script defer src="dist/sidebar_items-2EAE7B46.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1532
+          v1.1.1533
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />KV</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1532)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1533)</small>
 
     </h1>
 
@@ -346,7 +346,24 @@ hourly reminder, a boot sweep).</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Subscribe the current process to changes for a specific key/scope.</p></div>
+        <div class="summary-synopsis"><p>Subscribe the current process to changes for a specific key/scope. A part
+of a computed family (<code class="inline">word_pools:fr</code>) hears its own moves here; a move of
+every part is the family's (<a href="#subscribe_family/2"><code class="inline">subscribe_family/2</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#subscribe_family/2" data-no-tooltip="" translate="no">subscribe_family(family, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Subscribe the current process to the moves of every part of the computed
+family <code class="inline">family</code> (<code class="inline">&quot;word_pools:*&quot;</code>, <a href="Gamend.KV.Computed.html"><code class="inline">Gamend.KV.Computed</code></a>) in a scope: a
+<code class="inline">from</code> key with no <code class="inline">*</code> written, or <a href="#refresh/2"><code class="inline">refresh/2</code></a> of the family, arrives as
+<code class="inline">{:kv_stale, %{key: &quot;word_pools:*&quot;, ...}}</code>, for the subscriber to read
+again each part it holds. Once however many times it is asked; the user
+channel does it for the parts a client subscribes to.</p></div>
 
     </div>
 
@@ -357,6 +374,16 @@ hourly reminder, a boot sweep).</p></div>
       </div>
 
         <div class="summary-synopsis"><p>Unsubscribe the current process from changes for a specific key/scope.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unsubscribe_family/2" data-no-tooltip="" translate="no">unsubscribe_family(family, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Undo <a href="#subscribe_family/2"><code class="inline">subscribe_family/2</code></a>.</p></div>
 
     </div>
 
@@ -563,7 +590,7 @@ Returns <code class="inline">{:ok, entry}</code>, <code class="inline">{:error, 
       <h1 class="signature" translate="no">count_entries(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L438" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L464" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -591,7 +618,7 @@ Returns <code class="inline">{:ok, entry}</code>, <code class="inline">{:error, 
       <h1 class="signature" translate="no">create_entry(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L490" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L516" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -624,7 +651,7 @@ with <code class="inline">{:error, :too_many_entries}</code>. <a href="#put/4"><
       <h1 class="signature" translate="no">delete(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L289" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L315" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -652,7 +679,7 @@ with <code class="inline">{:error, :too_many_entries}</code>. <a href="#put/4"><
       <h1 class="signature" translate="no">delete_entry(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L609" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L635" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -680,7 +707,7 @@ with <code class="inline">{:error, :too_many_entries}</code>. <a href="#put/4"><
       <h1 class="signature" translate="no">delete_lobby_entries(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L314" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L340" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -711,7 +738,7 @@ the lobby's lock. Returns the number of entries deleted.</p>
       <h1 class="signature" translate="no">delete_user_lobby_entries(user_id, lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L344" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L370" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -743,7 +770,7 @@ Entries scoped to the lobby alone, or to the user alone, are left untouched.</p>
       <h1 class="signature" translate="no">get(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L175" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -772,7 +799,7 @@ Returns <code class="inline">{:ok, %{value: map(), metadata: map()}}</code> when
       <h1 class="signature" translate="no">get_entry(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L475" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L501" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -803,7 +830,7 @@ Returns the <code class="inline">Entry</code> struct or <code class="inline">nil
       <h1 class="signature" translate="no">list_entries(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L387" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L413" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -838,7 +865,7 @@ row of a key family, use <a href="#stream_prefix/2"><code class="inline">stream_
       <h1 class="signature" translate="no">prune_prefix(prefix, days, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L636" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L662" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -874,7 +901,7 @@ cache and its scope's listing are invalidated, as <a href="#delete/2"><code clas
       <h1 class="signature" translate="no">put(key, value, metadata \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L206" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L232" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -903,7 +930,7 @@ cache and its scope's listing are invalidated, as <a href="#delete/2"><code clas
       <h1 class="signature" translate="no">put(key, value, metadata, opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L220" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L246" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -936,7 +963,7 @@ Returns <code class="inline">{:ok, entry}</code> on success or <code class="inli
       <h1 class="signature" translate="no">refresh(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L800" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L826" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -968,7 +995,7 @@ it wakes sees what was written.</p>
       <h1 class="signature" translate="no">stream_prefix(prefix, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L672" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L698" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1009,7 +1036,7 @@ query, so run a long walk outside a transaction.</p>
       <h1 class="signature" translate="no">subscribe(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1024,7 +1051,44 @@ query, so run a long walk outside a transaction.</p>
 
       </div>
 
-<p>Subscribe the current process to changes for a specific key/scope.</p>
+<p>Subscribe the current process to changes for a specific key/scope. A part
+of a computed family (<code class="inline">word_pools:fr</code>) hears its own moves here; a move of
+every part is the family's (<a href="#subscribe_family/2"><code class="inline">subscribe_family/2</code></a>).</p>
+  </section>
+</section>
+<section class="detail" id="subscribe_family/2">
+
+    <span id="subscribe_family/1"></span>
+
+  <div class="detail-header">
+    <a href="#subscribe_family/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">subscribe_family(family, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> subscribe_family(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Subscribe the current process to the moves of every part of the computed
+family <code class="inline">family</code> (<code class="inline">&quot;word_pools:*&quot;</code>, <a href="Gamend.KV.Computed.html"><code class="inline">Gamend.KV.Computed</code></a>) in a scope: a
+<code class="inline">from</code> key with no <code class="inline">*</code> written, or <a href="#refresh/2"><code class="inline">refresh/2</code></a> of the family, arrives as
+<code class="inline">{:kv_stale, %{key: &quot;word_pools:*&quot;, ...}}</code>, for the subscriber to read
+again each part it holds. Once however many times it is asked; the user
+channel does it for the parts a client subscribes to.</p>
   </section>
 </section>
 <section class="detail" id="unsubscribe/2">
@@ -1039,7 +1103,7 @@ query, so run a long walk outside a transaction.</p>
       <h1 class="signature" translate="no">unsubscribe(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1057,6 +1121,36 @@ query, so run a long walk outside a transaction.</p>
 <p>Unsubscribe the current process from changes for a specific key/scope.</p>
   </section>
 </section>
+<section class="detail" id="unsubscribe_family/2">
+
+    <span id="unsubscribe_family/1"></span>
+
+  <div class="detail-header">
+    <a href="#unsubscribe_family/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unsubscribe_family(family, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> unsubscribe_family(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Undo <a href="#subscribe_family/2"><code class="inline">subscribe_family/2</code></a>.</p>
+  </section>
+</section>
 <section class="detail" id="update_entry/2">
 
   <div class="detail-header">
@@ -1067,7 +1161,7 @@ query, so run a long walk outside a transaction.</p>
       <h1 class="signature" translate="no">update_entry(id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L551" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L577" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1098,9 +1192,9 @@ Returns <code class="inline">{:ok, entry}</code>, <code class="inline">{:error, 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1532">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1533">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1532">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1533">Hex Preview</a>
 
             </span>
 

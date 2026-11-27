@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1532">
+    <meta name="project" content="gamend_core v1.1.1533">
 
 
-    <title>Gamend.KV.Computed — gamend_core v1.1.1532</title>
+    <title>Gamend.KV.Computed — gamend_core v1.1.1533</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-89689BBB.js"></script>
+    <script defer src="dist/sidebar_items-2EAE7B46.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1532
+          v1.1.1533
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />KV.<wbr />Computed</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1532)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1533)</small>
 
     </h1>
 
@@ -128,9 +128,11 @@ hook can close the row further, never open it. A row of what is
 only its owner's is that owner's on a host that says nothing.</li></ul><p>A key ending in <code class="inline">*</code> is a family of rows, one a part: a row per language
 worked out from that language's stored row.</p><pre><code class="makeup elixir" translate="no"><span class="s">&quot;word_pools:*&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="group-1">%{</span><span class="ss">value</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-2">{</span><span class="nc">MyGame.WordPools</span><span class="p">,</span><span class="w"> </span><span class="ss">:row</span><span class="p" data-group-id="group-2">}</span><span class="p">,</span><span class="w"> </span><span class="ss">from</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-3">[</span><span class="s">&quot;words:*&quot;</span><span class="p" data-group-id="group-3">]</span><span class="p" data-group-id="group-1">}</span></code></pre><p><code class="inline">word_pools:fr</code> is then <code class="inline">MyGame.WordPools.row/1</code> with <code class="inline">part: &quot;fr&quot;</code>, and a
 write of <code class="inline">words:fr</code> moves it, and only it. A <code class="inline">from</code> key with no <code class="inline">*</code> moves
-no row of a family: which part would it be? A key named whole wins over a
-family, and the longest prefix over a shorter one, as <code class="inline">kv_schemas</code>
-patterns do.</p><p><a href="Gamend.KV.html#get/2"><code class="inline">Gamend.KV.get/2</code></a> answers it, so the HTTP API and <code class="inline">kv:subscribe</code> do too,
+every part of the family in its scope, as <a href="Gamend.KV.html#refresh/2"><code class="inline">Gamend.KV.refresh/2</code></a> of the
+family's own key (<code class="inline">&quot;word_pools:*&quot;</code>) does: its subscribers are told on the
+family's topic (<a href="Gamend.KV.html#subscribe_family/2"><code class="inline">Gamend.KV.subscribe_family/2</code></a>). A key
+named whole wins over a family, and the longest prefix over a shorter
+one, as <code class="inline">kv_schemas</code> patterns do.</p><p><a href="Gamend.KV.html#get/2"><code class="inline">Gamend.KV.get/2</code></a> answers it, so the HTTP API and <code class="inline">kv:subscribe</code> do too,
 behind the same <code class="inline">before_kv_get</code> decision as a stored row. When it moves,
 everyone subscribed to it is told <code class="inline">{:kv_stale, %{key, user_id, lobby_id}}</code>
 on its topic (<a href="Gamend.KV.html#subscribe/2"><code class="inline">Gamend.KV.subscribe/2</code></a>), after the write commits; the user
@@ -203,6 +205,27 @@ row that names none and for a stored key.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#family/1" data-no-tooltip="" translate="no">family(key)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The family <code class="inline">key</code> is a part of (<code class="inline">&quot;word_pools:*&quot;</code> for <code class="inline">word_pools:fr</code>), nil
+for a key of its own or a stored one.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#family?/1" data-no-tooltip="" translate="no">family?(key)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">key</code> is a family's own key (<code class="inline">&quot;word_pools:*&quot;</code>), one the host computes.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#fetch/3" data-no-tooltip="" translate="no">fetch(key, user_id, lobby_id)</a>
 
       </div>
@@ -236,7 +259,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
       <h1 class="signature" translate="no">scope()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L55" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -281,7 +304,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
       <h1 class="signature" translate="no">access(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -310,7 +333,7 @@ row that names none and for a stored key.</p>
       <h1 class="signature" translate="no">computed?(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L86" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -338,7 +361,7 @@ row that names none and for a stored key.</p>
       <h1 class="signature" translate="no">dependents(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -356,6 +379,63 @@ row that names none and for a stored key.</p>
 <p>The computed rows worked out from the stored key <code class="inline">key</code>.</p>
   </section>
 </section>
+<section class="detail" id="family/1">
+
+  <div class="detail-header">
+    <a href="#family/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">family(key)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> family(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The family <code class="inline">key</code> is a part of (<code class="inline">&quot;word_pools:*&quot;</code> for <code class="inline">word_pools:fr</code>), nil
+for a key of its own or a stored one.</p>
+  </section>
+</section>
+<section class="detail" id="family?/1">
+
+  <div class="detail-header">
+    <a href="#family?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">family?(key)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> family?(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">key</code> is a family's own key (<code class="inline">&quot;word_pools:*&quot;</code>), one the host computes.</p>
+  </section>
+</section>
 <section class="detail" id="fetch/3">
 
   <div class="detail-header">
@@ -366,7 +446,7 @@ row that names none and for a stored key.</p>
       <h1 class="signature" translate="no">fetch(key, user_id, lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L75" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L94" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -395,9 +475,9 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1532">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1533">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1532">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1533">Hex Preview</a>
 
             </span>
 

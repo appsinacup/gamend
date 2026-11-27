@@ -30,7 +30,7 @@ defmodule Gamend.KVComputedTest do
   setup do
     Application.put_env(:gamend_core, :computed_rows, %{
       "level" => %{value: {Host, :level}, from: ["points"]},
-      "word_count:*" => %{value: {Host, :words}, from: ["words:*"]}
+      "word_count:*" => %{value: {Host, :words}, from: ["words:*", "word_settings"]}
     })
 
     on_exit(fn -> Application.delete_env(:gamend_core, :computed_rows) end)
@@ -113,6 +113,30 @@ defmodule Gamend.KVComputedTest do
     assert Computed.dependents("words:fr") == ["word_count:fr"]
     assert Computed.dependents("words") == []
     assert Computed.dependents("points") == ["level"]
+  end
+
+  test "a key named whole, and a refresh of the family, move every part, said once",
+       %{user: user} do
+    :ok = KV.subscribe_family("word_count:*", user_id: user.id)
+    :ok = KV.subscribe_family("word_count:*", user_id: user.id)
+    user_id = user.id
+
+    assert Computed.family("word_count:fr") == "word_count:*"
+    assert Computed.family("word_count") == nil
+    assert Computed.family?("word_count:*")
+    refute Computed.family?("level")
+    assert Computed.dependents("word_settings") == ["word_count:*"]
+
+    {:ok, _entry} = KV.put("word_settings", %{"v" => 1}, %{}, user_id: user.id)
+    assert_receive {:kv_stale, %{key: "word_count:*", user_id: ^user_id}}
+    refute_receive {:kv_stale, %{key: "word_count:*"}}, 50
+
+    :ok = KV.refresh("word_count:*", user_id: user.id)
+    assert_receive {:kv_stale, %{key: "word_count:*", user_id: ^user_id}}
+
+    :ok = KV.unsubscribe_family("word_count:*", user_id: user.id)
+    :ok = KV.refresh("word_count:*", user_id: user.id)
+    refute_receive {:kv_stale, _row}, 50
   end
 
   describe "the account's preferences" do

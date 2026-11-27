@@ -52,6 +52,14 @@ id.** Everything under `/friends/:id` (accept, reject, delete, and
 a person, not a relationship, which is what lets you block someone you have
 never interacted with.
 
+A friend (`GET /me/friends`), each side of a request (`GET /me/friend_requests`,
+`POST /friends`) and a found user (`GET /users`, `GET /users/:id`) carry the
+`card` the site's player card draws beside the name: `title` (the line under
+it), `title_class` (its look), `badge` and `mark` (what is drawn on the avatar),
+each `""` for none, in the reader's language. They are the host's answers to
+`config :gamend_web, :user_title`, `:user_title_class`, `:user_badge` and
+`:user_mark`.
+
 ## Realtime events
 
 Each friendship change is pushed on `user:{user_id}` to the users it involves,

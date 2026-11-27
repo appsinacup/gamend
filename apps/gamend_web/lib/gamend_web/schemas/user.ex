@@ -119,7 +119,8 @@ defmodule GamendWeb.Schemas.PublicUser do
         ),
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
-      last_seen_at: %Schema{type: :string, format: :"date-time"}
+      last_seen_at: %Schema{type: :string, format: :"date-time"},
+      card: GamendWeb.Schemas.PlayerCard
     },
     required: [
       :id,
@@ -128,7 +129,8 @@ defmodule GamendWeb.Schemas.PublicUser do
       :metadata,
       :is_online,
       :is_activated,
-      :last_seen_at
+      :last_seen_at,
+      :card
     ]
   })
 end

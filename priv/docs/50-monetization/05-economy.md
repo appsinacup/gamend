@@ -45,7 +45,7 @@ Player endpoints are read-only (see [/api/docs](/api/docs)):
 
 - `GET /api/v1/me/wallet`: all balances as a `{"currency": balance}` map.
 - `GET /api/v1/me/wallet/ledger`: paginated history, filterable by `currency`.
-- `GET /api/v1/me/inventory`: all held items as an `{"item": quantity}` map.
+- `GET /api/v1/me/inventory`: a page of the stacks the caller holds some of, by item code, each `{item, quantity, metadata, updated_at}` (`page`, `page_size`), as the settings page's Items tab shows them.
 
 Mutations live only under the admin API: `POST /api/v1/admin/economy/grant`, `/spend`, `/grant_item`, `/consume_item` (each takes `user_id`, `currency`/item code, `amount`, optional `reason` and `idempotency_key`), plus `GET` listings at `/admin/economy/wallets`, `/ledger`, and `/items`.
 

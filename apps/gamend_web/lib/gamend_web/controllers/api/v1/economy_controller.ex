@@ -10,7 +10,7 @@ defmodule GamendWeb.Api.V1.EconomyController do
   alias Gamend.Economy
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{InventoryResponse, LedgerEntryPage, WalletBalancesResponse}
+  alias GamendWeb.Schemas.{InventoryItemPage, LedgerEntryPage, WalletBalancesResponse}
   alias OpenApiSpex.Schema
 
   tags(["Economy"])
@@ -58,17 +58,43 @@ defmodule GamendWeb.Api.V1.EconomyController do
 
   operation(:inventory,
     operation_id: "get_current_user_inventory",
-    summary: "Current user's item quantities",
+    summary: "Current user's item stacks",
+    description:
+      "Every stack the current user holds some of, by item code: its quantity and its " <>
+        "per-stack metadata, as the settings page's Items tab shows them.",
     security: [%{"authorization" => []}],
+    parameters: [
+      page: [in: :query, schema: %Schema{type: :integer, default: 1}, required: false],
+      page_size: [in: :query, schema: %Schema{type: :integer, default: 25}, required: false]
+    ],
     responses: [
-      ok: {"Inventory", "application/json", InventoryResponse},
+      ok: {"Item stacks, by item code", "application/json", InventoryItemPage},
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
 
-  def inventory(conn, _params) do
+  def inventory(conn, params) do
     user = Scope.user(conn.assigns.current_scope)
-    reply_data(conn, Gamend.Inventory.inventory(user.id))
+    {page, page_size} = Pagination.params(params)
+    filters = [user_id: user.id, held: true, page: page, page_size: page_size]
+    items = Gamend.Inventory.list_items([preload: false] ++ filters)
+
+    reply_page(
+      conn,
+      Enum.map(items, &serialize_item/1),
+      page,
+      page_size,
+      Gamend.Inventory.count_items(filters)
+    )
+  end
+
+  defp serialize_item(item) do
+    %{
+      item: item.item,
+      quantity: item.quantity,
+      metadata: item.metadata || %{},
+      updated_at: item.updated_at
+    }
   end
 
   defp serialize(entry) do

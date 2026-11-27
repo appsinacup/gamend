@@ -402,4 +402,27 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
              |> post("/api/v1/notifications/read", %{ids: ids})
              |> json_response(400)
   end
+
+  test "DELETE /api/v1/notifications of an unread one tells the user's connections the count",
+       %{conn: conn} do
+    {a, b} = make_friends()
+    {:ok, unread} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "One"})
+    {:ok, read} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "Two"})
+    {1, 1} = Notifications.mark_notifications_read(b.id, [read.id])
+    :ok = Notifications.subscribe(b.id)
+
+    conn
+    |> auth_conn(b)
+    |> delete("/api/v1/notifications", %{ids: [read.id]})
+    |> json_response(200)
+
+    refute_receive {:notifications_read, _}, 50
+
+    conn
+    |> auth_conn(b)
+    |> delete("/api/v1/notifications", %{ids: [unread.id]})
+    |> json_response(200)
+
+    assert_receive {:notifications_read, %{ids: [], unread_count: 0}}
+  end
 end

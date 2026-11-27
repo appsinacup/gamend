@@ -12,17 +12,23 @@ defmodule GamendWeb.Schemas.WalletBalances do
   })
 end
 
-defmodule GamendWeb.Schemas.Inventory do
-  @moduledoc "Every item the caller holds, by code."
+defmodule GamendWeb.Schemas.InventoryItem do
+  @moduledoc "One stack of the caller's, as `Gamend.Inventory` keeps it."
   require OpenApiSpex
+  alias GamendWeb.Schemas.FreeForm
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
-    title: "Inventory",
-    description: "Item code to quantity",
+    title: "InventoryItem",
+    description: "An item stack",
     type: :object,
-    additionalProperties: %Schema{type: :integer},
-    example: %{"sword" => 1, "potion" => 5}
+    properties: %{
+      item: %Schema{type: :string, description: "The item's code"},
+      quantity: %Schema{type: :integer},
+      metadata: FreeForm.metadata(description: "The stack's own properties"),
+      updated_at: %Schema{type: :string, format: :"date-time"}
+    },
+    required: [:item, :quantity, :metadata, :updated_at]
   })
 end
 
@@ -54,9 +60,9 @@ defmodule GamendWeb.Schemas.WalletBalancesResponse do
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.WalletBalances
 end
 
-defmodule GamendWeb.Schemas.InventoryResponse do
-  @moduledoc "The caller's inventory under `data`."
-  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.Inventory
+defmodule GamendWeb.Schemas.InventoryItemPage do
+  @moduledoc "A page of the caller's item stacks."
+  use GamendWeb.Schemas.Envelope, page: GamendWeb.Schemas.InventoryItem
 end
 
 defmodule GamendWeb.Schemas.LedgerEntryPage do

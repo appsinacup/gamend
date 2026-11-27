@@ -427,11 +427,11 @@ defmodule Gamend.GDScript.API do
     },
     "Inventory" => %{
       "consume_item" => [3, 4],
-      "count_items" => [0],
+      "count_items" => [0, 1],
       "count_ledger" => [0],
       "grant_item" => [3, 4],
       "inventory" => [1],
-      "list_items" => [0],
+      "list_items" => [0, 1],
       "list_ledger" => [0],
       "quantity" => [2],
       "set_metadata" => [3],
@@ -459,7 +459,9 @@ defmodule Gamend.GDScript.API do
       "refresh" => [1, 2],
       "stream_prefix" => [1, 2],
       "subscribe" => [1, 2],
+      "subscribe_family" => [1, 2],
       "unsubscribe" => [1, 2],
+      "unsubscribe_family" => [1, 2],
       "update_entry" => [2]
     },
     "Leaderboards" => %{

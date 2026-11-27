@@ -5,7 +5,6 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   alias Gamend.Accounts.User
   alias Gamend.Leaderboards
   alias Gamend.Leaderboards.Leaderboard
-  alias GamendWeb.CoreComponents
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
 
@@ -605,20 +604,14 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   # `player_card/1` draws it: the avatar (`User.public_avatar_url/1`: an
   # uploaded picture or `/icons/<name>.svg?color=<color>`), the host's title
   # under the name and its class (`user_title/1`, `user_title_class/2`) and
-  # the host's badge (`user_badge/1`). Empty for a label's row, and for a
-  # read that does not load the user.
-  defp player_fields(%{user: %User{} = user}) do
-    title = CoreComponents.user_title_text(user)
+  # the host's badge (`user_badge/1`) and mark (`user_mark_text/1`):
+  # `Serializers.player_card/1`'s. Empty for a label's row, and for a read
+  # that does not load the user.
+  defp player_fields(%{user: %User{} = user}),
+    do: Map.put(Serializers.player_card(user), :avatar_url, User.public_avatar_url(user) || "")
 
-    %{
-      avatar_url: User.public_avatar_url(user) || "",
-      title: title || "",
-      title_class: (title && CoreComponents.user_title_class(user, title)) || "",
-      badge: CoreComponents.user_badge_text(user) || ""
-    }
-  end
-
-  defp player_fields(_record), do: %{avatar_url: "", title: "", title_class: "", badge: ""}
+  defp player_fields(_record),
+    do: %{avatar_url: "", title: "", title_class: "", badge: "", mark: ""}
 
   defp maybe_add_slug_filter(opts, nil), do: opts
   defp maybe_add_slug_filter(opts, ""), do: opts

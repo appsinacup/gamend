@@ -1,7 +1,7 @@
 defmodule GamendWeb.Schemas.Friend do
   @moduledoc "A friend: the member-list row plus the friendship's id, which the friend actions take."
   require OpenApiSpex
-  alias GamendWeb.Schemas.FreeForm
+  alias GamendWeb.Schemas.{FreeForm, PlayerCard}
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -21,7 +21,8 @@ defmodule GamendWeb.Schemas.Friend do
       metadata: FreeForm.metadata(),
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},
-      last_seen_at: %Schema{type: :string, format: :"date-time"}
+      last_seen_at: %Schema{type: :string, format: :"date-time"},
+      card: PlayerCard
     },
     required: [
       :id,
@@ -32,7 +33,8 @@ defmodule GamendWeb.Schemas.Friend do
       :metadata,
       :is_online,
       :is_activated,
-      :last_seen_at
+      :last_seen_at,
+      :card
     ]
   })
 end
@@ -43,9 +45,9 @@ defmodule GamendWeb.Schemas.FriendPage do
 end
 
 defmodule GamendWeb.Schemas.FriendRequest do
-  @moduledoc "A pending friendship row, with both users."
+  @moduledoc "A pending friendship row, with both users and their player cards."
   require OpenApiSpex
-  alias GamendWeb.Schemas.UserBrief
+  alias GamendWeb.Schemas.UserCard
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -54,8 +56,8 @@ defmodule GamendWeb.Schemas.FriendRequest do
     type: :object,
     properties: %{
       id: %Schema{type: :string, format: :uuid, description: "The friendship row id"},
-      requester: UserBrief,
-      target: UserBrief,
+      requester: UserCard,
+      target: UserCard,
       status: %Schema{type: :string},
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },

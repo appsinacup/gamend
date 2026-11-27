@@ -2620,10 +2620,10 @@ func chat_unmute_party_member(unmuteLobbyMemberRequest = null) -> GamendResult:
 
 
 ### ECONOMY
-## Current user's item quantities
+## Current user's item stacks, by item code, each with its metadata
 ## Operation getCurrentUserInventory → GET /api/v1/me/inventory
-func economy_get_current_user_inventory() -> GamendResult:
-	return await _call_api(EconomyApi.new(_config), "get_current_user_inventory")
+func economy_get_current_user_inventory(page = 1, pageSize = 25) -> GamendResult:
+	return await _call_api(EconomyApi.new(_config), "get_current_user_inventory", [page, pageSize])
 
 
 ## Current user's currency balances

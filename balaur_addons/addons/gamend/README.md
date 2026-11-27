@@ -338,7 +338,7 @@ Economy.
 
 | Function | Call | What it does |
 | --- | --- | --- |
-| `get_current_user_inventory()` | `GET /api/v1/me/inventory` | Current user's item quantities |
+| `get_current_user_inventory(options)` | `GET /api/v1/me/inventory` | Current user's item stacks |
 | `get_current_user_wallet()` | `GET /api/v1/me/wallet` | Current user's currency balances |
 | `list_current_user_ledger(options)` | `GET /api/v1/me/wallet/ledger` | Current user's ledger history |
 

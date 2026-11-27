@@ -28,9 +28,11 @@ defmodule Gamend.KV.Computed do
 
   `word_pools:fr` is then `MyGame.WordPools.row/1` with `part: "fr"`, and a
   write of `words:fr` moves it, and only it. A `from` key with no `*` moves
-  no row of a family: which part would it be? A key named whole wins over a
-  family, and the longest prefix over a shorter one, as `kv_schemas`
-  patterns do.
+  every part of the family in its scope, as `Gamend.KV.refresh/2` of the
+  family's own key (`"word_pools:*"`) does: its subscribers are told on the
+  family's topic (`Gamend.KV.subscribe_family/2`). A key
+  named whole wins over a family, and the longest prefix over a shorter
+  one, as `kv_schemas` patterns do.
 
   `Gamend.KV.get/2` answers it, so the HTTP API and `kv:subscribe` do too,
   behind the same `before_kv_get` decision as a stored row. When it moves,
@@ -61,6 +63,23 @@ defmodule Gamend.KV.Computed do
   @core %{
     "preferences" => %{value: {Gamend.Accounts.Preferences, :row}, access: :owner_only}
   }
+
+  @doc """
+  The family `key` is a part of (`"word_pools:*"` for `word_pools:fr`), nil
+  for a key of its own or a stored one.
+  """
+  @spec family(String.t()) :: String.t() | nil
+  def family(key) when is_binary(key) do
+    case find_named(key) do
+      {computed, _row, part} when is_binary(part) -> computed
+      _none -> nil
+    end
+  end
+
+  @doc "Whether `key` is a family's own key (`\"word_pools:*\"`), one the host computes."
+  @spec family?(String.t()) :: boolean()
+  def family?(key) when is_binary(key),
+    do: is_binary(family_prefix(key)) and Map.has_key?(rows(), key)
 
   @doc "Whether `key` is a computed row, one of a family's included."
   @spec computed?(String.t()) :: boolean()
@@ -112,11 +131,20 @@ defmodule Gamend.KV.Computed do
   # The row `key` names and its part: `{row, nil}` for a key of its own,
   # `{row, part}` for one of a family's; nil for a stored key.
   defp find(key) do
+    case find_named(key) do
+      {_computed, row, part} -> {row, part}
+      nil -> nil
+    end
+  end
+
+  # `find/1` with the computed key that names it: the key itself, or the
+  # family's (`"word_pools:*"`).
+  defp find_named(key) do
     rows = rows()
 
     case rows do
       %{^key => row} ->
-        {row, nil}
+        {key, row, nil}
 
       _none ->
         # The longest prefix wins, as `kv_schemas` patterns do.
@@ -125,7 +153,7 @@ defmodule Gamend.KV.Computed do
           with prefix when is_binary(prefix) <- family_prefix(computed),
                true <- String.starts_with?(key, prefix),
                part when part != "" <- String.replace_prefix(key, prefix, "") do
-            [{byte_size(prefix), {row, part}}]
+            [{byte_size(prefix), {computed, row, part}}]
           else
             _not -> []
           end
@@ -151,7 +179,7 @@ defmodule Gamend.KV.Computed do
         if String.starts_with?(key, from), do: computed
 
       {_family, nil} ->
-        nil
+        if source == key, do: computed
     end
   end
 

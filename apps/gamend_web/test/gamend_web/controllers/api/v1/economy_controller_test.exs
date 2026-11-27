@@ -31,8 +31,20 @@ defmodule GamendWeb.Api.V1.EconomyControllerTest do
     assert [%{"delta" => -40} | _] = body["data"]
   end
 
-  test "GET /me/inventory returns item quantities", %{conn: conn, user: user} do
+  test "GET /me/inventory pages the stacks by item code, each with its metadata",
+       %{conn: conn, user: user} do
+    Gamend.Inventory.grant_item(user.id, "sword", 1)
     Gamend.Inventory.grant_item(user.id, "potion", 3)
-    assert %{"data" => %{"potion" => 3}} = json_response(get(conn, "/api/v1/me/inventory"), 200)
+    {:ok, _} = Gamend.Inventory.set_metadata(user.id, "sword", %{"enchant" => "fire"})
+    # A stack with none left is not held.
+    {:ok, _} = Gamend.Inventory.set_metadata(user.id, "empty", %{})
+
+    body = json_response(get(conn, "/api/v1/me/inventory?page_size=1"), 200)
+
+    assert [%{"item" => "potion", "quantity" => 3, "metadata" => %{}}] = body["data"]
+    assert %{"total_count" => 2, "has_more" => true} = body["meta"]
+
+    body = json_response(get(conn, "/api/v1/me/inventory?page=2&page_size=1"), 200)
+    assert [%{"item" => "sword", "metadata" => %{"enchant" => "fire"}}] = body["data"]
   end
 end

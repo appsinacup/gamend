@@ -282,11 +282,19 @@ defmodule GamendWeb.UserChannelKvTest do
           :error -> nil
         end
       end
+
+      def shelf(%{user_id: user_id, part: part}) do
+        case KV.get("points", user_id: user_id) do
+          {:ok, %{value: %{"points" => points}}} -> %{"part" => part, "points" => points}
+          :error -> nil
+        end
+      end
     end
 
     setup do
       Application.put_env(:gamend_core, :computed_rows, %{
-        "level" => %{value: {Host, :level}, from: ["points"]}
+        "level" => %{value: {Host, :level}, from: ["points"]},
+        "shelf:*" => %{value: {Host, :shelf}, from: ["points"]}
       })
 
       on_exit(fn -> Application.delete_env(:gamend_core, :computed_rows) end)
@@ -333,6 +341,23 @@ defmodule GamendWeb.UserChannelKvTest do
 
       assert_push "kv_updated", %{key: "level", data: %{"level" => 5}}
       refute_push "kv_updated", %{key: "level"}, 100
+    end
+
+    test "a family's every part moved: each part the socket holds is pushed" do
+      user = user_fixture()
+      {:ok, _entry} = KV.put("points", %{"points" => 1}, %{}, user_id: user.id)
+      socket = join_user_channel(user)
+
+      for part <- ~w(a b) do
+        ref = push(socket, "kv:subscribe", %{"key" => "shelf:" <> part, "user_id" => user.id})
+        assert_reply ref, :ok, %{subscribed: true}
+      end
+
+      {:ok, _entry} = KV.put("points", %{"points" => 7}, %{}, user_id: user.id)
+
+      assert_push "kv_updated", %{key: "shelf:" <> _, data: %{"points" => 7}}
+      assert_push "kv_updated", %{key: "shelf:" <> _, data: %{"points" => 7}}
+      refute_push "kv_updated", %{key: "shelf:" <> _}, 100
     end
 
     test "is not pushed to someone who may not read it" do

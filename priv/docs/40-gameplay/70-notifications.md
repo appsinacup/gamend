@@ -21,7 +21,8 @@ marks everything read when it opens; a client marks what it showed:
 
 Both marks answer `{marked, unread_count}`, and every connection of the user
 hears `notifications_read` (`{ids, unread_count}`), so a second device clears
-the same rows.
+the same rows. Deleting an unread one says the new count the same way, with
+no ids.
 
 ## The notifications page
 

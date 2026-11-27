@@ -1921,15 +1921,34 @@ defmodule GamendWeb.CoreComponents do
   @doc "The badge text `user_badge/1` renders, or nil."
   def user_badge_text(nil), do: nil
 
-  def user_badge_text(user) do
+  def user_badge_text(user), do: host_text(:user_badge, user)
+
+  # The host's `{module, function}` under `key` asked about `user`: its
+  # answer when a string with something in it, else nil.
+  defp host_text(key, user) do
     with {module, fun} when is_atom(module) and is_atom(fun) <-
-           Application.get_env(:gamend_web, :user_badge),
-         badge when is_binary(badge) and badge != "" <- apply(module, fun, [user]) do
-      badge
+           Application.get_env(:gamend_web, key),
+         text when is_binary(text) and text != "" <- apply(module, fun, [user]) do
+      text
     else
       _ -> nil
     end
   end
+
+  @doc """
+  The words or number the host draws on a player's avatar (a level, a rank)
+  as text, for a client to draw the same mark: the site draws it as markup
+  in its own `:player_avatar`, so a host sets both. The host answers it from
+  the user:
+
+      config :gamend_web, :user_mark, {MyHost.Players, :mark}
+
+  called with the `%User{}`, answering a string or nil. Nil when unset,
+  blank, or for a row with no account.
+  """
+  def user_mark_text(nil), do: nil
+
+  def user_mark_text(user), do: host_text(:user_mark, user)
 
   defp meta_path_title(user) do
     with [_ | _] = path <- Application.get_env(:gamend_web, :user_title_meta_path),

@@ -444,7 +444,9 @@ defmodule Gamend.KV do
   end
 
   @doc ~S"""
-    Subscribe the current process to changes for a specific key/scope.
+    Subscribe the current process to changes for a specific key/scope. A part
+    of a computed family (`word_pools:fr`) hears its own moves here; a move of
+    every part is the family's (`subscribe_family/2`).
     
   """
   @spec subscribe(
@@ -458,6 +460,29 @@ defmodule Gamend.KV do
 
       _ ->
         raise "Gamend.KV.subscribe/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Subscribe the current process to the moves of every part of the computed
+    family `family` (`"word_pools:*"`, `Gamend.KV.Computed`) in a scope: a
+    `from` key with no `*` written, or `refresh/2` of the family, arrives as
+    `{:kv_stale, %{key: "word_pools:*", ...}}`, for the subscriber to read
+    again each part it holds. Once however many times it is asked; the user
+    channel does it for the parts a client subscribes to.
+    
+  """
+  @spec subscribe_family(
+          String.t(),
+          keyword()
+        ) :: :ok | {:error, term()}
+  def subscribe_family(_family, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
+
+      _ ->
+        raise "Gamend.KV.subscribe_family/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -476,6 +501,23 @@ defmodule Gamend.KV do
 
       _ ->
         raise "Gamend.KV.unsubscribe/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Undo `subscribe_family/2`.
+  """
+  @spec unsubscribe_family(
+          String.t(),
+          keyword()
+        ) :: :ok
+  def unsubscribe_family(_family, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.KV.unsubscribe_family/2 is a stub - only available at runtime on Gamend"
     end
   end
 

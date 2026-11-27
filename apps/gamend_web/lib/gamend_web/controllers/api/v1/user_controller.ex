@@ -5,6 +5,7 @@ defmodule GamendWeb.Api.V1.UserController do
   import GamendWeb.Helpers.ParamParser
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.Scope
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{PlayerStatsResponse, PublicUserPage, PublicUserResponse}
@@ -54,7 +55,11 @@ defmodule GamendWeb.Api.V1.UserController do
     {page, page_size} = Pagination.params(params)
 
     users = if q == "", do: [], else: Accounts.search_users(q, page: page, page_size: page_size)
-    serialized = Enum.map(users, &serialize_user/1)
+
+    serialized =
+      Serializers.in_reader_locale(Scope.user(conn.assigns[:current_scope]), fn ->
+        Enum.map(users, &serialize_user/1)
+      end)
 
     total_count = if q == "", do: 0, else: Accounts.count_search_users(q)
 
@@ -68,8 +73,12 @@ defmodule GamendWeb.Api.V1.UserController do
 
       user_id ->
         case Accounts.get_user(user_id) do
-          %{} = user -> reply_data(conn, serialize_user(user))
-          nil -> reply_error(conn, :not_found, "not_found")
+          %{} = user ->
+            reader = Scope.user(conn.assigns[:current_scope])
+            reply_data(conn, Serializers.in_reader_locale(reader, fn -> serialize_user(user) end))
+
+          nil ->
+            reply_error(conn, :not_found, "not_found")
         end
     end
   end
@@ -103,6 +112,10 @@ defmodule GamendWeb.Api.V1.UserController do
     user
     |> Serializers.public_brief()
     |> Map.drop([:profile_url])
-    |> Map.merge(%{is_online: false, last_seen_at: ~U[1970-01-01 00:00:00Z]})
+    |> Map.merge(%{
+      is_online: false,
+      last_seen_at: ~U[1970-01-01 00:00:00Z],
+      card: Serializers.player_card(user)
+    })
   end
 end

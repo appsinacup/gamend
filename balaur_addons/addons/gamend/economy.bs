@@ -15,10 +15,11 @@
 
 use core;
 
-/// Current user's item quantities
+/// Current user's item stacks
 /// `GET /api/v1/me/inventory`
-pub async fn get_current_user_inventory() -> any {
-    let reply = await core::rest("GET", "/api/v1/me/inventory");
+pub async fn get_current_user_inventory(options: any) -> any {
+    let query = core::query(options, ["page", "page_size"]);
+    let reply = await core::rest("GET", "/api/v1/me/inventory{query}");
     reply
 }
 

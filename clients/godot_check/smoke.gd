@@ -131,7 +131,7 @@ func _run() -> void:
 	_expect(await api.quests_list_quests(), "list_quests", GamendQuestPage)
 	_expect(await api.quests_quest_stats(), "quest_stats", GamendQuestStatsResponse)
 	_expect(await api.economy_get_current_user_wallet(), "get_current_user_wallet", GamendWalletBalancesResponse)
-	_expect(await api.economy_get_current_user_inventory(), "get_current_user_inventory", GamendInventoryResponse)
+	_expect(await api.economy_get_current_user_inventory(), "get_current_user_inventory", GamendInventoryItemPage)
 	_expect(await api.economy_list_current_user_ledger(), "list_current_user_ledger", GamendLedgerEntryPage)
 	_expect(await api.payments_catalog(), "payments_catalog", GamendPaymentCatalogEntryPage)
 	_expect(await api.payments_entitlements(), "payments_entitlements", GamendEntitlementPage)

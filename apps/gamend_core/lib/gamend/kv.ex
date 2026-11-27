@@ -82,13 +82,39 @@ defmodule Gamend.KV do
   @missing :kv_missing
 
   @doc """
-  Subscribe the current process to changes for a specific key/scope.
+  Subscribe the current process to changes for a specific key/scope. A part
+  of a computed family (`word_pools:fr`) hears its own moves here; a move of
+  every part is the family's (`subscribe_family/2`).
   """
   @spec subscribe(String.t(), keyword()) :: :ok | {:error, term()}
   def subscribe(key, opts \\ []) when is_binary(key) and is_list(opts) do
     Phoenix.PubSub.subscribe(
       @pubsub,
       topic(key, Keyword.get(opts, :user_id), Keyword.get(opts, :lobby_id))
+    )
+  end
+
+  @doc """
+  Subscribe the current process to the moves of every part of the computed
+  family `family` (`"word_pools:*"`, `Gamend.KV.Computed`) in a scope: a
+  `from` key with no `*` written, or `refresh/2` of the family, arrives as
+  `{:kv_stale, %{key: "word_pools:*", ...}}`, for the subscriber to read
+  again each part it holds. Once however many times it is asked; the user
+  channel does it for the parts a client subscribes to.
+  """
+  @spec subscribe_family(String.t(), keyword()) :: :ok | {:error, term()}
+  def subscribe_family(family, opts \\ []) when is_binary(family) and is_list(opts) do
+    topic = topic(family, Keyword.get(opts, :user_id), Keyword.get(opts, :lobby_id))
+    :ok = Phoenix.PubSub.unsubscribe(@pubsub, topic)
+    Phoenix.PubSub.subscribe(@pubsub, topic)
+  end
+
+  @doc "Undo `subscribe_family/2`."
+  @spec unsubscribe_family(String.t(), keyword()) :: :ok
+  def unsubscribe_family(family, opts \\ []) when is_binary(family) and is_list(opts) do
+    Phoenix.PubSub.unsubscribe(
+      @pubsub,
+      topic(family, Keyword.get(opts, :user_id), Keyword.get(opts, :lobby_id))
     )
   end
 

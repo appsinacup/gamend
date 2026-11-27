@@ -11,6 +11,7 @@ defmodule GamendWeb.Serializers do
   """
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.Preferences, as: AccountPreferences
   alias Gamend.Accounts.User
   alias Gamend.Bans
   alias Gamend.Groups
@@ -22,9 +23,35 @@ defmodule GamendWeb.Serializers do
   alias Gamend.Notifications
   alias Gamend.Parties
   alias Gamend.Sent
+  alias GamendWeb.CoreComponents
   alias GamendWeb.Features
+  alias GamendWeb.NotificationEmail
 
   require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+
+  @doc """
+  What the site's `player_card/1` draws about `user` beside their name and
+  avatar, from the host's hooks, for a client to draw the same card: `title`
+  (`user_title_text/1`), `title_class` (`user_title_class/2`), `badge`
+  (`user_badge_text/1`) and `mark` (`user_mark_text/1`), each `""` for none.
+  In the current locale.
+  """
+  @spec player_card(User.t()) :: map()
+  def player_card(%User{} = user) do
+    title = CoreComponents.user_title_text(user)
+
+    %{
+      title: title || "",
+      title_class: CoreComponents.user_title_class(user, title) || "",
+      badge: CoreComponents.user_badge_text(user) || "",
+      mark: CoreComponents.user_mark_text(user) || ""
+    }
+  end
+
+  @doc "`fun` run in `reader`'s language (the one they last read the site in), for `player_card/1`."
+  @spec in_reader_locale(User.t() | nil, (-> result)) :: result when result: var
+  def in_reader_locale(reader, fun),
+    do: NotificationEmail.in_locale(AccountPreferences.locale(reader), fun)
 
   @doc """
   A user as someone outside their lobby, party and friends sees them:

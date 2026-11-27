@@ -494,4 +494,86 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
       assert Repo.get!(Friends.Friendship, f.id).status == "pending"
     end
   end
+
+  describe "a player card" do
+    defmodule Cards do
+      @moduledoc false
+      def title(%{username: "captain" <> _}), do: "Captain"
+      def title(_user), do: nil
+      def title_class(_user, "Captain"), do: "title-gold"
+      def badge(_user), do: "Pro"
+      def mark(_user), do: "7"
+    end
+
+    setup do
+      keys = [:user_title, :user_title_class, :user_badge, :user_mark]
+      old = Map.new(keys, &{&1, Application.get_env(:gamend_web, &1)})
+
+      Application.put_env(:gamend_web, :user_title, {Cards, :title})
+      Application.put_env(:gamend_web, :user_title_class, {Cards, :title_class})
+      Application.put_env(:gamend_web, :user_badge, {Cards, :badge})
+      Application.put_env(:gamend_web, :user_mark, {Cards, :mark})
+
+      on_exit(fn ->
+        Enum.each(old, fn
+          {key, nil} -> Application.delete_env(:gamend_web, key)
+          {key, value} -> Application.put_env(:gamend_web, key, value)
+        end)
+      end)
+    end
+
+    test "rides on a friend's row and on both sides of a request", %{conn: conn} do
+      a =
+        AccountsFixtures.user_fixture()
+        |> Ecto.Changeset.change(username: "captain-ahab")
+        |> Repo.update!()
+
+      b = AccountsFixtures.user_fixture()
+      {:ok, token_a, _} = Guardian.encode_and_sign(a)
+      {:ok, token_b, _} = Guardian.encode_and_sign(b)
+
+      %{"data" => %{"requester" => sent_by, "target" => sent_to, "id" => fid}} =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token_a)
+        |> post("/api/v1/friends", %{target_user_id: b.id})
+        |> json_response(201)
+
+      assert sent_by["card"]["title"] == "Captain"
+      assert sent_to["card"]["title"] == ""
+      f = Repo.get!(Friends.Friendship, fid)
+
+      %{"data" => %{"incoming" => [request]}} =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token_b)
+        |> get("/api/v1/me/friend_requests")
+        |> json_response(200)
+
+      assert request["requester"]["card"] == %{
+               "title" => "Captain",
+               "title_class" => "title-gold",
+               "badge" => "Pro",
+               "mark" => "7"
+             }
+
+      assert %{"title" => "", "title_class" => "", "badge" => "Pro"} = request["target"]["card"]
+
+      {:ok, _} = Friends.accept_friend_request(f.id, b)
+
+      %{"data" => [friend]} =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token_b)
+        |> get("/api/v1/me/friends")
+        |> json_response(200)
+
+      assert %{"title" => "Captain", "mark" => "7"} = friend["card"]
+
+      %{"data" => [found]} =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token_a)
+        |> get("/api/v1/users", %{q: "captain"})
+        |> json_response(200)
+
+      assert %{"title" => "Captain", "badge" => "Pro"} = found["card"]
+    end
+  end
 end

@@ -311,7 +311,11 @@ defmodule GamendWeb.Api.V1.FriendController do
 
         case Friends.create_request(user.id, target_id) do
           {:ok, friendship} ->
-            reply_data(conn, :created, serialize_request(friendship))
+            reply_data(
+              conn,
+              :created,
+              Serializers.in_reader_locale(user, fn -> serialize_request(friendship, user) end)
+            )
 
           {:error, %Ecto.Changeset{} = cs} ->
             unprocessable(conn, cs)
@@ -420,7 +424,10 @@ defmodule GamendWeb.Api.V1.FriendController do
 
         # include the friendship row id so clients can call delete/accept/reject by id
         friends = Friends.list_friends_with_friendship(user.id, page: page, page_size: page_size)
-        serialized = Enum.map(friends, &serialize_friend/1)
+
+        serialized =
+          Serializers.in_reader_locale(user, fn -> Enum.map(friends, &serialize_friend/1) end)
+
         total_count = Friends.count_friends_for_user(user.id)
 
         reply_page(conn, serialized, page, page_size, total_count)
@@ -482,8 +489,11 @@ defmodule GamendWeb.Api.V1.FriendController do
         incoming = Friends.list_incoming_requests(user.id, page: page, page_size: page_size)
         outgoing = Friends.list_outgoing_requests(user.id, page: page, page_size: page_size)
 
-        inc_serialized = Enum.map(incoming, &serialize_request/1)
-        out_serialized = Enum.map(outgoing, &serialize_request/1)
+        {inc_serialized, out_serialized} =
+          Serializers.in_reader_locale(user, fn ->
+            {Enum.map(incoming, &serialize_request(&1, user)),
+             Enum.map(outgoing, &serialize_request(&1, user))}
+          end)
 
         total_in = Friends.count_incoming_requests(user.id)
         total_out = Friends.count_outgoing_requests(user.id)
@@ -601,20 +611,32 @@ defmodule GamendWeb.Api.V1.FriendController do
   defp serialize_user(user), do: Serializers.public_brief(user)
 
   defp serialize_friend(%{friendship_id: fid, user: user}) do
-    User.serialize_brief(user) |> Map.put(:friendship_id, fid)
+    user
+    |> User.serialize_brief()
+    |> Map.merge(%{friendship_id: fid, card: Serializers.player_card(user)})
   end
 
-  defp serialize_request(%Friends.Friendship{} = f) do
-    requester = brief(f.requester, f.requester_id, f.status)
-    target = brief(f.target, f.target_id, f.status)
-
+  defp serialize_request(%Friends.Friendship{} = f, reader) do
     %{
       id: f.id,
-      requester: requester,
-      target: target,
+      requester: side(f.requester, f.requester_id, f.status, reader),
+      target: side(f.target, f.target_id, f.status, reader),
       status: f.status,
       inserted_at: f.inserted_at
     }
+  end
+
+  # A side with its player card (`Serializers.player_card/1`), drawn from
+  # its account: the one preloaded, the reader's, else read.
+  defp side(user, id, status, reader) do
+    account =
+      cond do
+        match?(%User{}, user) -> user
+        id == reader.id -> reader
+        true -> Gamend.Accounts.get_user(id) || %User{id: id}
+      end
+
+    user |> brief(id, status) |> Map.put(:card, Serializers.player_card(account))
   end
 
   # A side that was not preloaded is sent as a blank member row with its id,

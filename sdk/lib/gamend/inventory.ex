@@ -57,6 +57,20 @@ defmodule Gamend.Inventory do
   end
 
   @doc ~S"""
+    How many stacks `list_items/1`'s filters hold, every page.
+  """
+  @spec count_items(keyword()) :: non_neg_integer()
+  def count_items(_opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Inventory.count_items/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Add `qty` of `item` to a user's inventory.
     
     Options: `:reason` (ledger label), `:idempotency_key`, `:metadata`.
@@ -96,6 +110,24 @@ defmodule Gamend.Inventory do
 
       _ ->
         raise "Gamend.Inventory.inventory/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Item stacks by item code, a page of them (`:page`, `:page_size`), of one
+    user (`:user_id`) or every one's, of one `:item`, and with `held: true`
+    only those with some left: the Items tab, `GET /api/v1/me/inventory` and
+    the admin's list. Each with its `user`, but with `preload: false`.
+    
+  """
+  @spec list_items(keyword()) :: [Gamend.Inventory.Item.t()]
+  def list_items(_opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Inventory.list_items/1 is a stub - only available at runtime on Gamend"
     end
   end
 

@@ -239,28 +239,34 @@ defmodule Gamend.Inventory do
     )
   end
 
-  # ── Admin reads ──────────────────────────────────────────────────────────
+  # ── Lists ────────────────────────────────────────────────────────────────
 
-  @doc false
+  @doc """
+  Item stacks by item code, a page of them (`:page`, `:page_size`), of one
+  user (`:user_id`) or every one's, of one `:item`, and with `held: true`
+  only those with some left: the Items tab, `GET /api/v1/me/inventory` and
+  the admin's list. Each with its `user`, but with `preload: false`.
+  """
   @spec list_items(keyword()) :: [Item.t()]
   def list_items(opts \\ []) do
-    item_query(opts)
-    |> order_by([i], asc: i.item)
-    |> paginate(opts)
-    |> preload(:user)
-    |> Repo.all()
+    query = item_query(opts) |> order_by([i], asc: i.item) |> paginate(opts)
+    query = if Keyword.get(opts, :preload, true), do: preload(query, :user), else: query
+    Repo.all(query)
   end
 
-  @doc false
+  @doc "How many stacks `list_items/1`'s filters hold, every page."
   @spec count_items(keyword()) :: non_neg_integer()
   def count_items(opts \\ []) do
     Repo.aggregate(item_query(opts), :count, :id)
   end
 
   defp item_query(opts) do
-    Item
-    |> maybe_filter(:user_id, Keyword.get(opts, :user_id))
-    |> maybe_filter(:item, Keyword.get(opts, :item))
+    query =
+      Item
+      |> maybe_filter(:user_id, Keyword.get(opts, :user_id))
+      |> maybe_filter(:item, Keyword.get(opts, :item))
+
+    if Keyword.get(opts, :held, false), do: where(query, [i], i.quantity > 0), else: query
   end
 
   @doc false

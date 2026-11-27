@@ -13,9 +13,11 @@ defmodule Gamend.Notifications do
   This module broadcasts to the `"notifications:user:<user_id>"` topic:
 
   - `{:notification_created, notification}` – a new notification was created
-  - `{:notifications_read, %{ids: ids, unread_count: count}}` – notifications
-    were marked read (`mark_notifications_read/2`, `mark_all_notifications_read/1`,
-    `mark_notification_read/2`): their ids and how many are left unread
+  - `{:notifications_read, %{ids: ids, unread_count: count}}` – the unread
+    count moved: notifications marked read (`mark_notifications_read/2`,
+    `mark_all_notifications_read/1`, `mark_notification_read/2`), their ids,
+    or unread ones deleted (`delete_notifications/2` and the other deletes),
+    no ids
 
   ## Usage
 
@@ -585,7 +587,7 @@ defmodule Gamend.Notifications do
       notification ->
         case Repo.delete(notification) do
           {:ok, deleted} ->
-            invalidate_notifications_cache(deleted.recipient_id)
+            deleted_moved(deleted.recipient_id, not deleted.read)
             {:ok, deleted}
 
           error ->
@@ -679,23 +681,30 @@ defmodule Gamend.Notifications do
   @spec delete_notifications(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
   def delete_notifications(user_id, ids)
       when is_binary(user_id) and is_list(ids) do
-    result =
-      from(n in Notification,
-        where: n.recipient_id == ^user_id and n.id in ^ids
-      )
-      |> Repo.delete_all()
-
-    invalidate_notifications_cache(user_id)
-    result
+    delete_received(
+      user_id,
+      from(n in Notification, where: n.recipient_id == ^user_id and n.id in ^ids)
+    )
   end
 
   @doc "Delete every notification `user_id` received, in one statement. Returns `{deleted_count, nil}`."
   @spec delete_all_notifications(user_id()) :: {non_neg_integer(), nil}
-  def delete_all_notifications(user_id) when is_binary(user_id) do
-    result = Repo.delete_all(from(n in Notification, where: n.recipient_id == ^user_id))
-    invalidate_notifications_cache(user_id)
-    result
+  def delete_all_notifications(user_id) when is_binary(user_id),
+    do: delete_received(user_id, from(n in Notification, where: n.recipient_id == ^user_id))
+
+  # `query`'s rows of `user_id`'s deleted, and the unread count told when
+  # one of them was unread.
+  defp delete_received(user_id, query) do
+    {deleted, reads} = query |> select([n], n.read) |> Repo.delete_all()
+    deleted_moved(user_id, false in reads)
+    {deleted, nil}
   end
+
+  # Notifications of `user_id`'s gone: the cache dropped, and with an unread
+  # one among them its connections told the count (`notifications_read`, no
+  # ids: none was read).
+  defp deleted_moved(user_id, true), do: read_moved(user_id, [])
+  defp deleted_moved(user_id, false), do: invalidate_notifications_cache(user_id)
 
   @doc """
   Delete all notifications from `sender_id` to `recipient_id` with the given `title`.
@@ -705,14 +714,15 @@ defmodule Gamend.Notifications do
   def delete_notification_by(sender_id, recipient_id, title)
       when is_binary(sender_id) and is_binary(recipient_id) and is_binary(title) do
     result =
-      from(n in Notification,
-        where:
-          n.sender_id == ^sender_id and n.recipient_id == ^recipient_id and
-            n.title == ^title
+      delete_received(
+        recipient_id,
+        from(n in Notification,
+          where:
+            n.sender_id == ^sender_id and n.recipient_id == ^recipient_id and
+              n.title == ^title
+        )
       )
-      |> Repo.delete_all()
 
-    invalidate_notifications_cache(recipient_id)
     invalidate_notifications_cache(sender_id)
     result
   end

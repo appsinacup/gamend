@@ -157,6 +157,10 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
         type: :string,
         description: "The host's badge beside the name (Pro); empty for none"
       },
+      mark: %Schema{
+        type: :string,
+        description: "What the host draws on the avatar (a level); empty for none"
+      },
       metadata: FreeForm.metadata(description: "Per-record metadata"),
       user_metadata:
         FreeForm.metadata(
@@ -178,6 +182,7 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       :title,
       :title_class,
       :badge,
+      :mark,
       :metadata,
       :user_metadata,
       :updated_at
@@ -193,6 +198,7 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       title: "",
       title_class: "",
       badge: "",
+      mark: "7",
       metadata: %{weapon: "sword"},
       user_metadata: %{player: %{pass_level: 7}},
       updated_at: "2025-12-02T10:00:00Z"

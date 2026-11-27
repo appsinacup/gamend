@@ -489,17 +489,25 @@ defmodule GamendWeb.UserChannel do
   # A computed row moved (`Gamend.KV.Computed`): read once and pushed as the
   # row it is to the client. A burst of writes says so many times over; the
   # read waits behind what is already in the mailbox, so it runs once for it.
+  # A family's every part moved (`"word_pools:*"`): each part this socket
+  # holds of it, in that scope, is read again.
   @impl true
   def handle_info({:kv_stale, %{key: key} = payload}, socket) when is_binary(key) do
-    scope = {key, Map.get(payload, :user_id), Map.get(payload, :lobby_id)}
-    pending = Map.get(socket.assigns, :kv_stale, MapSet.new())
+    user_id = Map.get(payload, :user_id)
+    lobby_id = Map.get(payload, :lobby_id)
 
-    if MapSet.member?(pending, scope) do
-      {:noreply, socket}
-    else
-      send(self(), {:kv_recompute, scope})
-      {:noreply, assign(socket, :kv_stale, MapSet.put(pending, scope))}
-    end
+    keys =
+      if KV.Computed.family?(key),
+        do:
+          family_held(
+            Map.get(socket.assigns, :kv_subscriptions, MapSet.new()),
+            key,
+            user_id,
+            lobby_id
+          ),
+        else: [key]
+
+    {:noreply, Enum.reduce(keys, socket, &kv_stale(&2, {&1, user_id, lobby_id}))}
   end
 
   @impl true
@@ -846,6 +854,19 @@ defmodule GamendWeb.UserChannel do
   # registrations — each with a key as large as the 128 KB frame allows.
   @max_kv_subscriptions 64
 
+  # One read of a computed row's scope waits in the mailbox, however many
+  # times it is said to have moved.
+  defp kv_stale(socket, scope) do
+    pending = Map.get(socket.assigns, :kv_stale, MapSet.new())
+
+    if MapSet.member?(pending, scope) do
+      socket
+    else
+      send(self(), {:kv_recompute, scope})
+      assign(socket, :kv_stale, MapSet.put(pending, scope))
+    end
+  end
+
   defp subscribe_kv_once(socket, key, user_id, lobby_id) do
     scope = {key, user_id, lobby_id}
     subscribed = Map.get(socket.assigns, :kv_subscriptions, MapSet.new())
@@ -859,13 +880,46 @@ defmodule GamendWeb.UserChannel do
 
       true ->
         :ok = KV.subscribe(key, user_id: user_id, lobby_id: lobby_id)
+
+        # A part of a computed family hears the family's moves too.
+        if family = KV.Computed.family(key),
+          do: :ok = KV.subscribe_family(family, user_id: user_id, lobby_id: lobby_id)
+
         assign(socket, :kv_subscriptions, MapSet.put(subscribed, scope))
     end
   end
 
+  # A family's topic is the family key's own: it is left once the socket
+  # holds neither the key nor a part of it, and joined again while it holds
+  # either.
   defp forget_kv_subscription(socket, key, user_id, lobby_id) do
-    subscribed = Map.get(socket.assigns, :kv_subscriptions, MapSet.new())
-    assign(socket, :kv_subscriptions, MapSet.delete(subscribed, {key, user_id, lobby_id}))
+    subscribed =
+      socket.assigns
+      |> Map.get(:kv_subscriptions, MapSet.new())
+      |> MapSet.delete({key, user_id, lobby_id})
+
+    family = if KV.Computed.family?(key), do: key, else: KV.Computed.family(key)
+
+    if family do
+      opts = [user_id: user_id, lobby_id: lobby_id]
+
+      if family_held(subscribed, family, user_id, lobby_id) == [],
+        do: KV.unsubscribe_family(family, opts),
+        else: KV.subscribe_family(family, opts)
+    end
+
+    assign(socket, :kv_subscriptions, subscribed)
+  end
+
+  # What `subscribed` holds of `family` in a scope: its parts, and the family
+  # key itself.
+  defp family_held(subscribed, family, user_id, lobby_id) do
+    prefix = String.trim_trailing(family, "*")
+
+    for {held, ^user_id, ^lobby_id} <- subscribed,
+        held == family or
+          (String.starts_with?(held, prefix) and KV.Computed.family(held) == family),
+        do: held
   end
 
   defp kv_subscribe_reply(key, user_id, lobby_id, payload) do

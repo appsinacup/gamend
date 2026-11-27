@@ -123,6 +123,8 @@ def row(%{user_id: user_id, part: language}), do: pools_of(user_id, language)
 
 A key named whole wins over a family and the longest prefix over a shorter one, as `kv_schemas` patterns do.
 
+A family's `from` key with no `*` moves every part, and so does `Gamend.KV.refresh("word_pools:*", user_id: id)` for what the host keeps outside the store: a subscriber to the family (`Gamend.KV.subscribe_family/2`) hears `{:kv_stale, %{key: "word_pools:*", ...}}`. The user channel subscribes to the family of each part a client subscribes to, and pushes each of those parts again.
+
 A row only its owner may read says so with `access`, in the words `before_kv_get/2` answers in. That is the least a reader must be: a plugin can close the row further, never open it, and on a host with no plugin it holds all the same.
 
 ```elixir

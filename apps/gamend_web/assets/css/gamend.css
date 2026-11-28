@@ -100,6 +100,33 @@
   box-shadow: 0 0 0 var(--nav-status-ring-width, 0) var(--nav-status-ring, transparent);
 }
 
+/* A status with a clock (`nav_clock.js`) on a rail's or a tab bar's icon is
+   its time alone, its icon dropped (a test's time left read as one pill over
+   the link's own icon). In the rail it starts where a count does, right of
+   the icon's middle; in the tab bar, where tabs are narrow, it sits left of
+   the icon instead, clear of the next tab (user, 2026-11-28). The open
+   sidebar keeps it whole, at the row's end. */
+.side-link > .nav-status-clock {
+  padding-inline: 0.375rem;
+}
+.side-link > .nav-status-clock > :first-child {
+  display: none;
+}
+.side-link-rail > .nav-status-clock {
+  inset-inline: calc(50% + 0.125rem) auto;
+}
+.side-link-tab > .nav-status-clock {
+  inset-inline: auto calc(50% + 0.25rem);
+}
+@container side (min-width: 8rem) {
+  .side-link > .nav-status-clock {
+    padding-inline: 0.25rem 0.375rem;
+  }
+  .side-link > .nav-status-clock > :first-child {
+    display: revert;
+  }
+}
+
 .summary-no-marker {
   list-style: none;
 }

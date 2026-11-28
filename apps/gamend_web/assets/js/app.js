@@ -34,6 +34,7 @@ import {startVideoClickToPlay} from "./video_click_to_play"
 import {startConnectionState} from "./connection_state"
 import {startSearchPalette} from "./search_palette"
 import {startNavbarFit} from "./navbar_fit"
+import {setChipDeadline, syncNavClocks} from "./nav_clock"
 import {startSideNav} from "./side_nav"
 import {startConfirmDialog} from "./confirm_dialog"
 import {startUnsavedChanges} from "./unsaved_changes"
@@ -518,13 +519,20 @@ startAnonymousSession({getLiveSocket: () => window.liveSocket})
 // or a `phx-page-loading` click keeps 300 ms: the reader is waiting on it.
 const BAR_DELAY_MS = {initial: 1000, redirect: 1000, patch: 1000}
 window.addEventListener("phx:page-loading-start", info => topbar.show(BAR_DELAY_MS[info.detail?.kind] ?? 300))
-window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+window.addEventListener("phx:page-loading-stop", _info => {
+  topbar.hide()
+  // A live navigation's navbar may hold a clock (`nav_clock.js`).
+  syncNavClocks()
+})
 
 // A nav link's `"status"` changed (`HostLayoutNavigation.count_pill/1`'s
 // `data-nav-status`, the link's key): a host's view pushes `nav_status` with
 // that `key`, the heroicon or "spinner" ("" for none) and the `label` a screen reader
 // says, and every copy of that link (bar, sidebar, tab bar, menu) shows it,
-// with no redraw of the nav. Other links' statuses are left alone.
+// with no redraw of the nav. Other links' statuses are left alone. A
+// `deadline` (Unix ms, with `now`, the server's time) puts a clock beside the
+// icon, run down to it (`nav_clock.js`); none takes it away. An `href` (the
+// locale's) is where the link leads from now: the thing in progress.
 window.addEventListener("phx:nav_status", ({detail}) => {
   if (typeof detail?.key !== "string") return
   const spinner = detail.icon === "spinner"
@@ -535,8 +543,13 @@ window.addEventListener("phx:nav_status", ({detail}) => {
     for (const [name, value] of [["aria-label", label], ["title", label]])
       value ? chip.setAttribute(name, value) : chip.removeAttribute(name)
     const glyph = chip.firstElementChild
-    if (glyph && icon) glyph.className = spinner ? "loading loading-spinner loading-xs" : `${icon} size-3.5`
+    if (glyph && icon) glyph.className = spinner ? "loading loading-spinner loading-xs" : `${icon} size-3.5 shrink-0`
+    setChipDeadline(chip, icon ? detail.deadline : null, detail.now)
+    const link = chip.closest("a[href]")
+    if (link && typeof detail.href === "string" && detail.href.startsWith("/"))
+      link.setAttribute("href", detail.href)
   }
+  syncNavClocks()
 })
 
 // Timestamps render as UTC server-side and are rewritten in the viewer's zone.
@@ -550,6 +563,8 @@ startSearchPalette()
 startLastPage()
 // Here too for a page with no LiveView, whose navbar no hook mounts.
 startNavbarFit(document.getElementById("main-navbar"))
+// A nav link's clock (a test's time left), on every page.
+syncNavClocks()
 // The sidebar's Collapse / Expand, on every page.
 startSideNav()
 // `data-confirm` in the page's popup, on every page, and the same popup before

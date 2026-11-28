@@ -1462,32 +1462,43 @@ defmodule GamendWeb.HostLayoutNavigation do
   # scope, says what goes on there for the viewer (a game's search running):
   # a heroicon name (`"hero-..."`) or `"spinner"` (daisyUI's, for something
   # running), or `{icon, label}` with the words a
-  # screen reader says and a hover shows (a msgid, translated here). Drawn
+  # screen reader says and a hover shows (a msgid, translated here), or
+  # `{icon, label, deadline}` with a clock beside the icon running down to
+  # `deadline` (Unix ms: a test's time left, `nav_clock.js`). Drawn
   # where a count would be, while there is none; with nothing to say the
-  # place is kept, hidden. Resolved to `%{"key", "icon", "label"}`, `key` the
-  # entry's own label as configured: a page's `nav_status` event names it
-  # (`app.js`, pushed by a host's view), and only that link's copies change,
-  # with no redraw.
+  # place is kept, hidden. Resolved to `%{"key", "icon", "label",
+  # "deadline"}`, `key` the entry's own label as configured: a page's
+  # `nav_status` event names it (`app.js`, pushed by a host's view), and
+  # only that link's copies change, with no redraw.
   defp resolve_entry_status(%{"items" => items} = entry, scope) when is_list(items),
     do: Map.put(entry, "items", Enum.map(items, &resolve_entry_status(&1, scope)))
 
   defp resolve_entry_status(%{"status" => "{" <> _ = token} = entry, scope) do
-    {icon, label} =
+    {icon, label, deadline} =
       case call_token(
              token |> String.trim() |> String.trim_leading("{") |> String.trim_trailing("}"),
              [scope]
            ) do
+        {icon, label, deadline}
+        when is_binary(icon) and is_binary(label) and is_integer(deadline) ->
+          {status_icon(icon), translate_label(label), deadline}
+
         {icon, label} when is_binary(icon) and is_binary(label) ->
-          {status_icon(icon), translate_label(label)}
+          {status_icon(icon), translate_label(label), nil}
 
         icon when is_binary(icon) ->
-          {status_icon(icon), nil}
+          {status_icon(icon), nil, nil}
 
         _ ->
-          {"", nil}
+          {"", nil, nil}
       end
 
-    Map.put(entry, "status", %{"key" => entry["label"], "icon" => icon, "label" => label})
+    Map.put(entry, "status", %{
+      "key" => entry["label"],
+      "icon" => icon,
+      "label" => label,
+      "deadline" => if(icon != "", do: deadline)
+    })
   end
 
   defp resolve_entry_status(entry, _scope), do: Map.delete(entry, "status")
@@ -1499,7 +1510,7 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   # The glyph inside a status chip: the spinner's classes, or the icon's.
   defp status_glyph_class(@status_spinner), do: "loading loading-spinner loading-xs"
-  defp status_glyph_class(icon), do: [icon, "size-3.5"]
+  defp status_glyph_class(icon), do: [icon, "size-3.5 shrink-0"]
 
   # An entry's `"href"` as a `{Module.fun}` token: the function is given the
   # scope and the current path (arity 2) and answers the path to link, which
@@ -1707,7 +1718,7 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   attr :status, :map,
     default: nil,
-    doc: "`%{\"key\", \"icon\", \"label\"}` (`resolve_entry_status/2`)"
+    doc: "`%{\"key\", \"icon\", \"label\", \"deadline\"}` (`resolve_entry_status/2`)"
 
   attr :class, :string, default: nil
 
@@ -1716,8 +1727,21 @@ defmodule GamendWeb.HostLayoutNavigation do
   # `"status"` icon in the same place, in the link's own tone (its
   # `data-nav-status` the entry's key, hidden while empty, named by its
   # label when it has one). Its colours are a host's to set (`gamend.css`
-  # `.nav-status`).
+  # `.nav-status`). A status with a `deadline` is a pill with the time left
+  # beside its icon, drawn as it stands now so the first paint is its size,
+  # and run down by the browser's frames (`nav_clock.js`; `data-nav-now`,
+  # the server's time when drawn, so a clock off by minutes reads the same).
   defp count_pill(assigns) do
+    deadline = is_map(assigns.status) && assigns.status["deadline"]
+    now = System.system_time(:millisecond)
+
+    assigns =
+      assign(assigns,
+        deadline: if(is_integer(deadline), do: deadline),
+        now: now,
+        clock: if(is_integer(deadline), do: clock_text(deadline - now))
+      )
+
     ~H"""
     <span
       :if={is_integer(@count) and @count > 0}
@@ -1731,15 +1755,35 @@ defmodule GamendWeb.HostLayoutNavigation do
     <span
       :if={!(is_integer(@count) and @count > 0) and is_map(@status)}
       data-nav-status={@status["key"]}
+      data-nav-deadline={@deadline}
+      data-nav-now={@deadline && @now}
       hidden={@status["icon"] == ""}
       role="img"
       aria-label={@status["label"]}
       title={@status["label"]}
-      class={["nav-status inline-flex items-center justify-center size-5 rounded-full", @class]}
+      class={[
+        "nav-status inline-flex items-center justify-center h-5 rounded-full",
+        if(@deadline, do: "nav-status-clock gap-0.5 ps-1 pe-1.5", else: "w-5"),
+        @class
+      ]}
     >
       <span class={status_glyph_class(@status["icon"])} aria-hidden="true"></span>
+      <span
+        :if={@deadline}
+        data-nav-clock
+        class="text-[0.6875rem] font-bold leading-none tabular-nums"
+        aria-hidden="true"
+      >
+        {@clock}
+      </span>
     </span>
     """
+  end
+
+  # `m:ss` of `ms` left, never below 0:00 (`nav_clock.js` draws the same).
+  defp clock_text(ms) do
+    seconds = max(0, div(ms + 999, 1000))
+    "#{div(seconds, 60)}:#{seconds |> rem(60) |> Integer.to_string() |> String.pad_leading(2, "0")}"
   end
 
   @doc """

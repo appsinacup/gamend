@@ -317,12 +317,13 @@ reload — the page painted at the top and glided down to where it had been. --%
     <%!-- The host's view of a signed-in reader on every page (`online_view/0`,
           `config :gamend_web, :online_view`): a page with no LiveView gets
           one socket for it, one with a LiveView shares that page's, and a
-          move between LiveViews keeps it, outside the page's view. --%>
+          move between LiveViews keeps it, outside the page's view. Given
+          the page's locale, for the links it points (`nav_status`'s `href`). --%>
     <%= if (view = GamendWeb.HostLayouts.online_view()) && assigns[:conn] &&
              GamendWeb.HostLayouts.signed_in?(assigns[:current_scope]) do %>
       {live_render(GamendWeb.HostLayouts.online_conn(@conn), view,
         id: "gamend-online",
-        session: %{}
+        session: %{"locale" => GamendWeb.HostLayouts.current_locale()}
       )}
     <% end %>
   </body>

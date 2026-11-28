@@ -90,7 +90,7 @@ The status follows the reason. `404` means the thing is not there, including you
 
 ## Binary uploads
 
-Image bytes never travel through the API server. Uploads are two steps: request a presigned ticket, `PUT` the file straight to storage at the URL the ticket names, then confirm: for an avatar, `POST /api/v1/me/avatar/upload_url`, the `PUT`, then `POST /api/v1/me/avatar`. A ticket is bound to the exact storage key it was issued for, so a client cannot choose where its bytes land.
+Image bytes never travel through the API server. Uploads are two steps: request a presigned ticket, `PUT` the file straight to storage at the URL the ticket names, then confirm: for an avatar, `POST /api/v1/me/avatar/upload_url`, the `PUT`, then `POST /api/v1/me/avatar`. A ticket is bound to the exact storage key it was issued for, so a client cannot choose where its bytes land. An avatar may instead be one of the site's icons, as the settings page offers them: `GET /api/v1/avatar_icons` lists the picker's `icons` (`key`, and `url`, the SVG on the server) and `colors` (`key`, and `css`, what the site draws it in), and `POST /api/v1/me/avatar/icon` `{"icon": "rocket-launch", "color": "success"}` sets one (`profile_url` becomes `/icons/rocket-launch.svg?color=success`), deletes the uploaded pictures it replaces and says `user_updated`; a guest may too. An unknown icon is `422 unknown_icon`, a colour not offered `422 unknown_color`, and the icon shown already is answered as it is.
 
 ## Reference
 

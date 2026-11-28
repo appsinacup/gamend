@@ -1995,6 +1995,42 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    One of the icons people pick (`Gamend.Icons.picks/0`) as the user's avatar,
+    in one of its colours (nil or `""` for none), as the settings page's Save
+    sets it: its URL (`Gamend.Icons.path/2`) in `profile_url`, the uploaded
+    pictures it replaces gone from storage. The icon stored already is kept as
+    it is, nothing written; an icon the user only shows (their id's, while
+    `profile_url` holds a provider's picture) is written, so the provider's
+    picture never comes back over it. Refused: `:unknown_icon` for a name not
+    in the picks, `:unknown_color` for a colour not in `Gamend.Icons.colors/0`.
+    
+  """
+  @spec pick_avatar_icon(Gamend.Accounts.User.t(), String.t(), String.t() | nil) ::
+          {:ok, Gamend.Accounts.User.t()}
+          | {:error, :unknown_icon | :unknown_color | Ecto.Changeset.t()}
+  def pick_avatar_icon(_user, _name, _color) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
+
+      _ ->
+        raise "Gamend.Accounts.pick_avatar_icon/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Aggregate player counts for the public stats endpoint.
     
     Every field is derived, never a counter: a counter would put a write on the

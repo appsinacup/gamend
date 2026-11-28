@@ -79,6 +79,7 @@ defmodule Gamend.GDScript.API do
       "login_user_by_magic_link" => [1],
       "merge_metadata" => [2],
       "notify_existing_account" => [3, 4],
+      "pick_avatar_icon" => [3],
       "player_stats" => [0],
       "prune_user_avatars" => [2],
       "refresh_account_class" => [1],

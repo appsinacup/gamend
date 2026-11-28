@@ -2938,6 +2938,21 @@ func user_set_current_user_avatar(request = null) -> GamendResult:
 	return await _call_api(UsersApi.new(_config), "set_current_user_avatar", [request])
 
 
+## The icons and colours an avatar is picked from, as the settings page offers them
+## Operation listAvatarIcons → GET /api/v1/avatar_icons
+func user_list_avatar_icons() -> GamendResult:
+	return await _call_api(UsersApi.new(_config), "list_avatar_icons")
+
+
+## Make one of the site's icons the avatar, in one of its colours ("" for none)
+## Operation pickCurrentUserAvatarIcon → POST /api/v1/me/avatar/icon
+## The body goes as a Dictionary: the generated model names `color`
+## `some_color` (a GDScript type), and would send that.
+func user_pick_current_user_avatar_icon(icon: String, color: String = "") -> GamendResult:
+	var request := {"icon": icon, "color": color}
+	return await _call_api(UsersApi.new(_config), "pick_current_user_avatar_icon", [request])
+
+
 ## Player counts
 ## Operation userStats → GET /api/v1/users/stats
 func user_user_stats() -> GamendResult:

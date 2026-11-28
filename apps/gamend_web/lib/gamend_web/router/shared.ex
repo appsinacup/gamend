@@ -425,6 +425,7 @@ defmodule GamendWeb.Router.Shared do
         get "/health", HealthController, :index
         get "/time", TimeController, :show
         get "/time_zones", TimeController, :time_zones
+        get "/avatar_icons", MeController, :avatar_icons
         # A local upload ticket's URL: its signed token is the authorization,
         # as an S3 presigned URL's signature is, so no session.
         put "/storage/upload", StorageController, :upload
@@ -685,6 +686,8 @@ defmodule GamendWeb.Router.Shared do
         patch "/me/display_name", MeController, :update_display_name
         patch "/me/username", MeController, :update_username
         put "/me/preferences", PreferenceController, :update
+        # Not an upload: one of the site's icons, outside the image gate.
+        post "/me/avatar/icon", MeController, :pick_avatar_icon
         get "/me/wallet", EconomyController, :wallet
         get "/me/wallet/ledger", EconomyController, :ledger
         get "/me/inventory", EconomyController, :inventory

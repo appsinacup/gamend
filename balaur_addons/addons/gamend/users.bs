@@ -49,6 +49,23 @@ pub async fn get_user(id: str) -> any {
     reply
 }
 
+/// The icons and colours an avatar is picked from
+/// `GET /api/v1/avatar_icons`
+pub async fn list_avatar_icons() -> any {
+    let reply = await core::rest("GET", "/api/v1/avatar_icons");
+    reply
+}
+
+/// Make one of the site's icons the avatar
+/// `POST /api/v1/me/avatar/icon`
+pub async fn pick_current_user_avatar_icon(params: any) -> any {
+    if !core::given(params, "icon") {
+        return core::missing("gamend::users::pick_current_user_avatar_icon", "icon");
+    }
+    let reply = await core::rest("POST", "/api/v1/me/avatar/icon", params);
+    reply
+}
+
 /// Search users by id, username, or display_name
 /// `GET /api/v1/users`
 pub async fn search_users(options: any) -> any {

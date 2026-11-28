@@ -593,16 +593,14 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
   defp avatar_file_error, do: gettext("File is too large or not a supported image.")
 
-  # One of the site's icons as the avatar: its URL in `profile_url`, as an
-  # upload's is, and the uploaded picture it replaces gone from storage. Only
-  # one of the site's, and only when it is another than the one shown.
+  # One of the site's icons as the avatar (`Accounts.pick_avatar_icon/3`, as a
+  # client sets one), only when it is another than the one stored.
   defp save_avatar_icon(socket, user, picked) do
     url = avatar_form(user, picked)[:profile_url].value
 
-    if Gamend.Icons.name(url) && url != User.public_avatar_url(user) do
-      case Accounts.update_user_avatar(user, url) do
+    if Gamend.Icons.name(url) && url != user.profile_url do
+      case Accounts.pick_avatar_icon(user, Gamend.Icons.name(url), Gamend.Icons.color(url)) do
         {:ok, updated} ->
-          _ = Accounts.prune_user_avatars(user.id, "")
           {:noreply, avatar_saved(socket, updated)}
 
         _failed ->

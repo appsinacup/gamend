@@ -18,7 +18,7 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-292 operations in 45 modules, and 101 realtime events, 15 socket commands.
+294 operations in 45 modules, and 101 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -635,6 +635,8 @@ Users.
 | `delete_current_user(params)` | `DELETE /api/v1/me` | Delete current user |
 | `get_current_user()` | `GET /api/v1/me` | Return current user info |
 | `get_user(id)` | `GET /api/v1/users/{id}` | Get a user by id |
+| `list_avatar_icons()` | `GET /api/v1/avatar_icons` | The icons and colours an avatar is picked from |
+| `pick_current_user_avatar_icon(params)` | `POST /api/v1/me/avatar/icon` | Make one of the site's icons the avatar |
 | `search_users(options)` | `GET /api/v1/users` | Search users by id, username, or display_name |
 | `set_current_user_avatar(params)` | `POST /api/v1/me/avatar` | Confirm an uploaded avatar |
 | `update_current_user_display_name(params)` | `PATCH /api/v1/me/display_name` | Update current user's display name |

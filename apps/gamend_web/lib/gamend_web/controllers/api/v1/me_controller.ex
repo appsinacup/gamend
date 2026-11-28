@@ -7,7 +7,14 @@ defmodule GamendWeb.Api.V1.MeController do
   alias Gamend.Accounts.Scope
   alias Gamend.Accounts.User
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{CurrentUserResponse, OkResponse, UploadTicketResponse}
+
+  alias GamendWeb.Schemas.{
+    AvatarIconsResponse,
+    CurrentUserResponse,
+    OkResponse,
+    UploadTicketResponse
+  }
+
   alias GamendWeb.Serializers
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
@@ -283,6 +290,70 @@ defmodule GamendWeb.Api.V1.MeController do
           unprocessable(conn, changeset)
       end
     end)
+  end
+
+  operation(:avatar_icons,
+    operation_id: "list_avatar_icons",
+    summary: "The icons and colours an avatar is picked from",
+    description:
+      "The settings page's avatar picker: its icons (`key`, and `url`, the SVG on this " <>
+        "server) and its colours (`key`, and `css`, what the site draws it with), in its " <>
+        "order. `POST /me/avatar/icon` sets one. No session needed.",
+    responses: [
+      ok: {"Icons and colours", "application/json", AvatarIconsResponse}
+    ]
+  )
+
+  def avatar_icons(conn, _params) do
+    reply_data(conn, %{
+      icons: Enum.map(Gamend.Icons.picks(), &%{key: &1, url: Gamend.Icons.path(&1)}),
+      colors: Enum.map(Gamend.Icons.colors(), &%{key: &1, css: Gamend.Icons.color_css(&1)})
+    })
+  end
+
+  operation(:pick_avatar_icon,
+    operation_id: "pick_current_user_avatar_icon",
+    summary: "Make one of the site's icons the avatar",
+    description:
+      "Sets the avatar to an icon in a colour, as the settings page's Save does: " <>
+        "`profile_url` becomes `/icons/<icon>.svg?color=<color>`, the uploaded pictures it " <>
+        "replaces are deleted, and the user's connections hear `user_updated`. The icon " <>
+        "already stored is answered as it is, nothing written. Any account may, a guest too.",
+    request_body: {
+      "The icon and its colour",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          icon: %Schema{type: :string, description: "One of `list_avatar_icons`' icon keys"},
+          color: %Schema{
+            type: :string,
+            description: "One of its colour keys; left out or `\"\"` for none"
+          }
+        },
+        required: [:icon]
+      }
+    },
+    security: [%{"authorization" => []}],
+    responses: [
+      ok: {"Avatar updated", "application/json", CurrentUserResponse},
+      unauthorized: Schemas.error("Not authenticated"),
+      unprocessable_entity:
+        Schemas.error(
+          "Not one of the icons (unknown_icon) or colours (unknown_color) offered, or no " <>
+            "`icon` (validation_failed)"
+        )
+    ]
+  )
+
+  def pick_avatar_icon(conn, params) do
+    user = Scope.user(conn.assigns.current_scope)
+
+    case Accounts.pick_avatar_icon(user, params["icon"], params["color"]) do
+      {:ok, updated} -> reply_data(conn, current_user(updated))
+      {:error, %Ecto.Changeset{} = changeset} -> unprocessable(conn, changeset)
+      {:error, reason} -> reply_reason(conn, reason)
+    end
   end
 
   operation(:delete,

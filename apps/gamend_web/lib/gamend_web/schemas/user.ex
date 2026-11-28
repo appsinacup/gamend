@@ -180,3 +180,72 @@ defmodule GamendWeb.Schemas.PublicUserResponse do
   @moduledoc "One user under `data`."
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.PublicUser
 end
+
+defmodule GamendWeb.Schemas.AvatarIcon do
+  @moduledoc "One of the site's icons a person picks as their avatar (`Gamend.Icons.picks/0`)."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "AvatarIcon",
+    description: "An icon the avatar picker offers",
+    type: :object,
+    properties: %{
+      key: %Schema{type: :string, description: "Its name, `rocket-launch`: what `icon` sends"},
+      url: %Schema{
+        type: :string,
+        description: "The SVG, a path on the server (`/icons/<name>.svg`): a 24 px solid heroicon"
+      }
+    },
+    required: [:key, :url]
+  })
+end
+
+defmodule GamendWeb.Schemas.AvatarIconColor do
+  @moduledoc "A colour an avatar icon is drawn in (`Gamend.Icons.colors/0`)."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "AvatarIconColor",
+    description: "A colour the avatar picker offers",
+    type: :object,
+    properties: %{
+      key: %Schema{
+        type: :string,
+        description:
+          "Its name, the theme's (`primary`, `info`, `success`, `warning`, `error`): what " <>
+            "`color` sends"
+      },
+      css: %Schema{
+        type: :string,
+        description:
+          "What the site draws it with: `var(--color-<name>)`, the theme's own, or a host's CSS colour"
+      }
+    },
+    required: [:key, :css]
+  })
+end
+
+defmodule GamendWeb.Schemas.AvatarIcons do
+  @moduledoc "The avatar picker's icons and colours, in the site's order."
+  require OpenApiSpex
+  alias GamendWeb.Schemas.{AvatarIcon, AvatarIconColor}
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "AvatarIcons",
+    description: "The icons and colours the settings page's avatar picker offers",
+    type: :object,
+    properties: %{
+      icons: %Schema{type: :array, items: AvatarIcon},
+      colors: %Schema{type: :array, items: AvatarIconColor}
+    },
+    required: [:icons, :colors]
+  })
+end
+
+defmodule GamendWeb.Schemas.AvatarIconsResponse do
+  @moduledoc "The avatar picker's icons and colours under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.AvatarIcons
+end

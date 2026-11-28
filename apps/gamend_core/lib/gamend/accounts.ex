@@ -268,6 +268,9 @@ defmodule Gamend.Accounts do
   @doc delegate_to: {Profile, :delete_user_storage, 1}
   defdelegate delete_user_storage(user_id), to: Profile
 
+  @doc delegate_to: {Profile, :pick_avatar_icon, 3}
+  defdelegate pick_avatar_icon(user, name, color), to: Profile
+
   @doc delegate_to: {Profile, :prune_user_avatars, 2}
   defdelegate prune_user_avatars(user_id, keep_key), to: Profile
 

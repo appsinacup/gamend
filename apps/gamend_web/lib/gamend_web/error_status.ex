@@ -134,6 +134,8 @@ defmodule GamendWeb.ErrorStatus do
     not_code_only: :unprocessable_entity,
     too_many_participants: :unprocessable_entity,
     too_small: :unprocessable_entity,
+    unknown_color: :unprocessable_entity,
+    unknown_icon: :unprocessable_entity,
     chat_daily_limit: :too_many_requests,
     redeem_rate_limit: :too_many_requests,
     report_daily_limit: :too_many_requests,

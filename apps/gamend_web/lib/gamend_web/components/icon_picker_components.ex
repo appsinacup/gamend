@@ -38,8 +38,7 @@ defmodule GamendWeb.IconPickerComponents do
     field = assigns.field
     value = to_string(field.value)
     errors = if Component.used_input?(field), do: field.errors, else: []
-    picked = Gamend.Icons.name(value)
-    color = if picked, do: Gamend.Icons.color(value), else: next_color(field, value)
+    {picked, color} = lit(field)
     css = Gamend.Icons.color_css(color)
 
     assigns =
@@ -141,6 +140,21 @@ defmodule GamendWeb.IconPickerComponents do
       <.error :for={msg <- @errors}>{msg}</.error>
     </fieldset>
     """
+  end
+
+  @doc """
+  What the picker shows lit for `field`: `{icon, color}`, the icon its value
+  names (nil for none) and the colour: the icon's own, else the one the next
+  icon picked takes (nil for none).
+  """
+  @spec lit(Phoenix.HTML.FormField.t()) :: {String.t() | nil, String.t() | nil}
+  def lit(field) do
+    value = to_string(field.value)
+
+    case Gamend.Icons.name(value) do
+      nil -> {nil, next_color(field, value)}
+      name -> {name, Gamend.Icons.color(value)}
+    end
   end
 
   # With no icon picked, the colour the next one will have: the one chosen so

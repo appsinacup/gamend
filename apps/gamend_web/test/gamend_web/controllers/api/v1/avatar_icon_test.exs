@@ -1,6 +1,8 @@
 defmodule GamendWeb.Api.V1.AvatarIconTest do
   use GamendWeb.ConnCase, async: false
 
+  import Phoenix.LiveViewTest
+
   alias Gamend.Accounts
   alias Gamend.Accounts.User
   alias Gamend.Icons
@@ -47,6 +49,63 @@ defmodule GamendWeb.Api.V1.AvatarIconTest do
 
     # Each icon's url is the SVG the server serves.
     assert get(build_conn(), "/icons/rocket-launch.svg").status == 200
+  end
+
+  # The settings page's picker, as it renders for `user`: the icon and the
+  # colour checked.
+  defp page_lit(conn, user) do
+    {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+    icon =
+      Enum.find(
+        Icons.picks(),
+        &has_element?(lv, ~s(#avatar_form input[value="/icons/#{&1}.svg"][checked]))
+      )
+
+    color =
+      Enum.find(Icons.colors(), &has_element?(lv, ~s(#avatar_form input[value="#{&1}"][checked])))
+
+    %{"icon" => icon || "", "color" => color || ""}
+  end
+
+  defp lit(authed) do
+    authed |> get("/api/v1/me/avatar/icon") |> json_response(200) |> Map.fetch!("data")
+  end
+
+  test "with a session, what the settings page's picker shows lit: the account's own icon", %{
+    conn: conn,
+    authed: authed,
+    user: user
+  } do
+    assert %{"icon" => icon, "color" => color} = lit(authed)
+    assert "/icons/#{icon}.svg?color=#{color}" == User.public_avatar_url(user)
+    assert lit(authed) == page_lit(conn, user)
+    assert json_response(get(conn, "/api/v1/me/avatar/icon"), 401)
+  end
+
+  # An icon that is no tile: none lit, as on the page; its colour still is.
+  test "an icon that is not one of the picks lights no tile", %{
+    conn: conn,
+    authed: authed,
+    user: user
+  } do
+    {:ok, user} = Accounts.update_user_avatar(user, "/icons/shield-check.svg?color=info")
+    assert %{"icon" => "", "color" => "info"} = lit(authed)
+    assert lit(authed) == page_lit(conn, user)
+  end
+
+  test "with an uploaded picture shown, the colour an icon picked next takes, as the page's", %{
+    conn: conn,
+    authed: authed,
+    user: user
+  } do
+    key = Storage.build_key("avatars", user.id, "x.png")
+    {:ok, _} = Storage.put(key, @png)
+    {:ok, user} = Accounts.update_user_avatar(user, Storage.url(key))
+
+    assert %{"icon" => "", "color" => color} = lit(authed)
+    assert color in Icons.colors()
+    assert lit(authed) == page_lit(conn, user)
   end
 
   test "POST /api/v1/me/avatar/icon sets the icon in its colour, as the site's Save does", %{

@@ -687,6 +687,7 @@ defmodule GamendWeb.Router.Shared do
         patch "/me/username", MeController, :update_username
         put "/me/preferences", PreferenceController, :update
         # Not an upload: one of the site's icons, outside the image gate.
+        get "/me/avatar/icon", MeController, :avatar_icon
         post "/me/avatar/icon", MeController, :pick_avatar_icon
         get "/me/wallet", EconomyController, :wallet
         get "/me/wallet/ledger", EconomyController, :ledger

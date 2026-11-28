@@ -2944,6 +2944,12 @@ func user_list_avatar_icons() -> GamendResult:
 	return await _call_api(UsersApi.new(_config), "list_avatar_icons")
 
 
+## The icon and colour the caller's avatar picker shows lit before they pick
+## Operation getCurrentUserAvatarIcon → GET /api/v1/me/avatar/icon
+func user_get_current_user_avatar_icon() -> GamendResult:
+	return await _call_api(UsersApi.new(_config), "get_current_user_avatar_icon")
+
+
 ## Make one of the site's icons the avatar, in one of its colours ("" for none)
 ## Operation pickCurrentUserAvatarIcon → POST /api/v1/me/avatar/icon
 ## The body goes as a Dictionary: the generated model names `color`

@@ -6,9 +6,11 @@ defmodule GamendWeb.Api.V1.MeController do
   alias Gamend.Accounts.DeletionReason
   alias Gamend.Accounts.Scope
   alias Gamend.Accounts.User
+  alias GamendWeb.AvatarForm
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
+    AvatarIconLitResponse,
     AvatarIconsResponse,
     CurrentUserResponse,
     OkResponse,
@@ -298,7 +300,8 @@ defmodule GamendWeb.Api.V1.MeController do
     description:
       "The settings page's avatar picker: its icons (`key`, and `url`, the SVG on this " <>
         "server) and its colours (`key`, and `css`, what the site draws it with), in its " <>
-        "order. `POST /me/avatar/icon` sets one. No session needed.",
+        "order. `GET /me/avatar/icon` is what the caller's picker shows lit, " <>
+        "`POST /me/avatar/icon` sets one. No session needed.",
     responses: [
       ok: {"Icons and colours", "application/json", AvatarIconsResponse}
     ]
@@ -309,6 +312,26 @@ defmodule GamendWeb.Api.V1.MeController do
       icons: Enum.map(Gamend.Icons.picks(), &%{key: &1, url: Gamend.Icons.path(&1)}),
       colors: Enum.map(Gamend.Icons.colors(), &%{key: &1, css: Gamend.Icons.color_css(&1)})
     })
+  end
+
+  operation(:avatar_icon,
+    operation_id: "get_current_user_avatar_icon",
+    summary: "What the avatar picker shows lit",
+    description:
+      "The icon and the colour the settings page's avatar picker shows lit for the caller " <>
+        "before they pick (`GamendWeb.AvatarForm.lit/1`, the page's own): `icon`, the one " <>
+        "picked, else the account's own (`\"\"` with an uploaded picture shown), and " <>
+        "`color`, the icon's, else the one an icon picked next takes (`\"\"` for none).",
+    security: [%{"authorization" => []}],
+    responses: [
+      ok: {"The icon and colour lit", "application/json", AvatarIconLitResponse},
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  def avatar_icon(conn, _params) do
+    {icon, color} = conn.assigns.current_scope |> Scope.user() |> AvatarForm.lit()
+    reply_data(conn, %{icon: icon || "", color: color || ""})
   end
 
   operation(:pick_avatar_icon,

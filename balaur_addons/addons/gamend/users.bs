@@ -39,6 +39,13 @@ pub async fn get_current_user() -> any {
     reply
 }
 
+/// What the avatar picker shows lit
+/// `GET /api/v1/me/avatar/icon`
+pub async fn get_current_user_avatar_icon() -> any {
+    let reply = await core::rest("GET", "/api/v1/me/avatar/icon");
+    reply
+}
+
 /// Get a user by id
 /// `GET /api/v1/users/{id}`
 pub async fn get_user(id: str) -> any {

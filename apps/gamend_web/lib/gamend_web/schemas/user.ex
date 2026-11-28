@@ -227,6 +227,30 @@ defmodule GamendWeb.Schemas.AvatarIconColor do
   })
 end
 
+defmodule GamendWeb.Schemas.AvatarIconLit do
+  @moduledoc "What the caller's avatar picker shows lit (`GamendWeb.AvatarForm.lit/1`)."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "AvatarIconLit",
+    description: "The icon and the colour the caller's avatar picker shows lit",
+    type: :object,
+    properties: %{
+      icon: %Schema{
+        type: :string,
+        description: "The icon lit (the one picked, else the account's own), \"\" for a picture"
+      },
+      color: %Schema{
+        type: :string,
+        description:
+          "The colour lit: the icon's, else the one an icon picked next takes; \"\" for none"
+      }
+    },
+    required: [:icon, :color]
+  })
+end
+
 defmodule GamendWeb.Schemas.AvatarIcons do
   @moduledoc "The avatar picker's icons and colours, in the site's order."
   require OpenApiSpex
@@ -243,6 +267,11 @@ defmodule GamendWeb.Schemas.AvatarIcons do
     },
     required: [:icons, :colors]
   })
+end
+
+defmodule GamendWeb.Schemas.AvatarIconLitResponse do
+  @moduledoc "What the caller's avatar picker shows lit under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.AvatarIconLit
 end
 
 defmodule GamendWeb.Schemas.AvatarIconsResponse do

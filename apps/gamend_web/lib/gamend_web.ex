@@ -172,7 +172,7 @@ defmodule GamendWeb do
         ]
 
       import GamendWeb.AvatarComponents
-      import GamendWeb.IconPickerComponents
+      import GamendWeb.IconPickerComponents, only: [icon_picker: 1]
       import GamendWeb.MarkdownComponents
       import GamendWeb.RewardComponents
       # A file field that takes a dropped file as well as a picked one

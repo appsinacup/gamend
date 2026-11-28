@@ -15,6 +15,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   alias Gamend.OAuth.AuthProvider
   alias Gamend.OAuth.Providers
   alias Gamend.Storage
+  alias GamendWeb.AvatarForm
   alias GamendWeb.Features
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
@@ -675,18 +676,9 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
-  # What the avatar form holds: the icon picked, in its colour; none picked,
-  # the avatar shown (`User.public_avatar_url/1`), an icon their id gave them
-  # lit as if picked. A colour with no icon stays on the form for the next.
-  defp avatar_form(user, picked \\ %{}) do
-    url = Gamend.Icons.put_color(picked, "profile_url")["profile_url"]
-    shown = if Gamend.Icons.name(url), do: url, else: User.public_avatar_url(user) || ""
-    to_form(Map.put(picked, "profile_url", shown), as: :avatar_icon)
-  end
+  defp avatar_form(user, picked \\ %{}), do: AvatarForm.form(user, picked)
 
-  # Not `@avatar_form[:profile_url]` in the template: LiveView redraws that only
-  # when the icon itself changes, and the colour is a field of its own.
-  defp avatar_icon_field(form), do: form[:profile_url]
+  defp avatar_icon_field(form), do: AvatarForm.field(form)
 
   defp avatar_preview(user, form), do: %{user | profile_url: form[:profile_url].value}
 

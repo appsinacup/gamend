@@ -460,6 +460,8 @@ Accepts a user ID and clears both the primary and all index caches.
 
 # `notify_existing_account`
 
+# `pick_avatar_icon`
+
 # `player_stats`
 
 # `prune_user_avatars`

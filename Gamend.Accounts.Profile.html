@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.5">
-    <meta name="project" content="gamend_core v1.1.1534">
+    <meta name="project" content="gamend_core v1.1.1535">
 
 
-    <title>Gamend.Accounts.Profile — gamend_core v1.1.1534</title>
+    <title>Gamend.Accounts.Profile — gamend_core v1.1.1535</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-04DEE03B.js"></script>
+    <script defer src="dist/sidebar_items-4AAC6BF2.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-LBCGAQQV.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1534
+          v1.1.1535
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Profile</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1534)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1535)</small>
 
     </h1>
 
@@ -169,6 +169,23 @@ the same name.</p>
 
         <div class="summary-synopsis"><p>Merges <code class="inline">patch</code> into the user's metadata, leaving untouched every key it does
 not mention.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#pick_avatar_icon/3" data-no-tooltip="" translate="no">pick_avatar_icon(user, name, color)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>One of the icons people pick (<a href="Gamend.Icons.html#picks/0"><code class="inline">Gamend.Icons.picks/0</code></a>) as the user's avatar,
+in one of its colours (nil or <code class="inline">&quot;&quot;</code> for none), as the settings page's Save
+sets it: its URL (<a href="Gamend.Icons.html#path/2"><code class="inline">Gamend.Icons.path/2</code></a>) in <code class="inline">profile_url</code>, the uploaded
+pictures it replaces gone from storage. The icon stored already is kept as
+it is, nothing written; an icon the user only shows (their id's, while
+<code class="inline">profile_url</code> holds a provider's picture) is written, so the provider's
+picture never comes back over it. Refused: <code class="inline">:unknown_icon</code> for a name not
+in the picks, <code class="inline">:unknown_color</code> for a colour not in <a href="Gamend.Icons.html#colors/0"><code class="inline">Gamend.Icons.colors/0</code></a>.</p></div>
 
     </div>
 
@@ -319,7 +336,7 @@ by <a href="Gamend.Storage.html"><code class="inline">Gamend.Storage</code></a>.
       <h1 class="signature" translate="no">delete_user_storage(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L104" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -348,7 +365,7 @@ not block an account deletion that has already happened at the database level.</
       <h1 class="signature" translate="no">merge_metadata(user, patch)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -371,6 +388,43 @@ belonging to code it has never heard of. Top-level merge, serialized so two
 concurrent merges cannot lose each other.</p>
   </section>
 </section>
+<section class="detail" id="pick_avatar_icon/3">
+
+  <div class="detail-header">
+    <a href="#pick_avatar_icon/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">pick_avatar_icon(user, name, color)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> pick_avatar_icon(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()}
+  | {:error, :unknown_icon | :unknown_color | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+
+      </div>
+
+<p>One of the icons people pick (<a href="Gamend.Icons.html#picks/0"><code class="inline">Gamend.Icons.picks/0</code></a>) as the user's avatar,
+in one of its colours (nil or <code class="inline">&quot;&quot;</code> for none), as the settings page's Save
+sets it: its URL (<a href="Gamend.Icons.html#path/2"><code class="inline">Gamend.Icons.path/2</code></a>) in <code class="inline">profile_url</code>, the uploaded
+pictures it replaces gone from storage. The icon stored already is kept as
+it is, nothing written; an icon the user only shows (their id's, while
+<code class="inline">profile_url</code> holds a provider's picture) is written, so the provider's
+picture never comes back over it. Refused: <code class="inline">:unknown_icon</code> for a name not
+in the picks, <code class="inline">:unknown_color</code> for a colour not in <a href="Gamend.Icons.html#colors/0"><code class="inline">Gamend.Icons.colors/0</code></a>.</p>
+  </section>
+</section>
 <section class="detail" id="prune_user_avatars/2">
 
   <div class="detail-header">
@@ -381,7 +435,7 @@ concurrent merges cannot lose each other.</p>
       <h1 class="signature" translate="no">prune_user_avatars(user_id, keep_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L127" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -412,7 +466,7 @@ update that already succeeded.</p>
       <h1 class="signature" translate="no">refresh_account_class(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L276" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L312" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -444,7 +498,7 @@ sweep or on login.</p>
       <h1 class="signature" translate="no">set_user_age(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L205" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L241" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -512,7 +566,7 @@ by <a href="Gamend.Storage.html"><code class="inline">Gamend.Storage</code></a>.
       <h1 class="signature" translate="no">update_user_display_name(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L154" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L190" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -544,7 +598,7 @@ by <a href="Gamend.Storage.html"><code class="inline">Gamend.Storage</code></a>.
       <h1 class="signature" translate="no">update_username(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L308" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L344" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -577,9 +631,9 @@ its refusal comes back as <code class="inline">{:error, {:hook_rejected, reason}
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1534">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1535">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1534">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1535">Hex Preview</a>
 
             </span>
 

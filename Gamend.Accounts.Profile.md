@@ -47,6 +47,23 @@ reason: `metadata` is one shared map, so a writer that replaces it wipes keys
 belonging to code it has never heard of. Top-level merge, serialized so two
 concurrent merges cannot lose each other.
 
+# `pick_avatar_icon`
+
+```elixir
+@spec pick_avatar_icon(Gamend.Accounts.User.t(), String.t(), String.t() | nil) ::
+  {:ok, Gamend.Accounts.User.t()}
+  | {:error, :unknown_icon | :unknown_color | Ecto.Changeset.t()}
+```
+
+One of the icons people pick (`Gamend.Icons.picks/0`) as the user's avatar,
+in one of its colours (nil or `""` for none), as the settings page's Save
+sets it: its URL (`Gamend.Icons.path/2`) in `profile_url`, the uploaded
+pictures it replaces gone from storage. The icon stored already is kept as
+it is, nothing written; an icon the user only shows (their id's, while
+`profile_url` holds a provider's picture) is written, so the provider's
+picture never comes back over it. Refused: `:unknown_icon` for a name not
+in the picks, `:unknown_color` for a colour not in `Gamend.Icons.colors/0`.
+
 # `prune_user_avatars`
 
 ```elixir
